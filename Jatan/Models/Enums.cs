@@ -144,6 +144,16 @@ namespace Jatan.Models
         TakeAction,
 
         /// <summary>
+        /// The player is placing a road.
+        /// </summary>
+        PlacingRoad,
+
+        /// <summary>
+        /// The player is placing a building.
+        /// </summary>
+        PlacingBuilding,
+
+        /// <summary>
         /// The player is requesting a trade.
         /// </summary>
         RequestingTrade
