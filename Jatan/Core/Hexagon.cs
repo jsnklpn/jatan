@@ -1,26 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Jatan.Core.Serialization;
 
 namespace Jatan.Core
 {
     /// <summary>
     /// Struct to represent a hexagon location
     /// </summary>
-    public struct Hexagon
+    [TypeConverter(typeof(StringTypeConverter<Hexagon>))]
+    public struct Hexagon : IStringSerializable
     {
         /// <summary>
         /// The X-cordinate
         /// </summary>
-        public readonly int X;
+        public int X;
 
         /// <summary>
         /// The Y-cordinate
         /// </summary>
-        public readonly int Y;
+        public int Y;
 
         /// <summary>
         /// Creates a new hexagon at [x,y]
@@ -114,6 +117,23 @@ namespace Jatan.Core
         public override string ToString()
         {
             return string.Format("({0}, {1})", X, Y);
+        }
+
+        /// <summary>
+        /// Creates this object from a string.
+        /// </summary>
+        public void FromString(string value)
+        {
+            try
+            {
+                var split = value.Trim('(', ')', ' ').Split(',');
+                X = int.Parse(split[0]);
+                Y = int.Parse(split[1]);
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException("Cannot parse Hexagon string. Must be in the format \"(X, Y)\"", "value");
+            }
         }
 
         #region Equals

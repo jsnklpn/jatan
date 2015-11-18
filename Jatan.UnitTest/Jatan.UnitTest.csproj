@@ -53,6 +53,8 @@
     <Compile Include="HexagonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GameBoardTest.cs" />
+    <Compile Include="HexEdgeTest.cs" />
+    <Compile Include="HexPointTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jatan\Jatan.csproj">

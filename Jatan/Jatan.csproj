@@ -45,6 +45,8 @@
     <Compile Include="Core\Hexagon.cs" />
     <Compile Include="Core\HexEdge.cs" />
     <Compile Include="Core\HexPoint.cs" />
+    <Compile Include="Core\Serialization\IStringSerializable.cs" />
+    <Compile Include="Core\Serialization\StringTypeConverter.cs" />
     <Compile Include="GameLogic\GameManager.cs" />
     <Compile Include="Models\Building.cs" />
     <Compile Include="Models\Enums.cs" />

@@ -1,25 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jatan.Core.Serialization;
 
 namespace Jatan.Core
 {
     /// <summary>
     /// A struct to represent a hexagon edge
     /// </summary>
-    public struct HexEdge
+    [TypeConverter(typeof(StringTypeConverter<HexEdge>))]
+    public struct HexEdge : IStringSerializable
     {
         /// <summary>
         /// The first hexagon that the edge is touching
         /// </summary>
-        public readonly Hexagon Hex1;
+        public Hexagon Hex1;
 
         /// <summary>
         /// The second hexagon that the edge is touching
         /// </summary>
-        public readonly Hexagon Hex2;
+        public Hexagon Hex2;
 
         /// <summary>
         /// Creates a new hexagon edge
@@ -105,7 +108,27 @@ namespace Jatan.Core
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{{{0}, {1}}}", Hex1, Hex2);
+            return string.Format("[{0}, {1}]", Hex1, Hex2);
+        }
+
+        /// <summary>
+        /// Creates this object from a string.
+        /// </summary>
+        public void FromString(string value)
+        {
+            try
+            {
+                value = value.Trim('[', ']', ' ');
+                int middleIndex = value.IndexOf(")", StringComparison.OrdinalIgnoreCase);
+                var first = value.Substring(0, middleIndex);
+                var second = value.Substring(middleIndex + 1).Trim(',');
+                Hex1.FromString(first);
+                Hex2.FromString(second);
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException("Cannot parse HexEdge string. Must be in the format \"[(X1, Y1), (X2, Y2)]\"", "value");
+            }
         }
 
         #region Equals

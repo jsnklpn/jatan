@@ -1,30 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jatan.Core.Serialization;
 
 namespace Jatan.Core
 {
     /// <summary>
     /// A struct to represent a hexagon point
     /// </summary>
-    public struct HexPoint
+    [TypeConverter(typeof(StringTypeConverter<HexPoint>))]
+    public struct HexPoint : IStringSerializable
     {
         /// <summary>
         /// The first hexagon that the point is touching
         /// </summary>
-        public readonly Hexagon Hex1;
+        public Hexagon Hex1;
 
         /// <summary>
         /// The second hexagon that the point is touching
         /// </summary>
-        public readonly Hexagon Hex2;
+        public Hexagon Hex2;
 
         /// <summary>
         /// The third hexagon that the point is touching
         /// </summary>
-        public readonly Hexagon Hex3;
+        public Hexagon Hex3;
 
         /// <summary>
         /// Creates a new hexagon point
@@ -90,7 +93,30 @@ namespace Jatan.Core
         /// </summary>
         public override string ToString()
         {
-            return string.Format("{{{0}, {1}, {2}}}", Hex1, Hex2, Hex3);
+            return string.Format("[{0}, {1}, {2}]", Hex1, Hex2, Hex3);
+        }
+
+        /// <summary>
+        /// Creates this object from a string.
+        /// </summary>
+        public void FromString(string value)
+        {
+            try
+            {
+                value = value.Trim('[', ']', ' ');
+                int firstSepIndex = value.IndexOf(")", StringComparison.OrdinalIgnoreCase);
+                int secondSepIndex = value.IndexOf(")", firstSepIndex + 1, StringComparison.OrdinalIgnoreCase);
+                var first = value.Substring(0, firstSepIndex + 1);
+                var second = value.Substring(firstSepIndex + 1, secondSepIndex - firstSepIndex).Trim(',');
+                var third = value.Substring(secondSepIndex + 1).Trim(',');
+                Hex1.FromString(first);
+                Hex2.FromString(second);
+                Hex3.FromString(third);
+            }
+            catch (Exception)
+            {
+                throw new ArgumentException("Cannot parse HexPoint string. Must be in the format \"[(X1, Y1), (X2, Y2), (X3, Y3)]\"", "value");
+            }
         }
 
         #region Equals

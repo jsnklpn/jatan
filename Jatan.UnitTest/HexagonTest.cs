@@ -55,5 +55,26 @@ namespace Jatan.UnitTest
             Assert.IsTrue(edges.Contains(new HexEdge(0, 0, -1, 0)), msg);
             Assert.IsTrue(edges.Contains(new HexEdge(0, 0, 0, 1)), msg);
         }
+
+        [TestMethod]
+        public void TestSerialize()
+        {
+            var hexes = new Hexagon[]
+            {
+                new Hexagon(0, 0),
+                new Hexagon(1, 1),
+                new Hexagon(134234, 3465465),
+                new Hexagon(-134234, -3465465),
+                new Hexagon(int.MaxValue, int.MinValue),
+            };
+
+            foreach (var hex in hexes)
+            {
+                var str = hex.ToString();
+                var actual = new Hexagon();
+                actual.FromString(str);
+                Assert.AreEqual(hex, actual, "The FromString method must produce the exact object that called the ToString method.");
+            }
+        }
     }
 }
