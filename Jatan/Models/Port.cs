@@ -12,14 +12,9 @@ namespace Jatan.Models
     public struct Port
     {
         /// <summary>
-        /// The resource which can be traded here.
+        /// The resource which can be traded here. 'None' indicates that any resource can be traded.
         /// </summary>
         public readonly ResourceTypes Resource;
-
-        /// <summary>
-        /// Indicates if this a 3-to-1 any-resource port.
-        /// </summary>
-        public bool CanTradeAnyResource { get { return Resource == ResourceTypes.None; } }
 
         /// <summary>
         /// Creates a new port
