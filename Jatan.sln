@@ -1,11 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jatan", "Jatan\Jatan.csproj", "{D27FB785-CC87-4936-9746-892DD7916EA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jatan.UnitTest", "Jatan.UnitTest\Jatan.UnitTest.csproj", "{C1CB00B9-ACD1-42CB-8084-068966D39FA9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{1590B0A7-8B0D-4AF4-BE86-E19C2DA0F415}"
+	ProjectSection(SolutionItems) = preProject
+		Images\jatan-logo.psd = Images\jatan-logo.psd
+		Images\jatanlogo-full-black.png = Images\jatanlogo-full-black.png
+		Images\jatanlogo-full-transparent.png = Images\jatanlogo-full-transparent.png
+		Images\jatanlogo-full-white.png = Images\jatanlogo-full-white.png
+		Images\jatanlogo-sun-black.png = Images\jatanlogo-sun-black.png
+		Images\jatanlogo-sun-transparent.png = Images\jatanlogo-sun-transparent.png
+		Images\jatanlogo-sun-white.png = Images\jatanlogo-sun-white.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
