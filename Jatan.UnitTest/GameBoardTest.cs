@@ -49,5 +49,42 @@ namespace Jatan.UnitTest
             Assert.IsTrue(rollResult[1].IsEmpty(), "Settlement should not collect on a robber tile.");
             Assert.IsTrue(rollResult[2].IsEmpty(), "City should not collect on a robber tile.");
         }
+
+        [TestMethod]
+        public void TestLongestRoad()
+        {
+            var board = new GameBoard();
+            board.Setup();
+            board.PlaceBuilding(1, BuildingTypes.Settlement, new HexPoint(0, 0, 1, 1, 1, 0), true);
+
+            Assert.AreEqual(0, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(0, 0, 1, 1), false);
+            Assert.AreEqual(1, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(0, 0, 1, 0), false);
+            Assert.AreEqual(2, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(0, 0, 0, -1), false);
+            Assert.AreEqual(3, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(0, 0, -1, -1), false);
+            Assert.AreEqual(4, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(0, 0, -1, 0), false);
+            Assert.AreEqual(5, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(0, 0, 0, 1), false);
+            Assert.AreEqual(6, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(0, 1, 1, 1), false);
+            Assert.AreEqual(7, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(1, 2, 1, 1), false);
+            Assert.AreEqual(8, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(2, 2, 1, 1), false);
+            Assert.AreEqual(9, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(2, 1, 1, 1), false);
+            Assert.AreEqual(10, board.GetRoadLengthForPlayer(1));
+            board.PlaceRoad(1, new HexEdge(1, 0, 1, 1), false);
+            Assert.AreEqual(11, board.GetRoadLengthForPlayer(1));
+
+            // Block player 1
+            board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(0, 0, -1, -1, 0, -1), true);
+            board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(0, 0, -1, 0, 0, 1), true);
+            Assert.AreEqual(8, board.GetRoadLengthForPlayer(1));
+        }
     }
 }

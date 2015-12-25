@@ -88,6 +88,17 @@ namespace Jatan.Core
         }
 
         /// <summary>
+        /// Gets the point which connects two edges.
+        /// </summary>
+        public HexPoint GetNeighborPoint(HexEdge neighborEdge)
+        {
+            var point = this.GetPoints().Intersect(neighborEdge.GetPoints()).ToList();
+            if (point.Count != 1)
+                throw new ArgumentException("Invalid neighbor edge.");
+            return point[0];
+        }
+
+        /// <summary>
         /// Indicates if the edge contains the given point.
         /// </summary>
         public bool ContainsPoint(HexPoint point)

@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Jatan.Core;
 
 namespace Jatan.Models
@@ -376,6 +374,40 @@ namespace Jatan.Models
         }
 
         /// <summary>
+        /// Gets the maximum road length for a player.
+        /// </summary>
+        public int GetRoadLengthForPlayer(int player)
+        {
+            int absoluteMax = 0;
+            var allPlayerRoads = _roads.Where(r => r.Value.Player == player).Select(r => r.Key).ToList();
+            foreach (var startingRoad in allPlayerRoads)
+            {
+                // We'll do this test using each road as the "starting" road.
+                var roadStack = new Stack<SearchRoad>();
+                var finalPaths = new List<SearchRoad>();
+                roadStack.Push(new SearchRoad(startingRoad));
+
+                while (roadStack.Any())
+                {
+                    var currentRoad = roadStack.Pop();
+                    var endOfPath = true;
+                    foreach (var permutation in GetRoadPermutations(player, currentRoad, allPlayerRoads))
+                    {
+                        roadStack.Push(permutation);
+                        endOfPath = false;
+                    }
+                    if (endOfPath)
+                        finalPaths.Add(currentRoad);
+                }
+
+                var currentMax = finalPaths.Max(r => r.GetLength());
+                if (currentMax > absoluteMax)
+                    absoluteMax = currentMax;
+            }
+            return absoluteMax;
+        }
+
+        /// <summary>
         /// Gets the string representation of the game board.
         /// </summary>
         public override string ToString()
@@ -518,6 +550,16 @@ namespace Jatan.Models
             return false;
         }
 
+        private bool IsEnemyPlayerBuildingHere(int player, HexPoint point)
+        {
+            if (_buildings.ContainsKey(point))
+            {
+                var b = _buildings[point];
+                return (b.Player != player);
+            }
+            return false;
+        }
+
         private bool IsPlayerRoadHere(int player, HexEdge edge)
         {
             if (_roads.ContainsKey(edge))
@@ -540,6 +582,66 @@ namespace Jatan.Models
         private bool IsPointInBoard(HexPoint point)
         {
             return _validBoardPoints.Contains(point);
+        }
+
+        #endregion
+
+        #region Road search
+
+        private IEnumerable<HexEdge> GetRoadPermutations(int player, HexEdge road, IEnumerable<HexEdge> allPlayerRoads)
+        {
+            return road.GetNeighborEdges()
+                       .Where(e => allPlayerRoads.Contains(e) &&
+                                   !IsEnemyPlayerBuildingHere(player, road.GetNeighborPoint(e))); // An enemy building can cut off a road.
+        }
+
+        private IEnumerable<HexEdge> GetRoadPermutations(int player, HexEdge road, IEnumerable<HexEdge> allPlayerRoads, IEnumerable<HexEdge> excludeRoads)
+        {
+            return GetRoadPermutations(player, road, allPlayerRoads)
+                   .Where(e => !excludeRoads.Contains(e));
+        }
+
+        private IEnumerable<SearchRoad> GetRoadPermutations(int player, SearchRoad parentRoad, IEnumerable<HexEdge> allPlayerRoads)
+        {
+            return GetRoadPermutations(player, parentRoad.Edge, allPlayerRoads, parentRoad.GetEdgesToExcludeFromPermutations())
+                   .Select(e => new SearchRoad(e, parentRoad));
+        }
+
+        private class SearchRoad
+        {
+            public HexEdge Edge { get; private set; }
+            public SearchRoad Parent { get; private set; }
+
+            public SearchRoad(HexEdge edge, SearchRoad parent = null)
+            {
+                Edge = edge;
+                Parent = parent;
+            }
+
+            public int GetLength()
+            {
+                return GetAllEdges().Count;
+            }
+
+            public List<HexEdge> GetAllEdges()
+            {
+                var edges = new List<HexEdge> { this.Edge };
+                var tmpParent = Parent;
+                while (tmpParent != null)
+                {
+                    edges.Add(tmpParent.Edge);
+                    tmpParent = tmpParent.Parent;
+                }
+                return edges;
+            }
+
+            public List<HexEdge> GetEdgesToExcludeFromPermutations()
+            {
+                var result = GetAllEdges();
+                if (Parent != null)
+                    result.AddRange(Parent.Edge.GetNeighborEdges());
+                return result;
+            }
         }
 
         #endregion
