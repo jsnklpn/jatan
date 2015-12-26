@@ -81,10 +81,27 @@ namespace Jatan.UnitTest
             board.PlaceRoad(1, new HexEdge(1, 0, 1, 1), false);
             Assert.AreEqual(11, board.GetRoadLengthForPlayer(1));
 
-            // Block player 1
+            // Block player1's road with a player2 settlement
             board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(0, 0, -1, -1, 0, -1), true);
             board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(0, 0, -1, 0, 0, 1), true);
             Assert.AreEqual(8, board.GetRoadLengthForPlayer(1));
+
+            // Create roads for player2
+            board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(-2, 0, -1, 0, -2, -1), true);
+            board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(1, 0, 2, 0, 1, -1), true);
+
+            Assert.AreEqual(0, board.GetRoadLengthForPlayer(2));
+            
+            board.PlaceRoad(2, new HexEdge(-2, 0, -2, -1), false);
+            board.PlaceRoad(2, new HexEdge(-1, 0, -2, -1), false);
+
+            Assert.AreEqual(2, board.GetRoadLengthForPlayer(2));
+
+            board.PlaceRoad(2, new HexEdge(1, 0, 1, -1), false);
+            board.PlaceRoad(2, new HexEdge(2, 0, 1, -1), false);
+            board.PlaceRoad(2, new HexEdge(2, -1, 1, -1), false);
+
+            Assert.AreEqual(3, board.GetRoadLengthForPlayer(2));
         }
     }
 }
