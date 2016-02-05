@@ -19,6 +19,11 @@ namespace Jatan.GameLogic
         private CardDeck<DevelopmentCards> _developmentCardDeck;
         private GameStates _gameState;
 
+        // <playerId, roadLength>
+        private Tuple<int, int> _longestRoad;
+        // <playerId, armySize>
+        private Tuple<int, int> _largestArmy;
+
         private static Random _random = new Random();
 
         /// <summary>
@@ -56,6 +61,8 @@ namespace Jatan.GameLogic
         public void StartNewGame()
         {
             _playerTurnIndex = _random.Next(NumberOfPlayers); // A random player will go first.
+            _longestRoad = Tuple.Create(-1, -1);
+            _largestArmy = Tuple.Create(-1, -1);
             SetupDevelopmentCards();
             _gameBoard.Setup();
         }
@@ -126,6 +133,15 @@ namespace Jatan.GameLogic
             var placement = _gameBoard.PlaceRoad(player.Id, location, startOfGame);
             System.Diagnostics.Debug.Assert(placement.Succeeded);
 
+            // When we place a road, do a check to see if we deserve the longest road.
+            if (_longestRoad.Item1 != playerId)
+            {
+                var newRoadLength = _gameBoard.GetRoadLengthForPlayer(playerId);
+                // Must be at least 5 roads to have the longest road.
+                if (newRoadLength >= 5 && newRoadLength > _longestRoad.Item2)
+                    _longestRoad = Tuple.Create(playerId, newRoadLength);
+            }
+
             return ActionResult.CreateSuccess();
         }
 
@@ -159,13 +175,36 @@ namespace Jatan.GameLogic
             return ActionResult.CreateSuccess();
         }
 
+        /// <summary>
+        /// Plays a development card for a player and performs any actions due to the card.
+        /// </summary>
+        public ActionResult PlayerPlayDevelopmentCard(int playerId, DevelopmentCards cardToPlay)
+        {
+            // TODO: PlayerPlayDevelopmentCard method
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+            var player = pr.Data;
+
+            // Check if the player now has the largest army.
+            if (_largestArmy.Item1 != playerId)
+            {
+                var newArmySize = player.ArmySize;
+                // Must be at least 3 knights to have the largest army.
+                if (newArmySize >= 3 && newArmySize > _largestArmy.Item2)
+                    _largestArmy = Tuple.Create(playerId, newArmySize);
+            }
+
+            return ActionResult.CreateSuccess();
+        }
+
         #region Private setup methods
 
         private void SetupDevelopmentCards()
         {
             _developmentCardDeck.Clear();
             var cardsToAdd = new List<DevelopmentCards>();
-            // I need to double check these card counts. I got them from yahoo answers :)
+            // TODO: I need to double check these card counts. I got them from yahoo answers :)
             cardsToAdd.Add(DevelopmentCards.Knight, 14);
             cardsToAdd.Add(DevelopmentCards.Library, 3);
             cardsToAdd.Add(DevelopmentCards.Palace, 2);
@@ -199,7 +238,17 @@ namespace Jatan.GameLogic
             // * Longest Road (2 points) - Must be at least 5 segments.
             // * Largest Army (2 points) - Must be at least 3 knights.
 
-            return ActionResult<int>.CreateSuccess(1);
+            var totalPoints = 0;
+            var settlementCount = _gameBoard.GetBuildingCountForPlayer(playerId, BuildingTypes.Settlement);
+            var cityCount = _gameBoard.GetBuildingCountForPlayer(playerId, BuildingTypes.City);
+
+            totalPoints += settlementCount;
+            totalPoints += (cityCount * 2);
+            totalPoints += player.VictoryPointsFromCards;
+            if (_largestArmy.Item1 == playerId) totalPoints += 2;
+            if (_longestRoad.Item1 == playerId) totalPoints += 2;
+
+            return ActionResult<int>.CreateSuccess(totalPoints);
         }
     }
 }
