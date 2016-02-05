@@ -21,6 +21,12 @@ namespace Jatan.UnitTest
             var board = new GameBoard();
             board.Setup();
 
+            // Randomize the board again if the middle tile (the tile to test) is a desert tile.
+            while (board.ResourceTiles[Hexagon.Zero].Resource == ResourceTypes.None)
+            {
+                board.Setup();
+            }
+
             var middleResourceTile = board.ResourceTiles[Hexagon.Zero];
             board.PlaceBuilding(1, BuildingTypes.Settlement, new HexPoint(0, 0, 1, 1, 1, 0), true);
             board.PlaceBuilding(2, BuildingTypes.City, new HexPoint(0, 0, -1, 0, -1, -1), true);
