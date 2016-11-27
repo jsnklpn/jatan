@@ -20,11 +20,19 @@ namespace Jatan.GameLogic
         private GameStates _gameState;
 
         // <playerId, roadLength>
-        private Tuple<int, int> _longestRoad;
+        private Tuple<int, int> _longestRoad; 
         // <playerId, armySize>
         private Tuple<int, int> _largestArmy;
 
         private static Random _random = new Random();
+
+        /// <summary>
+        /// Gets the game board.
+        /// </summary>
+        public GameBoard GameBoard
+        {
+            get { return _gameBoard; }
+        }
 
         /// <summary>
         /// Gets the number of players.
@@ -33,6 +41,11 @@ namespace Jatan.GameLogic
         {
             get { return _players.Count; }
         }
+
+        /// <summary>
+        /// Gets the current state of the game.
+        /// </summary>
+        public GameStates GameState { get { return _gameState; } }
 
         /// <summary>
         /// Creates a new game instance.
@@ -65,6 +78,13 @@ namespace Jatan.GameLogic
             _largestArmy = Tuple.Create(-1, -1);
             SetupDevelopmentCards();
             _gameBoard.Setup();
+            _gameState = GameStates.InitialPlacement;
+        }
+
+        private static int _idCounter;
+        public void AddPlayer(string name)
+        {
+            _players.Add(new Player(_idCounter++, name, 0));
         }
 
         public ActionResult PlayerOfferTrade(int playerId, ResourceStack toGive, ResourceStack toReceive)
