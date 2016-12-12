@@ -124,7 +124,7 @@ namespace Jatan.Models
     }
 
     /// <summary>
-    /// Player turn states.
+    /// Player turn states. The states are needed for actions that require further action from the player.
     /// </summary>
     public enum PlayerTurnState
     {
@@ -139,7 +139,7 @@ namespace Jatan.Models
         NeedToRoll,
 
         /// <summary>
-        /// The player must decide what they want to do.
+        /// The player is done rolling and now must decide what they want to do.
         /// </summary>
         TakeAction,
 
@@ -152,6 +152,21 @@ namespace Jatan.Models
         /// The player is placing a building.
         /// </summary>
         PlacingBuilding,
+
+        /// <summary>
+        /// The player is placing the robber.
+        /// </summary>
+        PlacingRobber,
+
+        /// <summary>
+        /// The player is selecting cards to steal from another player.
+        /// </summary>
+        StealingCards,
+
+        /// <summary>
+        /// The player is selecting which cards to lose.
+        /// </summary>
+        SelectingCardsToLose,
 
         /// <summary>
         /// The player is requesting a trade.

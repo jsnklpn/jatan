@@ -14,10 +14,12 @@ namespace Jatan.GameLogic
     public class GameManager
     {
         private GameBoard _gameBoard;
+        private GameSettings _gameSettings;
         private List<Player> _players;
         private int _playerTurnIndex;
         private CardDeck<DevelopmentCards> _developmentCardDeck;
         private GameStates _gameState;
+        private PlayerTurnState _playerTurnState;
 
         // <playerId, roadLength>
         private Tuple<int, int> _longestRoad; 
@@ -32,6 +34,14 @@ namespace Jatan.GameLogic
         public GameBoard GameBoard
         {
             get { return _gameBoard; }
+        }
+
+        /// <summary>
+        /// Gets the game settings.
+        /// </summary>
+        public GameSettings Settings
+        {
+            get {  return _gameSettings; }
         }
 
         /// <summary>
@@ -52,7 +62,9 @@ namespace Jatan.GameLogic
         /// </summary>
         public GameManager()
         {
+            _gameSettings = new GameSettings();
             _gameState = GameStates.NotStarted;
+            _playerTurnState = PlayerTurnState.None;
             _gameBoard = new GameBoard();
             _players = new List<Player>();
             _developmentCardDeck = new CardDeck<DevelopmentCards>();
@@ -78,7 +90,9 @@ namespace Jatan.GameLogic
             _largestArmy = Tuple.Create(-1, -1);
             SetupDevelopmentCards();
             _gameBoard.Setup();
+            _gameBoard.RobberMode = _gameSettings.RobberMode;
             _gameState = GameStates.InitialPlacement;
+            _playerTurnState = PlayerTurnState.None; // TODO: Set the turn state at some point.
         }
 
         private static int _idCounter;
