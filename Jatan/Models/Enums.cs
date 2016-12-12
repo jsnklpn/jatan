@@ -115,7 +115,7 @@ namespace Jatan.Models
         /// <summary>
         /// The regular game is in play.
         /// </summary>
-        GameStarted,
+        GameInProgress,
 
         /// <summary>
         /// The game has ended.
@@ -157,5 +157,26 @@ namespace Jatan.Models
         /// The player is requesting a trade.
         /// </summary>
         RequestingTrade
+    }
+
+    /// <summary>
+    /// Usage modes for the robber.
+    /// </summary>
+    public enum RobberMode
+    {
+        /// <summary>
+        /// In normal mode, the robber will prevent a tile from generating resources.
+        /// </summary>
+        Normal,
+
+        /// <summary>
+        /// In boost mode, the robber will cause a tile to generate extra resources.
+        /// </summary>
+        ResourceBoost,
+
+        /// <summary>
+        /// The robber will do nothing.
+        /// </summary>
+        None
     }
 }

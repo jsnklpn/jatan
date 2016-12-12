@@ -42,6 +42,13 @@ namespace Jatan.UnitTest
         {
             var board = new GameBoard();
             board.Setup();
+            board.RobberMode = RobberMode.Normal;
+
+            // Randomize the board again if the middle tile (the tile to test) is a desert tile.
+            while (board.ResourceTiles[Hexagon.Zero].Resource == ResourceTypes.None)
+            {
+                board.Setup();
+            }
 
             var middleResourceTile = board.ResourceTiles[Hexagon.Zero];
             board.PlaceBuilding(1, BuildingTypes.Settlement, new HexPoint(0, 0, 1, 1, 1, 0), true);
@@ -54,6 +61,38 @@ namespace Jatan.UnitTest
 
             Assert.IsTrue(rollResult[1].IsEmpty(), "Settlement should not collect on a robber tile.");
             Assert.IsTrue(rollResult[2].IsEmpty(), "City should not collect on a robber tile.");
+        }
+
+        [TestMethod]
+        public void TestRobberBoostMode()
+        {
+            var board = new GameBoard();
+            board.Setup();
+            board.RobberMode = RobberMode.ResourceBoost;
+
+            // Randomize the board again if the middle tile (the tile to test) is a desert tile.
+            while (board.ResourceTiles[Hexagon.Zero].Resource == ResourceTypes.None)
+            {
+                board.Setup();
+            }
+
+            var middleResourceTile = board.ResourceTiles[Hexagon.Zero];
+            board.PlaceBuilding(1, BuildingTypes.Settlement, new HexPoint(0, 0, 1, 1, 1, 0), true);
+            board.PlaceBuilding(2, BuildingTypes.City, new HexPoint(0, 0, 0, 1, -1, 0), true);
+
+            // Put the robber in the middle.
+            board.MoveRobber(1, Hexagon.Zero);
+
+            var rollResult = board.GetResourcesForDiceRoll(middleResourceTile.RetrieveNumber);
+
+            Assert.AreEqual(2, rollResult[1][middleResourceTile.Resource], "Settlement should collect 2 on a robber-boosted tile.");
+            Assert.AreEqual(3, rollResult[2][middleResourceTile.Resource], "City should collect 3 on a robber-boosted tile.");
+
+            // Add another building for player 1 and roll again
+            board.PlaceBuilding(1, BuildingTypes.Settlement, new HexPoint(0, 0, 0, -1, -1, -1), true);
+            rollResult = board.GetResourcesForDiceRoll(middleResourceTile.RetrieveNumber);
+
+            Assert.AreEqual(3, rollResult[1][middleResourceTile.Resource], "Two settlements should collect 3 total on a robber-boosted tile.");
         }
 
         [TestMethod]

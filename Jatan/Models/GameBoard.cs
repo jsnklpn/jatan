@@ -46,6 +46,7 @@ namespace Jatan.Models
         private Dictionary<HexPoint, Building> _buildings;
         private Dictionary<HexEdge, Port> _ports;
         private Hexagon _robberLocation;
+        private RobberMode _robberMode;
 
         // Some useful lists for validation and stuff
         private readonly List<Hexagon> _validBoardHexagons;
@@ -81,6 +82,15 @@ namespace Jatan.Models
         public Hexagon RobberLocation
         {
             get { return _robberLocation; }
+        }
+
+        /// <summary>
+        /// Gets/sets the robber mode.
+        /// </summary>
+        public RobberMode RobberMode
+        {
+            get { return _robberMode; }
+            set { _robberMode = value; }
         }
 
         /// <summary>
@@ -127,6 +137,7 @@ namespace Jatan.Models
             _buildings = new Dictionary<HexPoint, Building>();
             _ports = new Dictionary<HexEdge, Port>();
             _robberLocation = Hexagon.Zero;
+            _robberMode = RobberMode.Normal;
 
             // Create lists of valid hexagons and points
             _validBoardHexagons = new List<Hexagon>();
@@ -208,9 +219,19 @@ namespace Jatan.Models
             foreach (var playerId in GetPlayersOnBoard())
                 result[playerId] = ResourceCollection.Empty;
 
-            var activatedResourceTiles = _resourceTiles.Where(p => p.Value.RetrieveNumber == roll && p.Key != _robberLocation).ToList();
+            var activatedResourceTiles = _resourceTiles.Where(p => p.Value.RetrieveNumber == roll);
+
+            // Don't check tiles that have a robber on them (in normal robber mode.)
+            if (_robberMode == RobberMode.Normal)
+                activatedResourceTiles = activatedResourceTiles.Where(p => p.Key != _robberLocation);
+
+            // For use with robber boost mode to track players which have already got the boost.
+            var playersBoosted = new List<int>();
+
             foreach (var activatedTile in activatedResourceTiles)
             {
+                playersBoosted.Clear();
+
                 foreach (var point in activatedTile.Key.GetPoints())
                 {
                     if (_buildings.ContainsKey(point))
@@ -219,6 +240,16 @@ namespace Jatan.Models
                         int resourcesCollected = (building.Type == BuildingTypes.Settlement) ? 1 : 2;
                         var playerCollectedResources = result[building.Player];
                         playerCollectedResources[activatedTile.Value.Resource] += resourcesCollected;
+
+                        // The robber boost just adds +1 resource per player. Multiple buildings does not add extra boosts.
+                        if (_robberMode == RobberMode.ResourceBoost && activatedTile.Key == _robberLocation)
+                        {
+                            if (!playersBoosted.Contains(building.Player))
+                            {
+                                playerCollectedResources[activatedTile.Value.Resource] += 1;
+                                playersBoosted.Add(building.Player);
+                            }
+                        }
                     }
                 }
             }
