@@ -80,6 +80,14 @@ namespace Jatan.Core
         }
 
         /// <summary>
+        /// Gets the hexagon edge that is in the specified direction.
+        /// </summary>
+        public HexEdge GetEdge(EdgeDir direction)
+        {
+            return GetEdges()[(int)direction];
+        }
+
+        /// <summary>
         /// Gets a list of all the hexagon points.
         /// </summary>
         public IList<HexPoint> GetPoints()
@@ -93,6 +101,14 @@ namespace Jatan.Core
                 points.Add(new HexPoint(hex1, neighbors[i], neighbors[next]));
             }
             return points;
+        }
+
+        /// <summary>
+        /// Gets the hexagon point that is in the specified direction.
+        /// </summary>
+        public HexPoint GetPoint(PointDir direction)
+        {
+            return GetPoints()[(int)direction];
         }
 
         /// <summary>

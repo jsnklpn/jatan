@@ -25,6 +25,44 @@ namespace Jatan.UnitTest
         }
 
         [TestMethod]
+        public void TestGetPoint()
+        {
+            var hex = new Hexagon(0, 0);
+            var msg = "Point is not correct.";
+            var point = hex.GetPoint(PointDir.Top);
+            Assert.AreEqual(new HexPoint(0, 0, 0, 1, 1, 1), point, msg);
+            point = hex.GetPoint(PointDir.TopRight);
+            Assert.AreEqual(new HexPoint(0, 0, 1, 1, 1, 0), point, msg);
+            point = hex.GetPoint(PointDir.BottomRight);
+            Assert.AreEqual(new HexPoint(0, 0, 1, 0, 0,-1), point, msg);
+            point = hex.GetPoint(PointDir.Bottom);
+            Assert.AreEqual(new HexPoint(0, 0, 0,-1,-1,-1), point, msg);
+            point = hex.GetPoint(PointDir.BottomLeft);
+            Assert.AreEqual(new HexPoint(0, 0,-1,-1,-1, 0), point, msg);
+            point = hex.GetPoint(PointDir.TopLeft);
+            Assert.AreEqual(new HexPoint(0, 0,-1, 0, 0, 1), point, msg);
+        }
+
+        [TestMethod]
+        public void TestGetEdge()
+        {
+            var hex = new Hexagon(0, 0);
+            var msg = "Edge is not correct.";
+            var edge = hex.GetEdge(EdgeDir.TopRight);
+            Assert.AreEqual(new HexEdge(0, 0, 1, 1), edge, msg);
+            edge = hex.GetEdge(EdgeDir.Right);
+            Assert.AreEqual(new HexEdge(0, 0, 1, 0), edge, msg);
+            edge = hex.GetEdge(EdgeDir.BottomRight);
+            Assert.AreEqual(new HexEdge(0, 0, 0,-1), edge, msg);
+            edge = hex.GetEdge(EdgeDir.BottomLeft);
+            Assert.AreEqual(new HexEdge(0, 0,-1,-1), edge, msg);
+            edge = hex.GetEdge(EdgeDir.Left);
+            Assert.AreEqual(new HexEdge(0, 0,-1, 0), edge, msg);
+            edge = hex.GetEdge(EdgeDir.TopLeft);
+            Assert.AreEqual(new HexEdge(0, 0, 0, 1), edge, msg);
+        }
+
+        [TestMethod]
         public void TestGetNeighbors()
         {
             var hex = new Hexagon(0, 0);

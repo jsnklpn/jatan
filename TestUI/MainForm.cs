@@ -143,8 +143,16 @@ namespace TestUI
 
         private void Dump(object obj)
         {
-            var html = LINQPad.Util.ToHtmlString(obj);
-            wbObjectViewer.DocumentText = html;
+            try
+            {
+                var html = LINQPad.Util.ToHtmlString(obj);
+                wbObjectViewer.DocumentText = html;
+            }
+            catch (Exception ex)
+            {
+                wbObjectViewer.DocumentText = ex.ToString();
+            }
+            
         }
     }
 

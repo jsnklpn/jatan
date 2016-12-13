@@ -24,6 +24,11 @@ namespace Jatan.GameLogic
         public int CardCountLossThreshold { get; set; }
 
         /// <summary>
+        /// The length of a road a player must have before they can be considered for "longest road".
+        /// </summary>
+        public int MinimumLongestRoad { get; set; }
+
+        /// <summary>
         /// If non-zero, the number of seconds a player will have to take their turn.
         /// If the timer expires, the current player's turn is skipped.
         /// </summary>
@@ -36,6 +41,7 @@ namespace Jatan.GameLogic
         {
             this.RobberMode = RobberMode.Normal;
             this.CardCountLossThreshold = 8;
+            this.MinimumLongestRoad = 5;
             this.TurnTimeLimit = 0;
         }
     }

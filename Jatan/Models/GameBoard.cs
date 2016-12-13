@@ -413,6 +413,22 @@ namespace Jatan.Models
         }
 
         /// <summary>
+        /// Gets the number of buildings (any) on the board for a player.
+        /// </summary>
+        public int GetBuildingCountForPlayer(int player)
+        {
+            return _buildings.Count(c => c.Value.Player == player);
+        }
+
+        /// <summary>
+        /// Gets the number of roads on the board for a player. This does not find the road length.
+        /// </summary>
+        public int GetRoadCountForPlayer(int player)
+        {
+            return _roads.Count(r => r.Value.Player == player);
+        }
+
+        /// <summary>
         /// Gets the maximum road length for a player.
         /// </summary>
         public int GetRoadLengthForPlayer(int player)

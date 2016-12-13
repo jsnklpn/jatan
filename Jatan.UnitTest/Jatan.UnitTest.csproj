@@ -55,6 +55,7 @@
     <Compile Include="GameBoardTest.cs" />
     <Compile Include="HexEdgeTest.cs" />
     <Compile Include="HexPointTest.cs" />
+    <Compile Include="GameManagerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Jatan\Jatan.csproj">

@@ -55,7 +55,42 @@ namespace Jatan.GameLogic
         /// <summary>
         /// Gets the current state of the game.
         /// </summary>
-        public GameStates GameState { get { return _gameState; } }
+        public GameStates GameState
+        {
+            get { return _gameState; }
+        }
+
+        /// <summary>
+        /// Gets the state of the active player's turn.
+        /// </summary>
+        public PlayerTurnState PlayerTurnState
+        {
+            get { return _playerTurnState; }
+        }
+
+        /// <summary>
+        /// Gets the player whose turn it currently is.
+        /// </summary>
+        public Player ActivePlayer
+        {
+            get { return _players[_playerTurnIndex]; }
+        }
+
+        /// <summary>
+        /// Returns true if the last player has placed a building during the initial placement phase.
+        /// </summary>
+        public bool LastPlayerHasPlaced
+        {
+            get { return _gameBoard.GetBuildingCountForPlayer(_players.Last().Id) > 0; }
+        }
+
+        /// <summary>
+        /// Returns true if the "last" player is currently active.
+        /// </summary>
+        public bool LastPlayerIsActive
+        {
+            get { return _playerTurnIndex == _players.Count - 1; }
+        }
 
         /// <summary>
         /// Creates a new game instance.
@@ -85,14 +120,14 @@ namespace Jatan.GameLogic
         /// </summary>
         public void StartNewGame()
         {
-            _playerTurnIndex = _random.Next(NumberOfPlayers); // A random player will go first.
+            _playerTurnIndex = 0; // The first person in the list goes first.
             _longestRoad = Tuple.Create(-1, -1);
             _largestArmy = Tuple.Create(-1, -1);
             SetupDevelopmentCards();
             _gameBoard.Setup();
             _gameBoard.RobberMode = _gameSettings.RobberMode;
             _gameState = GameStates.InitialPlacement;
-            _playerTurnState = PlayerTurnState.None; // TODO: Set the turn state at some point.
+            _playerTurnState = PlayerTurnState.PlacingBuilding; // TODO: Possibly wait for something to trigger the game start.
         }
 
         private static int _idCounter;
@@ -103,18 +138,27 @@ namespace Jatan.GameLogic
 
         public ActionResult PlayerOfferTrade(int playerId, ResourceStack toGive, ResourceStack toReceive)
         {
+            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            if (validation.Failed) return validation;
+
             // TODO
             return ActionResult.CreateFailed("Not implemented");
         }
 
         public ActionResult PlayerAcceptCurrentTrade(int playerId)
         {
+            var validation = ValidatePlayerAction(PlayerTurnState.RequestingTrade, playerId);
+            if (validation.Failed) return validation;
+
             // TODO
             return ActionResult.CreateFailed("Not implemented");
         }
 
         public ActionResult PlayerTradeWithBank(int playerId, ResourceStack toGive, ResourceStack toReceive)
         {
+            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            if (validation.Failed) return validation;
+
             // TODO
             return ActionResult.CreateFailed("Not implemented");
         }
@@ -124,6 +168,9 @@ namespace Jatan.GameLogic
         /// </summary>
         public ActionResult<DevelopmentCards> PlayerBuyDevelopmentCard(int playerId)
         {
+            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            if (validation.Failed) return validation.ToGeneric<DevelopmentCards>();
+
             var pr = GetPlayerFromId(playerId);
             if (pr.Failed) pr.ToGeneric<DevelopmentCards>();
             var player = pr.Data;
@@ -146,16 +193,29 @@ namespace Jatan.GameLogic
 
         /// <summary>
         /// Places a road for the given player at the given location.
-        /// If it's the start of the game, the road is free.
+        /// If it's the initial placement phase of the game, the road is free.
         /// Otherwise, resources will be removed from the player.
         /// </summary>
         public ActionResult PlayerPlaceRoad(int playerId, HexEdge location)
         {
+            var validation = ValidatePlayerAction(PlayerTurnState.PlacingRoad, playerId);
+            if (validation.Failed) return validation;
+
             var pr = GetPlayerFromId(playerId);
             if (pr.Failed) return pr;
             var player = pr.Data;
 
             bool startOfGame = (_gameState == GameStates.InitialPlacement);
+
+            // Make sure the player doesn't place too many roads in the intial placement phase
+            if (startOfGame)
+            {
+                var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
+                var roadCount = _gameBoard.GetRoadCountForPlayer(playerId);
+                var maxRoads = buildingCount * 2;
+                if (roadCount >= maxRoads)
+                    return ActionResult.CreateFailed("Cannot place more than 2 roads per settlement during the initial placement phase.");
+            }
 
             var placementValidation = _gameBoard.ValidateRoadPlacement(playerId, location, startOfGame);
             if (placementValidation.Failed) return placementValidation;
@@ -171,9 +231,33 @@ namespace Jatan.GameLogic
             if (_longestRoad.Item1 != playerId)
             {
                 var newRoadLength = _gameBoard.GetRoadLengthForPlayer(playerId);
-                // Must be at least 5 roads to have the longest road.
-                if (newRoadLength >= 5 && newRoadLength > _longestRoad.Item2)
+                // Must be at least 5 (by default) roads to have the longest road.
+                if (newRoadLength >= _gameSettings.MinimumLongestRoad && newRoadLength > _longestRoad.Item2)
                     _longestRoad = Tuple.Create(playerId, newRoadLength);
+            }
+
+            // Update game and player states.
+            if (_gameState == GameStates.InitialPlacement)
+            {
+                var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
+                var roadCount = _gameBoard.GetRoadCountForPlayer(playerId);
+                if (roadCount == buildingCount * 2)
+                {
+                    if (LastPlayerIsActive && buildingCount == 1)
+                    {
+                        // The "last" players gets to place twice.
+                        _playerTurnState = PlayerTurnState.PlacingBuilding;
+                    }
+                    else
+                    {
+                        // We've placed the max number of roads for this turn.
+                        AdvanceToNextPlayerTurn();
+                    }
+                }
+            }
+            else if (_gameState == GameStates.GameInProgress)
+            {
+                _playerTurnState = PlayerTurnState.TakeAction;
             }
 
             return ActionResult.CreateSuccess();
@@ -186,11 +270,26 @@ namespace Jatan.GameLogic
         /// </summary>
         public ActionResult PlayerPlaceBuilding(int playerId, BuildingTypes type, HexPoint location)
         {
+            var validation = ValidatePlayerAction(PlayerTurnState.PlacingBuilding, playerId);
+            if (validation.Failed) return validation;
+
             var pr = GetPlayerFromId(playerId);
             if (pr.Failed) return pr;
             var player = pr.Data;
 
             bool startOfGame = (_gameState == GameStates.InitialPlacement);
+
+            // Make sure the player doesn't place too many buildings in the intial placement phase
+            if (startOfGame)
+            {
+                if (type != BuildingTypes.Settlement)
+                    return ActionResult.CreateFailed("Can only place settlements during the initial placement phase.");
+
+                var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
+                var maxBuildingCount = (LastPlayerHasPlaced) ? 2 : 1;
+                if (buildingCount >= maxBuildingCount)
+                    return ActionResult.CreateFailed("Cannot place any more settlements during the initial placement phase.");
+            }
 
             var placementValidation = _gameBoard.ValidateBuildingPlacement(playerId, type, location, startOfGame);
             if (placementValidation.Failed) return placementValidation;
@@ -206,6 +305,12 @@ namespace Jatan.GameLogic
             var placement = _gameBoard.PlaceBuilding(player.Id, type, location, startOfGame);
             System.Diagnostics.Debug.Assert(placement.Succeeded);
 
+            // Update game and player states.
+            if (_gameState == GameStates.InitialPlacement)
+                _playerTurnState = PlayerTurnState.PlacingRoad;
+            else if (_gameState == GameStates.GameInProgress)
+                _playerTurnState = PlayerTurnState.TakeAction;
+
             return ActionResult.CreateSuccess();
         }
 
@@ -214,6 +319,9 @@ namespace Jatan.GameLogic
         /// </summary>
         public ActionResult PlayerPlayDevelopmentCard(int playerId, DevelopmentCards cardToPlay)
         {
+            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            if (validation.Failed) return validation;
+
             // TODO: PlayerPlayDevelopmentCard method
 
             var pr = GetPlayerFromId(playerId);
@@ -251,12 +359,89 @@ namespace Jatan.GameLogic
 
         #endregion
 
+        private ActionResult ValidatePlayerAction(PlayerTurnState requiredState, int playerId)
+        {
+            if (ActivePlayer.Id != playerId)
+                return ActionResult.CreateFailed("Not allowed to play out of turn.");
+
+            return ValidatePlayerAction(requiredState);
+        }
+
+        private ActionResult ValidatePlayerAction(PlayerTurnState requiredState)
+        {
+            // Validates that the game and player are in the correct states to take the action.
+
+            if (requiredState != _playerTurnState)
+                return ActionResult.CreateFailed("Not allowed to take this action at this time.");
+
+            bool validAction = true;
+            switch (requiredState)
+            {
+                // The following actions can be taken during the initial placement phase or during the normal phase.
+                case PlayerTurnState.PlacingRoad:
+                case PlayerTurnState.PlacingBuilding:
+                    validAction = (_gameState == GameStates.GameInProgress || _gameState == GameStates.InitialPlacement);
+                    break;
+                // The following actions require the normal game phase to be in progress.
+                case PlayerTurnState.NeedToRoll:
+                case PlayerTurnState.PlacingRobber:
+                case PlayerTurnState.RequestingTrade:
+                case PlayerTurnState.SelectingCardsToLose:
+                case PlayerTurnState.StealingCards:
+                case PlayerTurnState.TakeAction:
+                    validAction = (_gameState == GameStates.GameInProgress);
+                    break;
+            }
+            return validAction ? ActionResult.CreateSuccess() :
+                                 ActionResult.CreateFailed("Not allowed to take this action at this time.");
+        }
+
         private ActionResult<Player> GetPlayerFromId(int playerId)
         {
-            if (_players.All(p => p.Id != playerId))
+            var player = _players.FirstOrDefault(p => p.Id == playerId);
+            if (player == null)
                 return new ActionResult<Player>(null, false, "Player \"" + playerId + "\" does not exist.");
-            var player = _players.First(p => p.Id == playerId);
             return new ActionResult<Player>(player, true);
+        }
+
+        private void AdvanceToNextPlayerTurn()
+        {
+            // Advances to the next player's turn.
+            if (_gameState == GameStates.GameInProgress)
+            {
+                _playerTurnIndex++;
+                _playerTurnIndex %= _players.Count;
+                _playerTurnState = PlayerTurnState.NeedToRoll;
+            }
+            else if (_gameState == GameStates.InitialPlacement)
+            {
+                // During the initial placement phase, the turn index increases until the last player
+                // makes his placements. Then, the turn index counts down to the first player.
+                if (!LastPlayerHasPlaced)
+                {
+                    // The last player has not placed yet. Count up.
+                    _playerTurnIndex++;
+                    _playerTurnState = PlayerTurnState.PlacingBuilding;
+                }
+                else
+                {
+                    // The last player has gone. Count down.
+                    _playerTurnIndex--;
+                    
+                    // If everyone has placed, start the game.
+                    if (_playerTurnIndex < 0)
+                    {
+                        _playerTurnIndex = 0;
+                        _gameState = GameStates.GameInProgress;
+                        _playerTurnState = PlayerTurnState.NeedToRoll;
+                    }
+                    else
+                    {
+                        _playerTurnState = PlayerTurnState.PlacingBuilding;    
+                    }
+                }
+                
+            }
         }
 
         private ActionResult<int> GetTotalPointsForPlayer(int playerId)
@@ -272,10 +457,10 @@ namespace Jatan.GameLogic
             // * Longest Road (2 points) - Must be at least 5 segments.
             // * Largest Army (2 points) - Must be at least 3 knights.
 
-            var totalPoints = 0;
             var settlementCount = _gameBoard.GetBuildingCountForPlayer(playerId, BuildingTypes.Settlement);
             var cityCount = _gameBoard.GetBuildingCountForPlayer(playerId, BuildingTypes.City);
 
+            var totalPoints = 0;
             totalPoints += settlementCount;
             totalPoints += (cityCount * 2);
             totalPoints += player.VictoryPointsFromCards;

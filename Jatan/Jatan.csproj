@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\ActionResult.cs" />
+    <Compile Include="Core\Enums.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
     <Compile Include="Core\CardDeck.cs" />
     <Compile Include="Core\Hexagon.cs" />
