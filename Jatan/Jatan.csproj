@@ -51,6 +51,7 @@
     <Compile Include="GameLogic\GameManager.cs" />
     <Compile Include="GameLogic\GameSettings.cs" />
     <Compile Include="Models\Building.cs" />
+    <Compile Include="Models\Dice.cs" />
     <Compile Include="Models\Enums.cs" />
     <Compile Include="Models\GameBoard.cs" />
     <Compile Include="Models\Player.cs" />

@@ -20,13 +20,14 @@ namespace Jatan.GameLogic
         private CardDeck<DevelopmentCards> _developmentCardDeck;
         private GameStates _gameState;
         private PlayerTurnState _playerTurnState;
+        private Dice _dice;
 
         // <playerId, roadLength>
         private Tuple<int, int> _longestRoad; 
         // <playerId, armySize>
         private Tuple<int, int> _largestArmy;
 
-        private static Random _random = new Random();
+        #region public properties
 
         /// <summary>
         /// Gets the game board.
@@ -92,6 +93,8 @@ namespace Jatan.GameLogic
             get { return _playerTurnIndex == _players.Count - 1; }
         }
 
+        #endregion
+
         /// <summary>
         /// Creates a new game instance.
         /// </summary>
@@ -103,6 +106,7 @@ namespace Jatan.GameLogic
             _gameBoard = new GameBoard();
             _players = new List<Player>();
             _developmentCardDeck = new CardDeck<DevelopmentCards>();
+            _dice = new Dice();
         }
 
         /// <summary>
@@ -126,6 +130,7 @@ namespace Jatan.GameLogic
             SetupDevelopmentCards();
             _gameBoard.Setup();
             _gameBoard.RobberMode = _gameSettings.RobberMode;
+            _dice.ClearLog();
             _gameState = GameStates.InitialPlacement;
             _playerTurnState = PlayerTurnState.PlacingBuilding; // TODO: Possibly wait for something to trigger the game start.
         }
@@ -134,6 +139,54 @@ namespace Jatan.GameLogic
         public void AddPlayer(string name)
         {
             _players.Add(new Player(_idCounter++, name, 0));
+        }
+
+        #region public player methods
+
+        public ActionResult<int> PlayerRollDice(int playerId)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.NeedToRoll, playerId);
+            if (validation.Failed) return validation.ToGeneric<int>();
+
+            var diceRoll = _dice.Roll();
+
+            // If the roll is a 7, then we do special logic to make players
+            // lose cards and we let the active player place the robber.
+            if (diceRoll == 7)
+            {
+                // Possibly make players lose cards
+                // TODO: Check which players should lose cards and let them decide which
+
+                // Set the PlacingRobber player state.
+                if (_gameSettings.RobberMode != RobberMode.None)
+                {
+                    // TODO: This will need to work even if some players have to lose cards.
+                    //_playerTurnState = PlayerTurnState.PlacingRobber;
+                }
+
+                // TODO: Remove this. Temporarily skip the 7 logic.
+                _playerTurnState = PlayerTurnState.TakeAction;
+            }
+            else
+            {
+                // Give resources
+                var allResources = _gameBoard.GetResourcesForDiceRoll(diceRoll);
+                foreach (var resources in allResources)
+                {
+                    var playerResult = GetPlayerFromId(resources.Key);
+                    if (playerResult.Succeeded && playerResult.Data != null)
+                    {
+                        var player = playerResult.Data;
+                        var newResourcesForPlayer = resources.Value;
+                        player.AddResourceCollection(newResourcesForPlayer);
+                    }
+                }
+
+                // Nothing special to do, just advance to next turn state.
+                _playerTurnState = PlayerTurnState.TakeAction;
+            }
+
+            return ActionResult<int>.CreateSuccess(diceRoll);
         }
 
         public ActionResult PlayerOfferTrade(int playerId, ResourceStack toGive, ResourceStack toReceive)
@@ -340,7 +393,9 @@ namespace Jatan.GameLogic
             return ActionResult.CreateSuccess();
         }
 
-        #region Private setup methods
+        #endregion
+
+        #region private setup methods
 
         private void SetupDevelopmentCards()
         {
@@ -358,6 +413,8 @@ namespace Jatan.GameLogic
         }
 
         #endregion
+
+        #region private helper methods
 
         private ActionResult ValidatePlayerAction(PlayerTurnState requiredState, int playerId)
         {
@@ -469,5 +526,7 @@ namespace Jatan.GameLogic
 
             return ActionResult<int>.CreateSuccess(totalPoints);
         }
+
+        #endregion
     }
 }

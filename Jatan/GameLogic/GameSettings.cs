@@ -13,6 +13,11 @@ namespace Jatan.GameLogic
     public class GameSettings
     {
         /// <summary>
+        /// The score a player must reach to win the game.
+        /// </summary>
+        public int ScoreNeededToWin { get; set; }
+
+        /// <summary>
         /// The robber mode.
         /// </summary>
         public RobberMode RobberMode { get; set; }
@@ -39,6 +44,7 @@ namespace Jatan.GameLogic
         /// </summary>
         public GameSettings()
         {
+            this.ScoreNeededToWin = 10;
             this.RobberMode = RobberMode.Normal;
             this.CardCountLossThreshold = 8;
             this.MinimumLongestRoad = 5;

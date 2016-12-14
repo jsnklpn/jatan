@@ -46,7 +46,7 @@ namespace Jatan.Models
         /// <summary>
         /// Gets the resource cards this player has in their hand.
         /// </summary>
-        public List<ResourceTypes> ResourceCards { get; set; }
+        public ResourceCollection ResourceCards { get; set; }
 
         /// <summary>
         /// Gets the development cards this player has in their hand.
@@ -61,7 +61,7 @@ namespace Jatan.Models
         /// <summary>
         /// Gets the number of resource cards.
         /// </summary>
-        public int NumberOfResourceCards { get { return ResourceCards.Count; } }
+        public int NumberOfResourceCards { get { return ResourceCards.GetResourceCount(); } }
 
         /// <summary>
         /// Gets the number of victory points this player has from cards alone.
@@ -94,7 +94,7 @@ namespace Jatan.Models
             RoadsAvailable = 15;
             SettlementsAvailable = 5;
             CitiesAvailable = 4;
-            ResourceCards = new List<ResourceTypes>();
+            ResourceCards = new ResourceCollection();
             DevelopmentCards = new List<DevelopmentCards>();
             DevelopmentCardsInPlay = new List<DevelopmentCards>();
         }
@@ -104,7 +104,7 @@ namespace Jatan.Models
         /// </summary>
         public int GetNumberResourceCount(ResourceTypes resource)
         {
-            return ResourceCards.Count(c => c == resource);
+            return ResourceCards[resource];
         }
 
         /// <summary>
@@ -112,7 +112,15 @@ namespace Jatan.Models
         /// </summary>
         public bool HasAtLeast(ResourceTypes resource, int n)
         {
-            return ResourceCards.Count(c => c == resource) >= n;
+            return ResourceCards[resource] >= n;
+        }
+
+        /// <summary>
+        /// Adds a collection of resources into the player's hand.
+        /// </summary>
+        public void AddResourceCollection(ResourceCollection collection)
+        {
+            
         }
 
         /// <summary>
@@ -122,8 +130,7 @@ namespace Jatan.Models
         {
             if (!HasAtLeast(resource, count))
                 return false;
-            for (int i = 0; i < count; i++)
-                ResourceCards.Remove(resource);
+            ResourceCards[resource] -= count;
             return true;
         }
 
@@ -132,7 +139,9 @@ namespace Jatan.Models
         /// </summary>
         public int RemoveAllResourceCards(ResourceTypes resource)
         {
-            return ResourceCards.RemoveAll(c => c == resource);
+            var count = ResourceCards[resource];
+            ResourceCards[resource] = 0;
+            return count;
         }
 
         /// <summary>

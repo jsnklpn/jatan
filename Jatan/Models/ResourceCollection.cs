@@ -55,6 +55,39 @@ namespace Jatan.Models
         }
 
         /// <summary>
+        /// Sets all resources to zero.
+        /// </summary>
+        public void Clear()
+        {
+            Wood = 0;
+            Brick = 0;
+            Sheep = 0;
+            Wheat = 0;
+            Ore = 0;
+        }
+
+        /// <summary>
+        /// Adds a collection to another collection.
+        /// </summary>
+        public void Add(ResourceCollection collection)
+        {
+            Wood += collection.Wood;
+            Brick += collection.Brick;
+            Sheep += collection.Sheep;
+            Wheat += collection.Wheat;
+            Ore += collection.Ore;
+        }
+
+        /// <summary>
+        /// Gets the total number of resources in the collection.
+        /// </summary>
+        /// <returns></returns>
+        public int GetResourceCount()
+        {
+            return Wood + Brick + Sheep + Wheat + Ore;
+        }
+
+        /// <summary>
         /// Gets the number of a certain resource.
         /// </summary>
         public int GetResourceCount(ResourceTypes type)

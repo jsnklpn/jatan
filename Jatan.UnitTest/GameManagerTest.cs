@@ -143,5 +143,11 @@ namespace Jatan.UnitTest
             Assert.AreEqual(GameStates.GameInProgress, manager.GameState, "The game state should be in the main game phase.");
             Assert.AreEqual(PlayerTurnState.NeedToRoll, manager.PlayerTurnState, "The player state should 'NeedToRoll'.");
         }
+
+        [TestMethod]
+        public void TestDiceRoll()
+        {
+            // TODO
+        }
     }
 }
