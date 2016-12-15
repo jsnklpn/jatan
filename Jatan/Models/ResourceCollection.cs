@@ -115,6 +115,7 @@ namespace Jatan.Models
                 case ResourceTypes.Sheep: Sheep = count; break;
                 case ResourceTypes.Wheat: Wheat = count; break;
                 case ResourceTypes.Ore: Ore = count; break;
+                default: break;
             }
         }
 

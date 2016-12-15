@@ -265,9 +265,9 @@ namespace Jatan.GameLogic
             {
                 var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
                 var roadCount = _gameBoard.GetRoadCountForPlayer(playerId);
-                var maxRoads = buildingCount * 2;
+                var maxRoads = buildingCount;
                 if (roadCount >= maxRoads)
-                    return ActionResult.CreateFailed("Cannot place more than 2 roads per settlement during the initial placement phase.");
+                    return ActionResult.CreateFailed("Cannot place more than 1 road per settlement during the initial placement phase.");
             }
 
             var placementValidation = _gameBoard.ValidateRoadPlacement(playerId, location, startOfGame);
@@ -293,19 +293,15 @@ namespace Jatan.GameLogic
             if (_gameState == GameStates.InitialPlacement)
             {
                 var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
-                var roadCount = _gameBoard.GetRoadCountForPlayer(playerId);
-                if (roadCount == buildingCount * 2)
+                if (LastPlayerIsActive && buildingCount == 1)
                 {
-                    if (LastPlayerIsActive && buildingCount == 1)
-                    {
-                        // The "last" players gets to place twice.
-                        _playerTurnState = PlayerTurnState.PlacingBuilding;
-                    }
-                    else
-                    {
-                        // We've placed the max number of roads for this turn.
-                        AdvanceToNextPlayerTurn();
-                    }
+                    // The "last" player gets to place twice.
+                    _playerTurnState = PlayerTurnState.PlacingBuilding;
+                }
+                else
+                {
+                    // Go to the next players turn.
+                    AdvanceToNextPlayerTurn();
                 }
             }
             else if (_gameState == GameStates.GameInProgress)
@@ -360,9 +356,21 @@ namespace Jatan.GameLogic
 
             // Update game and player states.
             if (_gameState == GameStates.InitialPlacement)
+            {
+                var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
+                if (buildingCount == 2)
+                {
+                    // We've played the second building during the setup phase. Collect resources.
+                    var resources = _gameBoard.GetResourcesForBuilding(location, BuildingTypes.Settlement);
+                    player.ResourceCards.Add(resources);
+                }
+
                 _playerTurnState = PlayerTurnState.PlacingRoad;
+            }
             else if (_gameState == GameStates.GameInProgress)
+            {
                 _playerTurnState = PlayerTurnState.TakeAction;
+            }
 
             return ActionResult.CreateSuccess();
         }
@@ -389,6 +397,19 @@ namespace Jatan.GameLogic
                 if (newArmySize >= 3 && newArmySize > _largestArmy.Item2)
                     _largestArmy = Tuple.Create(playerId, newArmySize);
             }
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Ends a players turn during the normal game phase.
+        /// </summary>
+        public ActionResult PlayerEndTurn(int playerId)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            if (validation.Failed) return validation;
+
+            AdvanceToNextPlayerTurn();
 
             return ActionResult.CreateSuccess();
         }
