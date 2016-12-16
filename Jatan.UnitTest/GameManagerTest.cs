@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Jatan.Core;
 using Jatan.GameLogic;
 using Jatan.Models;
@@ -130,15 +131,31 @@ namespace Jatan.UnitTest
         {
             var manager = DoInitialPlacements();
 
-            Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "It should be player 0's turn.");
-            Assert.AreEqual(GameStates.GameInProgress, manager.GameState, "The game state should be in the main game phase.");
-            Assert.AreEqual(PlayerTurnState.NeedToRoll, manager.PlayerTurnState, "The player state should 'NeedToRoll'.");
+            // Get a copy of the players' current resources
+            var player0 = manager.Players.First(p => p.Id == PLAYER_0);
+            var player1 = manager.Players.First(p => p.Id == PLAYER_1);
+            var player2 = manager.Players.First(p => p.Id == PLAYER_2);
+            var resourcesCopy0 = player0.ResourceCards.Copy();
+            var resourcesCopy1 = player1.ResourceCards.Copy();
+            var resourcesCopy2 = player2.ResourceCards.Copy();
 
+            // Roll the dice
             var rollResult = manager.PlayerRollDice(PLAYER_0);
             Assert.IsTrue(rollResult.Succeeded, "The roll should not fail.");
-
             int roll = rollResult.Data;
             var resources = manager.GameBoard.GetResourcesForDiceRoll(roll);
+
+            // Add the resources generated from the roll to the copies.
+            var rollResources0 = resources[PLAYER_0];
+            var rollResources1 = resources[PLAYER_1];
+            var rollResources2 = resources[PLAYER_2];
+            resourcesCopy0.Add(rollResources0);
+            resourcesCopy1.Add(rollResources1);
+            resourcesCopy2.Add(rollResources2);
+
+            Assert.IsTrue(player0.ResourceCards.Equals(resourcesCopy0), "The player's resource counts are not correct");
+            Assert.IsTrue(player1.ResourceCards.Equals(resourcesCopy1), "The player's resource counts are not correct");
+            Assert.IsTrue(player2.ResourceCards.Equals(resourcesCopy2), "The player's resource counts are not correct");
         }
 
         private GameManager DoInitialPlacements()
@@ -151,33 +168,36 @@ namespace Jatan.UnitTest
             manager.AddPlayer("Greg"); // PLAYER_2
             manager.StartNewGame();
 
-            ActionResult ar;
             // player 0
-            ar = manager.PlayerPlaceBuilding(PLAYER_0, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.Top));
-            ar = manager.PlayerPlaceRoad(PLAYER_0, Hexagon.Zero.GetEdge(EdgeDir.TopRight));
+            manager.PlayerPlaceBuilding(PLAYER_0, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.Top));
+            manager.PlayerPlaceRoad(PLAYER_0, Hexagon.Zero.GetEdge(EdgeDir.TopRight));
 
             // player 1
-            ar = manager.PlayerPlaceBuilding(PLAYER_1, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.BottomRight));
-            ar = manager.PlayerPlaceRoad(PLAYER_1, Hexagon.Zero.GetEdge(EdgeDir.Right));
+            manager.PlayerPlaceBuilding(PLAYER_1, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.BottomRight));
+            manager.PlayerPlaceRoad(PLAYER_1, Hexagon.Zero.GetEdge(EdgeDir.Right));
 
             // player 2
-            ar = manager.PlayerPlaceBuilding(PLAYER_2, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.BottomLeft));
-            ar = manager.PlayerPlaceRoad(PLAYER_2, Hexagon.Zero.GetEdge(EdgeDir.Left));
+            manager.PlayerPlaceBuilding(PLAYER_2, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.BottomLeft));
+            manager.PlayerPlaceRoad(PLAYER_2, Hexagon.Zero.GetEdge(EdgeDir.Left));
 
             // Create around a different hexagon since the middle is filled up.
             Hexagon otherHex = new Hexagon(2, 0);
 
-            ar = manager.PlayerPlaceBuilding(PLAYER_2, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.BottomLeft));
-            ar = manager.PlayerPlaceRoad(PLAYER_2, otherHex.GetEdge(EdgeDir.Left));
+            manager.PlayerPlaceBuilding(PLAYER_2, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.BottomLeft));
+            manager.PlayerPlaceRoad(PLAYER_2, otherHex.GetEdge(EdgeDir.Left));
 
             // player 1
-            ar = manager.PlayerPlaceBuilding(PLAYER_1, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.BottomRight));
-            ar = manager.PlayerPlaceRoad(PLAYER_1, otherHex.GetEdge(EdgeDir.Right));
+            manager.PlayerPlaceBuilding(PLAYER_1, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.BottomRight));
+            manager.PlayerPlaceRoad(PLAYER_1, otherHex.GetEdge(EdgeDir.Right));
 
             // player 0
-            ar = manager.PlayerPlaceBuilding(PLAYER_0, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.Top));
-            ar = manager.PlayerPlaceRoad(PLAYER_0, otherHex.GetEdge(EdgeDir.TopRight));
-            
+            manager.PlayerPlaceBuilding(PLAYER_0, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.Top));
+            manager.PlayerPlaceRoad(PLAYER_0, otherHex.GetEdge(EdgeDir.TopRight));
+
+            Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "It should be player 0's turn.");
+            Assert.AreEqual(GameStates.GameInProgress, manager.GameState, "The game state should be in the main game phase.");
+            Assert.AreEqual(PlayerTurnState.NeedToRoll, manager.PlayerTurnState, "The player state should 'NeedToRoll'.");
+
             return manager;
         }
     }

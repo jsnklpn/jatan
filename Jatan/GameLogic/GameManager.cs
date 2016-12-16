@@ -93,6 +93,14 @@ namespace Jatan.GameLogic
             get { return _playerTurnIndex == _players.Count - 1; }
         }
 
+        /// <summary>
+        /// Gets a copy of the player list.
+        /// </summary>
+        public List<Player> Players
+        {
+            get { return new List<Player>(_players); }
+        }
+
         #endregion
 
         /// <summary>
@@ -135,7 +143,7 @@ namespace Jatan.GameLogic
             _playerTurnState = PlayerTurnState.PlacingBuilding; // TODO: Possibly wait for something to trigger the game start.
         }
 
-        private static int _idCounter;
+        private int _idCounter;
         public void AddPlayer(string name)
         {
             _players.Add(new Player(_idCounter++, name, 0));

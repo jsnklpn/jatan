@@ -120,15 +120,6 @@ namespace Jatan.Models
         }
 
         /// <summary>
-        /// Increments the number of a certain resource.
-        /// </summary>
-        public void IncrementResourceCount(ResourceTypes type, int incrementAmount)
-        {
-            var current = GetResourceCount(type);
-            SetResourceCount(type, current + incrementAmount);
-        }
-
-        /// <summary>
         /// The [] operator overload.
         /// </summary>
         public int this[ResourceTypes key]
@@ -151,6 +142,36 @@ namespace Jatan.Models
         public bool Any()
         {
             return !IsEmpty();
+        }
+
+        /// <summary>
+        /// Returns a copy of the collection.
+        /// </summary>
+        /// <returns></returns>
+        public ResourceCollection Copy()
+        {
+            return new ResourceCollection()
+            {
+                Brick = this.Brick,
+                Ore = this.Ore,
+                Sheep = this.Sheep,
+                Wheat = this.Wheat,
+                Wood = this.Wood
+            };
+        }
+
+        /// <summary>
+        /// Returns true if both collections contains the same number of resources.
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(ResourceCollection other)
+        {
+            return (Brick == other.Brick &&
+                    Ore   == other.Ore &&
+                    Sheep == other.Sheep &&
+                    Wheat == other.Wheat &&
+                    Wood  == other.Wood);
         }
 
         /// <summary>

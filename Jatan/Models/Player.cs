@@ -120,7 +120,7 @@ namespace Jatan.Models
         /// </summary>
         public void AddResourceCollection(ResourceCollection collection)
         {
-            
+            ResourceCards.Add(collection);
         }
 
         /// <summary>
