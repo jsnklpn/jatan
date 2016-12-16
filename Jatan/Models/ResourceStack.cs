@@ -14,7 +14,7 @@ namespace Jatan.Models
         /// <summary>
         /// Gets the type of resource.
         /// </summary>
-        public readonly ResourceTypes Type;
+        public ResourceTypes Type;
 
         /// <summary>
         /// Gets the number of resources.
@@ -28,6 +28,17 @@ namespace Jatan.Models
         {
             Type = type;
             Count = count;
+        }
+
+        /// <summary>
+        /// Converts to a resource collection.
+        /// </summary>
+        /// <returns></returns>
+        public ResourceCollection ToResourceCollection()
+        {
+            var collection = new ResourceCollection();
+            collection[this.Type] = this.Count;
+            return collection;
         }
     }
 }

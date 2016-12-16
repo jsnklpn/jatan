@@ -226,5 +226,36 @@ namespace Jatan.Models
             }
             return ActionResult.CreateSuccess();
         }
+
+        /// <summary>
+        /// Returns true if this player can afford to do the specified trade offered by a different player.
+        /// </summary>
+        public bool CanAffordTradeOffer(TradeOffer otherPlayerOffer)
+        {
+            return HasAtLeast(otherPlayerOffer.ToReceive.Type, otherPlayerOffer.ToReceive.Count);
+        }
+
+        /// <summary>
+        /// Accepts a trade offer from another player and does the resouces exchange.
+        /// </summary>
+        public ActionResult AcceptTradeOffer(Player otherPlayer, TradeOffer offer)
+        {
+            if (!CanAffordTradeOffer(offer))
+            {
+                return ActionResult.CreateFailed("Accepting player cannot afford the trade.");
+            }
+            if (!otherPlayer.HasAtLeast(offer.ToGive.Type, offer.ToGive.Count))
+            {
+                return ActionResult.CreateFailed("Offering player cannot afford the trade.");
+            }
+
+            this.RemoveResourceCards(offer.ToReceive.Type, offer.ToReceive.Count);
+            otherPlayer.RemoveResourceCards(offer.ToGive.Type, offer.ToGive.Count);
+
+            this.AddResourceCollection(offer.ToGive.ToResourceCollection());
+            otherPlayer.AddResourceCollection(offer.ToReceive.ToResourceCollection());
+
+            return ActionResult.CreateSuccess();
+        }
     }
 }

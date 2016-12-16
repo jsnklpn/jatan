@@ -21,6 +21,7 @@ namespace Jatan.GameLogic
         private GameStates _gameState;
         private PlayerTurnState _playerTurnState;
         private Dice _dice;
+        private TradeHelper _tradeHelper;
 
         // <playerId, roadLength>
         private Tuple<int, int> _longestRoad; 
@@ -115,6 +116,7 @@ namespace Jatan.GameLogic
             _players = new List<Player>();
             _developmentCardDeck = new CardDeck<DevelopmentCards>();
             _dice = new Dice();
+            _tradeHelper = new TradeHelper();
         }
 
         /// <summary>
@@ -151,6 +153,9 @@ namespace Jatan.GameLogic
 
         #region public player methods
 
+        /// <summary>
+        /// Rolls the dice and handles resources/robber logic. Can only be called by the active player.
+        /// </summary>
         public ActionResult<int> PlayerRollDice(int playerId)
         {
             var validation = ValidatePlayerAction(PlayerTurnState.NeedToRoll, playerId);
@@ -197,25 +202,116 @@ namespace Jatan.GameLogic
             return ActionResult<int>.CreateSuccess(diceRoll);
         }
 
-        public ActionResult PlayerOfferTrade(int playerId, ResourceStack toGive, ResourceStack toReceive)
+        /// <summary>
+        /// Offer a player-to-player trade with anyone. This can be immediately accepted or
+        /// players can send counter-offers. Can only be called by the active player.
+        /// </summary>
+        public ActionResult PlayerOfferTrade(int playerId, TradeOffer tradeOffer)
         {
             var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
             if (validation.Failed) return validation;
 
-            // TODO
-            return ActionResult.CreateFailed("Not implemented");
+            if (tradeOffer == null || !tradeOffer.IsValid)
+            {
+                return ActionResult.CreateFailed("Invalid trade offer.");
+            }
+
+            if (!ActivePlayer.HasAtLeast(tradeOffer.ToGive.Type, tradeOffer.ToGive.Count))
+            {
+                return ActionResult.CreateFailed("Cannot afford to create this trade offer.");
+            }
+
+            _tradeHelper.ClearAllOffers();
+            _tradeHelper.ActivePlayerTradeOffer = tradeOffer;
+            _playerTurnState = PlayerTurnState.RequestingPlayerTrade;
+
+            return ActionResult.CreateSuccess();
         }
 
-        public ActionResult PlayerAcceptCurrentTrade(int playerId)
+        public ActionResult PlayerAcceptCounterTradeOffer(int playerId, int counterOfferPlayerId)
         {
-            var validation = ValidatePlayerAction(PlayerTurnState.RequestingTrade, playerId);
+            var validation = ValidatePlayerAction(PlayerTurnState.RequestingPlayerTrade, playerId);
             if (validation.Failed) return validation;
 
+            var pr = GetPlayerFromId(counterOfferPlayerId);
+            if (pr.Failed) return pr;
+            var counterOfferPlayer = pr.Data;
+
             // TODO
+
             return ActionResult.CreateFailed("Not implemented");
         }
 
-        public ActionResult PlayerTradeWithBank(int playerId, ResourceStack toGive, ResourceStack toReceive)
+        /// <summary>
+        /// Cancels a player's current trade offer.
+        /// If called by the active player, cancels all trade offers and changes the turn state.
+        /// If called by a non-active player, cancels a specific counter-offer.
+        /// </summary>
+        public ActionResult PlayerCancelTradeOffer(int playerId)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.RequestingPlayerTrade);
+            if (validation.Failed) return validation;
+
+            if (ActivePlayer.Id == playerId)
+            {
+                _tradeHelper.ClearAllOffers();
+                _playerTurnState = PlayerTurnState.TakeAction;
+            }
+            else
+            {
+                _tradeHelper.CancelCounterOffer(playerId);
+            }
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Sends a counter trade offer to the active player. This can only be called by a non-active player.
+        /// </summary>
+        public ActionResult SendCounterTradeOffer(int playerId, TradeOffer counterOffer)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.RequestingPlayerTrade);
+            if (validation.Failed) return validation;
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+
+            var nonActivePlayer = pr.Data;
+
+            // TODO
+
+            return ActionResult.CreateFailed("Not implemented");
+        }
+
+        /// <summary>
+        /// Accept the active player's current trade. This can only be called by a non-active player.
+        /// </summary>
+        public ActionResult AcceptTradeFromActivePlayer(int playerId)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.RequestingPlayerTrade);
+            if (validation.Failed) return validation;
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+
+            if (!_tradeHelper.HasActivePlayerTradeOffer)
+            {
+                return ActionResult.CreateFailed("There is no active trade offer to accept.");
+            }
+
+            // Check if the non-active player can afford to do the trade.
+            var nonActivePlayer = pr.Data;
+            var activeOffer = _tradeHelper.ActivePlayerTradeOffer;
+
+            return nonActivePlayer.AcceptTradeOffer(ActivePlayer, activeOffer);
+        }
+
+        /// <summary>
+        /// Trade with the bank or harbor. A 4:1 trade with the bank is always available.
+        /// A 3:1 or 2:1 trade can be done depending on the player's harbors.
+        /// Can only be called by the active player.
+        /// </summary>
+        public ActionResult PlayerTradeWithBank(int playerId, TradeOffer tradeOffer)
         {
             var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
             if (validation.Failed) return validation;
@@ -417,6 +513,9 @@ namespace Jatan.GameLogic
             var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
             if (validation.Failed) return validation;
 
+            // Clear any trade offers, just in case.
+            _tradeHelper.ClearAllOffers();
+
             AdvanceToNextPlayerTurn();
 
             return ActionResult.CreateSuccess();
@@ -471,9 +570,9 @@ namespace Jatan.GameLogic
                 // The following actions require the normal game phase to be in progress.
                 case PlayerTurnState.NeedToRoll:
                 case PlayerTurnState.PlacingRobber:
-                case PlayerTurnState.RequestingTrade:
-                case PlayerTurnState.SelectingCardsToLose:
-                case PlayerTurnState.StealingCards:
+                case PlayerTurnState.RequestingPlayerTrade:
+                case PlayerTurnState.AnyPlayerSelectingCardsToLose:
+                case PlayerTurnState.SelectingPlayerToStealFrom:
                 case PlayerTurnState.TakeAction:
                     validAction = (_gameState == GameStates.GameInProgress);
                     break;

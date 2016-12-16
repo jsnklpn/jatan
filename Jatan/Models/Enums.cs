@@ -139,6 +139,21 @@ namespace Jatan.Models
         NeedToRoll,
 
         /// <summary>
+        /// Any players are selecting which cards to lose from rolling a 7.
+        /// </summary>
+        AnyPlayerSelectingCardsToLose,
+
+        /// <summary>
+        /// The player is placing the robber.
+        /// </summary>
+        PlacingRobber,
+
+        /// <summary>
+        /// The player is selecting a player to steal from.
+        /// </summary>
+        SelectingPlayerToStealFrom,
+
+        /// <summary>
         /// The player is done rolling and now must decide what they want to do.
         /// </summary>
         TakeAction,
@@ -152,26 +167,11 @@ namespace Jatan.Models
         /// The player is placing a building.
         /// </summary>
         PlacingBuilding,
-
+        
         /// <summary>
-        /// The player is placing the robber.
+        /// The player is requesting a trade from another player.
         /// </summary>
-        PlacingRobber,
-
-        /// <summary>
-        /// The player is selecting cards to steal from another player.
-        /// </summary>
-        StealingCards,
-
-        /// <summary>
-        /// The player is selecting which cards to lose.
-        /// </summary>
-        SelectingCardsToLose,
-
-        /// <summary>
-        /// The player is requesting a trade.
-        /// </summary>
-        RequestingTrade
+        RequestingPlayerTrade
     }
 
     /// <summary>
