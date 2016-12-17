@@ -101,6 +101,12 @@
     <Compile Include="Controls\StringControl.Designer.cs">
       <DependentUpon>StringControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="Controls\TradeOfferControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Controls\TradeOfferControl.Designer.cs">
+      <DependentUpon>TradeOfferControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="GameBoardViewer.cs">
       <SubType>UserControl</SubType>
@@ -145,6 +151,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Controls\StringControl.resx">
       <DependentUpon>StringControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Controls\TradeOfferControl.resx">
+      <DependentUpon>TradeOfferControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

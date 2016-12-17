@@ -45,6 +45,10 @@ namespace TestUI.Controls
             {
                 return new ResourceStackControl();
             }
+            if (type == typeof(Jatan.Models.TradeOffer))
+            {
+                return new TradeOfferControl();
+            }
 
             return new Label() { Text = "Unable to set parameter." };
         }
