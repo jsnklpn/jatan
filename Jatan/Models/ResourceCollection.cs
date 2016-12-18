@@ -14,27 +14,59 @@ namespace Jatan.Models
         /// <summary>
         /// The wood count.
         /// </summary>
-        public int Wood;
+        public int Wood { get; set; }
 
         /// <summary>
         /// The brick count.
         /// </summary>
-        public int Brick;
+        public int Brick { get; set; }
 
         /// <summary>
         /// The sheep count.
         /// </summary>
-        public int Sheep;
+        public int Sheep { get; set; }
 
         /// <summary>
         /// The wheat count.
         /// </summary>
-        public int Wheat;
+        public int Wheat { get; set; }
 
         /// <summary>
         /// The ore count.
         /// </summary>
-        public int Ore;
+        public int Ore { get; set; }
+
+        /// <summary>
+        /// Returns true if this collection only contains one resource type.
+        /// </summary>
+        public bool IsSingleResourceType
+        {
+            get
+            {
+                var totalCount = GetResourceCount();
+                foreach (var stack in this.ToList())
+                {
+                    if (stack.Count == totalCount)
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Creates a new resource collection.
+        /// </summary>
+        public ResourceCollection()
+        {
+        }
+
+        /// <summary>
+        /// Creates new a resource collection from a stack.
+        /// </summary>
+        public ResourceCollection(ResourceStack resStack)
+        {
+            this.SetResourceCount(resStack.Type, resStack.Count);
+        }
 
         /// <summary>
         /// Returns non-zero resources as a list.
@@ -85,6 +117,14 @@ namespace Jatan.Models
         public int GetResourceCount()
         {
             return Wood + Brick + Sheep + Wheat + Ore;
+        }
+
+        /// <summary>
+        /// Returns the largest resource stack in the collection.
+        /// </summary>
+        public ResourceStack GetLargestStack()
+        {
+            return ToList().OrderByDescending(s => s.Count).First();
         }
 
         /// <summary>

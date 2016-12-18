@@ -19,19 +19,37 @@ namespace Jatan.Models
         /// <summary>
         /// The resouce to give.
         /// </summary>
-        public ResourceStack ToGive { get; set; }
+        public ResourceCollection ToGive { get; set; }
 
         /// <summary>
         /// The resource to recieve.
         /// </summary>
-        public ResourceStack ToReceive { get; set; }
+        public ResourceCollection ToReceive { get; set; }
 
         /// <summary>
-        /// Returns true if this is a valid trade.
+        /// Returns true if the trade is not empty.
         /// </summary>
         public bool IsValid
         {
-            get { return ToGive.Count > 0 && ToReceive.Count > 0; }
+            get { return !ToGive.IsEmpty() && !ToReceive.IsEmpty(); }
+        }
+
+        /// <summary>
+        /// Returns true if each resource collection only contain 1 resource type.
+        /// </summary>
+        public bool IsValidBankOffer
+        {
+            get { return IsValid && ToGive.IsSingleResourceType && ToReceive.IsSingleResourceType; }
+        }
+
+        /// <summary>
+        /// Creates a new trade offer.
+        /// </summary>
+        public TradeOffer(int playerId, ResourceCollection toGive, ResourceCollection toReceive)
+        {
+            this.CreatorPlayerId = playerId;
+            this.ToGive = toGive;
+            this.ToReceive = toReceive;
         }
 
         /// <summary>
@@ -40,8 +58,8 @@ namespace Jatan.Models
         public TradeOffer(int playerId, ResourceStack toGive, ResourceStack toReceive)
         {
             this.CreatorPlayerId = playerId;
-            this.ToGive = toGive;
-            this.ToReceive = toReceive;
+            this.ToGive = new ResourceCollection(toGive);
+            this.ToReceive = new ResourceCollection(toReceive);
         }
     }
 }

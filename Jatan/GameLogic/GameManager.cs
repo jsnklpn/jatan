@@ -191,7 +191,7 @@ namespace Jatan.GameLogic
                     {
                         var player = playerResult.Data;
                         var newResourcesForPlayer = resources.Value;
-                        player.AddResourceCollection(newResourcesForPlayer);
+                        player.AddResources(newResourcesForPlayer);
                     }
                 }
 
@@ -216,7 +216,7 @@ namespace Jatan.GameLogic
                 return ActionResult.CreateFailed("Invalid trade offer.");
             }
 
-            if (!ActivePlayer.HasAtLeast(tradeOffer.ToGive.Type, tradeOffer.ToGive.Count))
+            if (!ActivePlayer.HasAtLeast(tradeOffer.ToGive))
             {
                 return ActionResult.CreateFailed("Cannot afford to create this trade offer.");
             }
@@ -335,8 +335,13 @@ namespace Jatan.GameLogic
             var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
             if (validation.Failed) return validation;
 
-            // TODO
-            return ActionResult.CreateFailed("Not implemented");
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+
+            var player = pr.Data;
+            var ports = _gameBoard.GetPortsForPlayer(playerId);
+
+            return player.DoTradeWithBank(tradeOffer, ports);
         }
 
         /// <summary>

@@ -158,6 +158,27 @@ namespace Jatan.UnitTest
             Assert.IsTrue(player2.ResourceCards.Equals(resourcesCopy2), "The player's resource counts are not correct");
         }
 
+        [TestMethod]
+        public void TestAcceptTradeOffer()
+        {
+            // TODO
+            Assert.Fail();
+        }
+
+        [TestMethod]
+        public void TestAcceptTradeCounterOffer()
+        {
+            // TODO
+            Assert.Fail();
+        }
+
+        [TestMethod]
+        public void TradeWithBank()
+        {
+            // TODO
+            Assert.Fail();
+        }
+
         private GameManager DoInitialPlacements()
         {
             // This setup method will create a 3-player game with the center and far-right hexagons fully surrounded.

@@ -116,9 +116,29 @@ namespace Jatan.Models
         }
 
         /// <summary>
+        /// Returns true if the player has at least the resouces contained in the stack.
+        /// </summary>
+        public bool HasAtLeast(ResourceStack stack)
+        {
+            return ResourceCards[stack.Type] >= stack.Count;
+        }
+
+        /// <summary>
+        /// Returns true if the player has at least the resouces contained in the collection.
+        /// </summary>
+        public bool HasAtLeast(ResourceCollection collection)
+        {
+            foreach (var stack in collection.ToList())
+            {
+                if (!HasAtLeast(stack)) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Adds a collection of resources into the player's hand.
         /// </summary>
-        public void AddResourceCollection(ResourceCollection collection)
+        public void AddResources(ResourceCollection collection)
         {
             ResourceCards.Add(collection);
         }
@@ -126,11 +146,31 @@ namespace Jatan.Models
         /// <summary>
         /// Removes a number of resource cards of a certain type. Returns false if the player doesn't have enough.
         /// </summary>
-        public bool RemoveResourceCards(ResourceTypes resource, int count)
+        public bool RemoveResources(ResourceTypes resource, int count)
         {
             if (!HasAtLeast(resource, count))
                 return false;
             ResourceCards[resource] -= count;
+            return true;
+        }
+
+        /// <summary>
+        /// Removes a number of resource cards of a certain type. Returns false if the player doesn't have enough.
+        /// </summary>
+        public bool RemoveResources(ResourceStack stack)
+        {
+            return RemoveResources(stack.Type, stack.Count);
+        }
+
+        /// <summary>
+        /// Removes a number of resource cards of a certain type. Returns false if the player doesn't have enough.
+        /// </summary>
+        public bool RemoveResources(ResourceCollection collection)
+        {
+            if (!HasAtLeast(collection))
+                return false;
+            foreach (var stack in collection.ToList())
+                RemoveResources(stack);
             return true;
         }
 
@@ -187,8 +227,8 @@ namespace Jatan.Models
                         return ActionResult.CreateFailed("No more roads available.");
                     if (!isItemFree)
                     {
-                        RemoveResourceCards(ResourceTypes.Wood, 1);
-                        RemoveResourceCards(ResourceTypes.Brick, 1);
+                        RemoveResources(ResourceTypes.Wood, 1);
+                        RemoveResources(ResourceTypes.Brick, 1);
                     }
                     RoadsAvailable--;
                     break;
@@ -197,10 +237,10 @@ namespace Jatan.Models
                         return ActionResult.CreateFailed("No more settlements available.");
                     if (!isItemFree)
                     {
-                        RemoveResourceCards(ResourceTypes.Wood, 1);
-                        RemoveResourceCards(ResourceTypes.Brick, 1);
-                        RemoveResourceCards(ResourceTypes.Wheat, 1);
-                        RemoveResourceCards(ResourceTypes.Sheep, 1);
+                        RemoveResources(ResourceTypes.Wood, 1);
+                        RemoveResources(ResourceTypes.Brick, 1);
+                        RemoveResources(ResourceTypes.Wheat, 1);
+                        RemoveResources(ResourceTypes.Sheep, 1);
                     }
                     SettlementsAvailable--;
                     break;
@@ -209,8 +249,8 @@ namespace Jatan.Models
                         return ActionResult.CreateFailed("No more cities available.");
                     if (!isItemFree)
                     {
-                        RemoveResourceCards(ResourceTypes.Wheat, 2);
-                        RemoveResourceCards(ResourceTypes.Ore, 3);
+                        RemoveResources(ResourceTypes.Wheat, 2);
+                        RemoveResources(ResourceTypes.Ore, 3);
                     }
                     SettlementsAvailable++;
                     CitiesAvailable--;
@@ -218,9 +258,9 @@ namespace Jatan.Models
                 case PurchasableItems.DevelopmentCard:
                     if (!isItemFree)
                     {
-                        RemoveResourceCards(ResourceTypes.Wheat, 1);
-                        RemoveResourceCards(ResourceTypes.Sheep, 1);
-                        RemoveResourceCards(ResourceTypes.Ore, 1);
+                        RemoveResources(ResourceTypes.Wheat, 1);
+                        RemoveResources(ResourceTypes.Sheep, 1);
+                        RemoveResources(ResourceTypes.Ore, 1);
                     }
                     break;
             }
@@ -232,7 +272,7 @@ namespace Jatan.Models
         /// </summary>
         public bool CanAffordTradeOffer(TradeOffer otherPlayerOffer)
         {
-            return HasAtLeast(otherPlayerOffer.ToReceive.Type, otherPlayerOffer.ToReceive.Count);
+            return HasAtLeast(otherPlayerOffer.ToReceive);
         }
 
         /// <summary>
@@ -244,17 +284,46 @@ namespace Jatan.Models
             {
                 return ActionResult.CreateFailed("Accepting player cannot afford the trade.");
             }
-            if (!otherPlayer.HasAtLeast(offer.ToGive.Type, offer.ToGive.Count))
+            if (!otherPlayer.HasAtLeast(offer.ToGive))
             {
                 return ActionResult.CreateFailed("Offering player cannot afford the trade.");
             }
 
-            this.RemoveResourceCards(offer.ToReceive.Type, offer.ToReceive.Count);
-            otherPlayer.RemoveResourceCards(offer.ToGive.Type, offer.ToGive.Count);
+            this.RemoveResources(offer.ToReceive);
+            otherPlayer.RemoveResources(offer.ToGive);
 
-            this.AddResourceCollection(offer.ToGive.ToResourceCollection());
-            otherPlayer.AddResourceCollection(offer.ToReceive.ToResourceCollection());
+            this.AddResources(offer.ToGive);
+            otherPlayer.AddResources(offer.ToReceive);
 
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Does a resource exchange with the bank.
+        /// </summary>
+        public ActionResult DoTradeWithBank(TradeOffer offer, IList<Port> portsAvailable)
+        {
+            if (!offer.IsValidBankOffer) return ActionResult.CreateFailed("Invalid trade. One or more resources are empty.");
+
+            var toReceive = offer.ToReceive.GetLargestStack();
+            var toGive = offer.ToGive.GetLargestStack();
+
+            if (toGive.Type == toReceive.Type)
+                return ActionResult.CreateFailed("Invalid trade. Both resource types are identical.");
+
+            bool threeToOnePort = portsAvailable.Any(p => p.Resource == toGive.Type);
+            bool twoToOnePort = portsAvailable.Any(p => p.Resource == ResourceTypes.None);
+            bool doTrade = false;
+
+            doTrade = ((toReceive.Count*4) == toGive.Count) ||
+                      (threeToOnePort && ((toReceive.Count*3) == toGive.Count)) ||
+                      (twoToOnePort && ((toReceive.Count*2) == toGive.Count));
+
+            if (!doTrade)
+                return ActionResult.CreateFailed("Invalid trade. Resource counts are invalid.");
+
+            this.RemoveResources(offer.ToGive);
+            this.AddResources(offer.ToReceive);
             return ActionResult.CreateSuccess();
         }
     }
