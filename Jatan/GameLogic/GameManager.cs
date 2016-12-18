@@ -222,24 +222,39 @@ namespace Jatan.GameLogic
             }
 
             _tradeHelper.ClearAllOffers();
+            tradeOffer.CreatorPlayerId = playerId; // Set the playerId manually just in case.
             _tradeHelper.ActivePlayerTradeOffer = tradeOffer;
             _playerTurnState = PlayerTurnState.RequestingPlayerTrade;
 
             return ActionResult.CreateSuccess();
         }
 
+        /// <summary>
+        /// Accepts a specific counter trade offer. Can only be called by the active player.
+        /// </summary>
         public ActionResult PlayerAcceptCounterTradeOffer(int playerId, int counterOfferPlayerId)
         {
             var validation = ValidatePlayerAction(PlayerTurnState.RequestingPlayerTrade, playerId);
             if (validation.Failed) return validation;
 
+            var apr = GetPlayerFromId(counterOfferPlayerId);
+            if (apr.Failed) return apr;
+            var activePlayerId = apr.Data;
+
             var pr = GetPlayerFromId(counterOfferPlayerId);
             if (pr.Failed) return pr;
             var counterOfferPlayer = pr.Data;
 
-            // TODO
+            var offer = _tradeHelper.GetCounterOfferByPlayerId(counterOfferPlayerId);
+            if (offer == null)
+            {
+                return ActionResult.CreateFailed("The trade offer does not exist.");
+            }
 
-            return ActionResult.CreateFailed("Not implemented");
+            var tradeResult = activePlayerId.AcceptTradeOffer(counterOfferPlayer, offer);
+            if (tradeResult.Failed) return tradeResult;
+
+            return ActionResult.CreateSuccess();
         }
 
         /// <summary>
@@ -276,11 +291,15 @@ namespace Jatan.GameLogic
             var pr = GetPlayerFromId(playerId);
             if (pr.Failed) return pr;
 
-            var nonActivePlayer = pr.Data;
+            if (counterOffer == null || !counterOffer.IsValid)
+            {
+                return ActionResult.CreateFailed("Invalid trade offer.");
+            }
 
-            // TODO
+            counterOffer.CreatorPlayerId = playerId; // Set the playedId manually just in case.
+            _tradeHelper.SendCounterOffer(counterOffer);
 
-            return ActionResult.CreateFailed("Not implemented");
+            return ActionResult.CreateSuccess();
         }
 
         /// <summary>
@@ -544,9 +563,9 @@ namespace Jatan.GameLogic
 
         #region private helper methods
 
-        private ActionResult ValidatePlayerAction(PlayerTurnState requiredState, int playerId)
+        private ActionResult ValidatePlayerAction(PlayerTurnState requiredState, int activePlayerId)
         {
-            if (ActivePlayer.Id != playerId)
+            if (ActivePlayer == null || ActivePlayer.Id != activePlayerId)
                 return ActionResult.CreateFailed("Not allowed to play out of turn.");
 
             return ValidatePlayerAction(requiredState);

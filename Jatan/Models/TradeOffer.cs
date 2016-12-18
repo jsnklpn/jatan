@@ -11,17 +11,20 @@ namespace Jatan.Models
     /// </summary>
     public class TradeOffer
     {
-        public readonly int CreatorPlayerId;
+        /// <summary>
+        /// The play that created the offer.
+        /// </summary>
+        public int CreatorPlayerId { get; set; }
 
         /// <summary>
         /// The resouce to give.
         /// </summary>
-        public ResourceStack ToGive { get; private set; }
+        public ResourceStack ToGive { get; set; }
 
         /// <summary>
         /// The resource to recieve.
         /// </summary>
-        public ResourceStack ToReceive { get; private set; }
+        public ResourceStack ToReceive { get; set; }
 
         /// <summary>
         /// Returns true if this is a valid trade.

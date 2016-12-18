@@ -15,14 +15,17 @@ namespace TestUI
 {
     public partial class GameBoardViewer : UserControl
     {
+        // We'll imagine a 7x7 grid. Sizes are actually percentages of the total size.
+        private const float RelativeTileWidth = 100 / 7f;
+        public static readonly Dictionary<ResourceTypes, Color> ResourceColorMap;
         private Dictionary<Hexagon, PointF[]> _hexPointMap;
 
-        // We'll imagine a 7x7 grid. Sizes are actually percentages of the total size.
-        private const float RelativeTileWidth = 100/7f;
-
         public GameBoard GameBoard { get; set; }
-        public static readonly Dictionary<ResourceTypes, Color> ResourceColorMap;
 
+        public event EventHandler<Hexagon> HexagonClicked;
+        public event EventHandler<HexEdge> HexEdgeClicked;
+        public event EventHandler<HexPoint> HexPointClicked;
+        
         private static class BoardColors
         {
             public static readonly Color Brick = Color.Firebrick;
@@ -63,6 +66,13 @@ namespace TestUI
 
             // The size has changed, so the point map is invalidated.
             _hexPointMap.Clear();
+        }
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+
+            // TODO: Detect hex clicks
         }
 
         protected override void OnClick(EventArgs e)
