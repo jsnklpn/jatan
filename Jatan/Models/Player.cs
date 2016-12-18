@@ -177,10 +177,20 @@ namespace Jatan.Models
         /// <summary>
         /// Removes all resource cards of a certain type. Returns the number of cards removed.
         /// </summary>
-        public int RemoveAllResourceCards(ResourceTypes resource)
+        public int RemoveAllResources(ResourceTypes resource)
         {
             var count = ResourceCards[resource];
             ResourceCards[resource] = 0;
+            return count;
+        }
+
+        /// <summary>
+        /// Removes all resource cards. Returns the number of cards removed.
+        /// </summary>
+        public int RemoveAllResources()
+        {
+            var count = ResourceCards.GetResourceCount();
+            ResourceCards.Clear();
             return count;
         }
 

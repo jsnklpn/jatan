@@ -173,10 +173,51 @@ namespace Jatan.UnitTest
         }
 
         [TestMethod]
-        public void TradeWithBank()
+        public void TestTradeWithBank()
         {
-            // TODO
-            Assert.Fail();
+            var manager = DoInitialPlacementsAndRoll();
+            var player = manager.ActivePlayer;
+
+            // Trade 4 ore for 1 brick.
+            var fourOre = new ResourceCollection(ore: 4);
+            var oneBrick = new ResourceCollection(brick: 1);
+            player.RemoveAllResources();
+            player.AddResources(fourOre);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Ore) == 4);
+            var offer = new TradeOffer(player.Id, fourOre, oneBrick);
+            var tradeResult = manager.PlayerTradeWithBank(player.Id, offer);
+            Assert.IsTrue(tradeResult.Succeeded, "The bank trade should succeed.");
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Brick) == 1);
+
+            // Trade 8 wheat for 2 wood.
+            var eightWheat = new ResourceCollection(wheat: 8);
+            var twoWood = new ResourceCollection(wood: 2);
+            player.RemoveAllResources();
+            player.AddResources(eightWheat);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Wheat) == 8);
+            offer = new TradeOffer(player.Id, eightWheat, twoWood);
+            tradeResult = manager.PlayerTradeWithBank(player.Id, offer);
+            Assert.IsTrue(tradeResult.Succeeded, "The bank trade should succeed.");
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Wood) == 2);
+
+            // Trade 2 wheat for 2 wood. Should fail.
+            var twoWheat = new ResourceCollection(wheat: 2);
+            player.RemoveAllResources();
+            player.AddResources(twoWheat);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Wheat) == 2);
+            offer = new TradeOffer(player.Id, twoWheat, twoWood);
+            tradeResult = manager.PlayerTradeWithBank(player.Id, offer);
+            Assert.IsTrue(tradeResult.Failed, "The bank trade should fail.");
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Wheat) == 2);
+        }
+
+        private GameManager DoInitialPlacementsAndRoll()
+        {
+            var manager = DoInitialPlacements();
+            var player = manager.ActivePlayer;
+            manager.PlayerRollDice(player.Id);
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The player state should 'TakeAction'.");
+            return manager;
         }
 
         private GameManager DoInitialPlacements()

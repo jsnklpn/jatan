@@ -54,10 +54,15 @@ namespace Jatan.Models
         }
 
         /// <summary>
-        /// Creates a new resource collection.
+        /// Creates a new resource collection with some resources.
         /// </summary>
-        public ResourceCollection()
+        public ResourceCollection(int wood = 0, int brick = 0, int sheep = 0, int wheat = 0, int ore = 0)
         {
+            this.Wood = wood;
+            this.Brick = brick;
+            this.Sheep = sheep;
+            this.Wheat = wheat;
+            this.Ore = ore;
         }
 
         /// <summary>
