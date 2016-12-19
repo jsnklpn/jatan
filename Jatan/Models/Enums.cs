@@ -53,20 +53,36 @@ namespace Jatan.Models
         /// <summary>
         /// 1 victory point.
         /// </summary>
-        Palace,
+        Market,
 
         /// <summary>
-        /// 
+        /// 1 vistory point.
+        /// </summary>
+        GreatHall,
+
+        /// <summary>
+        /// 1 victory point.
+        /// </summary>
+        Chapel,
+
+        /// <summary>
+        /// 1 victory point.
+        /// </summary>
+        University,
+
+        /// <summary>
+        /// Progress card: If you play this card, you must name 1 type of resource. All the other players
+        /// must give you all of the resource cards of this type that they have in their hands.
         /// </summary>
         Monopoly,
 
         /// <summary>
-        /// 
+        /// Progress card: If you play this card, you may immediately place 2 free roads on the board.
         /// </summary>
         RoadBuilding,
 
         /// <summary>
-        /// 
+        /// Progress card: If you play this card you may immediately take any 2 resource cards from the supply stacks.
         /// </summary>
         YearOfPlenty
     }

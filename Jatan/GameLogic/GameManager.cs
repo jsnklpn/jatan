@@ -679,19 +679,39 @@ namespace Jatan.GameLogic
             var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
             if (validation.Failed) return validation;
 
-            // TODO: PlayerPlayDevelopmentCard method
-
             var pr = GetPlayerFromId(playerId);
             if (pr.Failed) return pr;
             var player = pr.Data;
 
-            // Check if the player now has the largest army.
-            if (_largestArmy.Item1 != playerId)
+            var dr = player.PlayDevelopmentCard(cardToPlay);
+            if (dr.Failed) return dr;
+
+            if (cardToPlay == DevelopmentCards.Knight)
             {
+                // Check if the player now has the largest army.
                 var newArmySize = player.ArmySize;
                 // Must be at least 3 knights to have the largest army.
                 if (newArmySize >= 3 && newArmySize > _largestArmy.Item2)
                     _largestArmy = Tuple.Create(playerId, newArmySize);
+
+                // Now let the player place the robber.
+                _playerTurnState = _gameSettings.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
+            }
+            else if (cardToPlay == DevelopmentCards.Library || cardToPlay == DevelopmentCards.Chapel || cardToPlay == DevelopmentCards.Market || cardToPlay == DevelopmentCards.University || cardToPlay == DevelopmentCards.GreatHall)
+            {
+                // VP card. Do nothing.
+            }
+            else if (cardToPlay == DevelopmentCards.Monopoly)
+            {
+                // TODO
+            }
+            else if (cardToPlay == DevelopmentCards.YearOfPlenty)
+            {
+                // TODO
+            }
+            else if (cardToPlay == DevelopmentCards.RoadBuilding)
+            {
+                // TODO
             }
 
             return ActionResult.CreateSuccess();
@@ -721,13 +741,19 @@ namespace Jatan.GameLogic
         {
             _developmentCardDeck.Clear();
             var cardsToAdd = new List<DevelopmentCards>();
-            // TODO: I need to double check these card counts. I got them from yahoo answers :)
+            
             cardsToAdd.Add(DevelopmentCards.Knight, 14);
-            cardsToAdd.Add(DevelopmentCards.Library, 3);
-            cardsToAdd.Add(DevelopmentCards.Palace, 2);
+
+            cardsToAdd.Add(DevelopmentCards.Library, 1);
+            cardsToAdd.Add(DevelopmentCards.Chapel, 1);
+            cardsToAdd.Add(DevelopmentCards.Market, 1);
+            cardsToAdd.Add(DevelopmentCards.University, 1);
+            cardsToAdd.Add(DevelopmentCards.GreatHall, 1);
+
             cardsToAdd.Add(DevelopmentCards.YearOfPlenty, 2);
             cardsToAdd.Add(DevelopmentCards.RoadBuilding, 2);
             cardsToAdd.Add(DevelopmentCards.Monopoly, 2);
+
             _developmentCardDeck.AddCards(cardsToAdd);
             _developmentCardDeck.Shuffle(5);
         }

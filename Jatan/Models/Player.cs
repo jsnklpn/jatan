@@ -336,5 +336,20 @@ namespace Jatan.Models
             this.AddResources(offer.ToReceive);
             return ActionResult.CreateSuccess();
         }
+
+        /// <summary>
+        /// Removes a development card from the players hand and puts it into their "CardsInPlay" list.
+        /// </summary>
+        public ActionResult PlayDevelopmentCard(DevelopmentCards card)
+        {
+            var foundIndex = DevelopmentCards.FindIndex(c => c == card);
+            if (foundIndex == -1)
+                return ActionResult.CreateFailed("Cannot play this card because it is not in the player's hand.");
+
+            DevelopmentCards.RemoveAt(foundIndex);
+            DevelopmentCardsInPlay.Add(card);
+
+            return ActionResult.CreateSuccess();
+        }
     }
 }
