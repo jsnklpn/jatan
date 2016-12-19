@@ -161,15 +161,69 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestAcceptTradeOffer()
         {
-            // TODO
-            Assert.Fail();
+            var manager = DoInitialPlacementsAndRoll();
+            var activePlayer = manager.ActivePlayer;
+            var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
+            var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
+            Assert.IsNotNull(player1);
+            Assert.IsNotNull(player2);
+
+            // Active player offer trade of 1 ore and 2 wheat for 3 wood and 4 sheep.
+            activePlayer.RemoveAllResources();
+            player1.RemoveAllResources();
+            player2.RemoveAllResources();
+            var toGive = new ResourceCollection(ore: 1, wheat: 2);
+            var toGet = new ResourceCollection(wood: 3, sheep: 4);
+            activePlayer.AddResources(toGive);
+            player1.AddResources(toGet);
+            manager.PlayerOfferTrade(activePlayer.Id, new TradeOffer(activePlayer.Id, toGive, toGet));
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should be in the 'RequestingTrade' state.");
+
+            // Player 2 will try to accept the trade, yet he can't afford to do it.
+            var r = manager.AcceptTradeFromActivePlayer(player2.Id);
+            Assert.IsTrue(r.Failed, "This player can't afford to do the trade.");
+
+            // Player 1 will accept the trade and it should work.
+            r = manager.AcceptTradeFromActivePlayer(player1.Id);
+            Assert.IsTrue(r.Succeeded, "The trade should be successful.");
+            Assert.IsTrue(activePlayer.ResourceCards.Equals(toGet), "Active player did not get his resources from the trade.");
+            Assert.IsTrue(player1.ResourceCards.Equals(toGive), "Player 1 did not get his resources from the trade.");
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The trade is complete. Player should be in the 'TakeAction' state.");
         }
 
         [TestMethod]
         public void TestAcceptTradeCounterOffer()
         {
-            // TODO
-            Assert.Fail();
+            var manager = DoInitialPlacementsAndRoll();
+            var activePlayer = manager.ActivePlayer;
+            var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
+            Assert.IsNotNull(player1);
+
+            // Active player offer trade of 1 ore and 2 wheat for 3 wood and 4 sheep.
+            activePlayer.RemoveAllResources();
+            player1.RemoveAllResources();
+            var toOtherPlayer = new ResourceCollection(ore: 1, wheat: 2);
+            var toActivePlayer = new ResourceCollection(wood: 3, sheep: 4);
+            var toActivePlayerCounter = new ResourceCollection(brick: 5, sheep: 1);
+            var originalOffer = new TradeOffer(activePlayer.Id, toOtherPlayer, toActivePlayer);
+            var counterOffer = new TradeOffer(player1.Id, toActivePlayerCounter, toOtherPlayer);
+
+            activePlayer.AddResources(toOtherPlayer);
+            player1.AddResources(toActivePlayerCounter);
+            manager.PlayerOfferTrade(activePlayer.Id, originalOffer);
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should be in the 'RequestingTrade' state.");
+
+            // Player 1 can't afford it and will send a counter-offer.
+            var r = manager.AcceptTradeFromActivePlayer(player1.Id);
+            Assert.IsTrue(r.Failed, "Player 1 can't afford the current trade.");
+            r = manager.SendCounterTradeOffer(player1.Id, counterOffer);
+            Assert.IsTrue(r.Succeeded, "The counter offer send action should work.");
+            r = manager.PlayerAcceptCounterTradeOffer(activePlayer.Id, player1.Id);
+            Assert.IsTrue(r.Succeeded, "The counter offer should be accepted.");
+
+            Assert.IsTrue(activePlayer.ResourceCards.Equals(toActivePlayerCounter), "Active player did not get his resources from the trade.");
+            Assert.IsTrue(player1.ResourceCards.Equals(toOtherPlayer), "Player 1 did not get his resources from the trade.");
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The trade is complete. Player should be in the 'TakeAction' state.");
         }
 
         [TestMethod]
@@ -179,36 +233,40 @@ namespace Jatan.UnitTest
             var player = manager.ActivePlayer;
 
             // Trade 4 ore for 1 brick.
-            var fourOre = new ResourceCollection(ore: 4);
-            var oneBrick = new ResourceCollection(brick: 1);
+            var toGive = new ResourceCollection(ore: 4);
+            var toGet = new ResourceCollection(brick: 1);
             player.RemoveAllResources();
-            player.AddResources(fourOre);
-            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Ore) == 4);
-            var offer = new TradeOffer(player.Id, fourOre, oneBrick);
+            player.AddResources(toGive);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(toGive));
+            var offer = new TradeOffer(player.Id, toGive, toGet);
             var tradeResult = manager.PlayerTradeWithBank(player.Id, offer);
             Assert.IsTrue(tradeResult.Succeeded, "The bank trade should succeed.");
-            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Brick) == 1);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(toGet));
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
 
             // Trade 8 wheat for 2 wood.
-            var eightWheat = new ResourceCollection(wheat: 8);
-            var twoWood = new ResourceCollection(wood: 2);
+            toGive = new ResourceCollection(wheat: 8);
+            toGet = new ResourceCollection(wood: 2);
             player.RemoveAllResources();
-            player.AddResources(eightWheat);
-            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Wheat) == 8);
-            offer = new TradeOffer(player.Id, eightWheat, twoWood);
+            player.AddResources(toGive);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(toGive));
+            offer = new TradeOffer(player.Id, toGive, toGet);
             tradeResult = manager.PlayerTradeWithBank(player.Id, offer);
             Assert.IsTrue(tradeResult.Succeeded, "The bank trade should succeed.");
-            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Wood) == 2);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(toGet));
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
 
             // Trade 2 wheat for 2 wood. Should fail.
-            var twoWheat = new ResourceCollection(wheat: 2);
+            toGive = new ResourceCollection(wheat: 2);
+            toGet = new ResourceCollection(wood: 2);
             player.RemoveAllResources();
-            player.AddResources(twoWheat);
-            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Wheat) == 2);
-            offer = new TradeOffer(player.Id, twoWheat, twoWood);
+            player.AddResources(toGive);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(toGive));
+            offer = new TradeOffer(player.Id, toGive, toGet);
             tradeResult = manager.PlayerTradeWithBank(player.Id, offer);
             Assert.IsTrue(tradeResult.Failed, "The bank trade should fail.");
-            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.GetNumberResourceCount(ResourceTypes.Wheat) == 2);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(toGive));
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
         }
 
         private GameManager DoInitialPlacementsAndRoll()

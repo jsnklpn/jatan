@@ -237,9 +237,9 @@ namespace Jatan.GameLogic
             var validation = ValidatePlayerAction(PlayerTurnState.RequestingPlayerTrade, playerId);
             if (validation.Failed) return validation;
 
-            var apr = GetPlayerFromId(counterOfferPlayerId);
+            var apr = GetPlayerFromId(playerId);
             if (apr.Failed) return apr;
-            var activePlayerId = apr.Data;
+            var activePlayer = apr.Data;
 
             var pr = GetPlayerFromId(counterOfferPlayerId);
             if (pr.Failed) return pr;
@@ -251,8 +251,12 @@ namespace Jatan.GameLogic
                 return ActionResult.CreateFailed("The trade offer does not exist.");
             }
 
-            var tradeResult = activePlayerId.AcceptTradeOffer(counterOfferPlayer, offer);
+            var tradeResult = activePlayer.AcceptTradeOffer(counterOfferPlayer, offer);
             if (tradeResult.Failed) return tradeResult;
+
+            // Go back to TakeAction player state
+            _tradeHelper.ClearAllOffers();
+            _playerTurnState = PlayerTurnState.TakeAction;
 
             return ActionResult.CreateSuccess();
         }
@@ -269,6 +273,7 @@ namespace Jatan.GameLogic
 
             if (ActivePlayer.Id == playerId)
             {
+                // Go back to TakeAction player state
                 _tradeHelper.ClearAllOffers();
                 _playerTurnState = PlayerTurnState.TakeAction;
             }
@@ -322,7 +327,14 @@ namespace Jatan.GameLogic
             var nonActivePlayer = pr.Data;
             var activeOffer = _tradeHelper.ActivePlayerTradeOffer;
 
-            return nonActivePlayer.AcceptTradeOffer(ActivePlayer, activeOffer);
+            var result = nonActivePlayer.AcceptTradeOffer(ActivePlayer, activeOffer);
+            if (result.Failed) return result;
+
+            // Go back to TakeAction player state
+            _tradeHelper.ClearAllOffers();
+            _playerTurnState = PlayerTurnState.TakeAction;
+
+            return ActionResult.CreateSuccess();
         }
 
         /// <summary>
