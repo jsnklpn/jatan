@@ -71,7 +71,11 @@ namespace Jatan.Models
             get
             {
                 return DevelopmentCardsInPlay.Count(
-                        c => c == Models.DevelopmentCards.Library || c == Models.DevelopmentCards.Palace);
+                        c => c == Models.DevelopmentCards.Library ||
+                            c == Models.DevelopmentCards.Chapel ||
+                            c == Models.DevelopmentCards.Market ||
+                            c == Models.DevelopmentCards.University ||
+                            c == Models.DevelopmentCards.GreatHall);
             }
         }
 

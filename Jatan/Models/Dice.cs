@@ -25,12 +25,25 @@ namespace Jatan.Models
             get {  return new List<int>(_rollLog); }
         }
 
+        /// <summary>
+        /// The set of numbers which will not be allowed to roll. Useful for testing.
+        /// </summary>
+        public HashSet<int> ExcludeSet { get; set; }
+
+        /// <summary>
+        /// Creates a dice class with the specified number of dice.
+        /// </summary>
+        /// <param name="diceCount"></param>
         public Dice(int diceCount)
         {
+            this.ExcludeSet = new HashSet<int>();
             _rollLog = new List<int>();
             _diceCount = (diceCount < 1) ? 1 : diceCount;
         }
 
+        /// <summary>
+        /// Creates a dice class with 2 dice.
+        /// </summary>
         public Dice() : this(2)
         {
         }
@@ -41,10 +54,16 @@ namespace Jatan.Models
         /// <returns></returns>
         public int Roll()
         {
+            bool done = false;
             int total = 0;
-            for (int i = 0; i < _diceCount; i++)
+            while (!done)
             {
-                total += _random.Next(1, DiceSides + 1);
+                total = 0;
+                for (int i = 0; i < _diceCount; i++)
+                {
+                    total += _random.Next(1, DiceSides + 1);
+                }
+                done = !ExcludeSet.Contains(total);
             }
             _rollLog.Add(total);
             return total;

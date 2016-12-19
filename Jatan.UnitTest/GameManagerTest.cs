@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using Jatan.Core;
 using Jatan.GameLogic;
 using Jatan.Models;
@@ -129,7 +130,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestDiceRoll()
         {
-            var manager = DoInitialPlacements();
+            var manager = DoInitialPlacements(false);
 
             // Get a copy of the players' current resources
             var player0 = manager.Players.First(p => p.Id == PLAYER_0);
@@ -161,7 +162,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestAcceptTradeOffer()
         {
-            var manager = DoInitialPlacementsAndRoll();
+            var manager = DoInitialPlacementsAndRoll(false);
             var activePlayer = manager.ActivePlayer;
             var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
             var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
@@ -194,7 +195,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestAcceptTradeCounterOffer()
         {
-            var manager = DoInitialPlacementsAndRoll();
+            var manager = DoInitialPlacementsAndRoll(false);
             var activePlayer = manager.ActivePlayer;
             var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
             Assert.IsNotNull(player1);
@@ -229,7 +230,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestTradeWithBank()
         {
-            var manager = DoInitialPlacementsAndRoll();
+            var manager = DoInitialPlacementsAndRoll(false);
             var player = manager.ActivePlayer;
 
             // Trade 4 ore for 1 brick.
@@ -269,16 +270,16 @@ namespace Jatan.UnitTest
             Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
         }
 
-        private GameManager DoInitialPlacementsAndRoll()
+        private GameManager DoInitialPlacementsAndRoll(bool allowSevenRoll)
         {
-            var manager = DoInitialPlacements();
+            var manager = DoInitialPlacements(allowSevenRoll);
             var player = manager.ActivePlayer;
             manager.PlayerRollDice(player.Id);
             Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The player state should 'TakeAction'.");
             return manager;
         }
 
-        private GameManager DoInitialPlacements()
+        private GameManager DoInitialPlacements(bool allowSevenRoll)
         {
             // This setup method will create a 3-player game with the center and far-right hexagons fully surrounded.
 
@@ -286,6 +287,17 @@ namespace Jatan.UnitTest
             manager.AddPlayer("Billy"); // PLAYER_0
             manager.AddPlayer("John"); // PLAYER_1
             manager.AddPlayer("Greg"); // PLAYER_2
+
+            if (!allowSevenRoll)
+            {
+                var diceFieldInfo = typeof(GameManager).GetField("_dice", BindingFlags.NonPublic | BindingFlags.Instance);
+                var dice = diceFieldInfo.GetValue(manager) as Dice;
+                if (dice != null)
+                {
+                    dice.ExcludeSet.Add(7);
+                }
+            }
+
             manager.StartNewGame();
 
             // player 0
