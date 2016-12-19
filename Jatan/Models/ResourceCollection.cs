@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jatan.Core;
 
 namespace Jatan.Models
 {
@@ -74,9 +75,8 @@ namespace Jatan.Models
         }
 
         /// <summary>
-        /// Returns non-zero resources as a list.
+        /// Returns non-zero resources as a stack list.
         /// </summary>
-        /// <returns></returns>
         public List<ResourceStack> ToList()
         {
             var result = new List<ResourceStack>();
@@ -88,6 +88,23 @@ namespace Jatan.Models
             if (Wheat != 0) result.Add(new ResourceStack(ResourceTypes.Wheat, Wheat));
             if (Ore != 0) result.Add(new ResourceStack(ResourceTypes.Ore, Ore));
 
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a flat list of all resources.
+        /// </summary>
+        public List<ResourceTypes> ToResourceTypeList()
+        {
+            var result = new List<ResourceTypes>();
+            if (IsEmpty()) return result;
+            foreach (var stack in ToList())
+            {
+                for (int i = 0; i < stack.Count; i++)
+                {
+                    result.Add(stack.Type);
+                }
+            }
             return result;
         }
 
@@ -130,6 +147,20 @@ namespace Jatan.Models
         public ResourceStack GetLargestStack()
         {
             return ToList().OrderByDescending(s => s.Count).First();
+        }
+
+        /// <summary>
+        /// Removes and returns a random resource from the collection.
+        /// </summary>
+        public ActionResult<ResourceTypes> RemoveRandom()
+        {
+            var resourceList = this.ToResourceTypeList();
+            if (!resourceList.Any())
+                return ActionResult.CreateFailed("This player has no resource cards to take.").ToGeneric<ResourceTypes>();
+
+            var randomItem = resourceList.RemoveRandom();
+            this[randomItem]--;
+            return new ActionResult<ResourceTypes>(randomItem, true);
         }
 
         /// <summary>

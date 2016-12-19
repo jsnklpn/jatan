@@ -22,6 +22,8 @@ namespace Jatan.GameLogic
         private PlayerTurnState _playerTurnState;
         private Dice _dice;
         private TradeHelper _tradeHelper;
+        private Dictionary<Player, int> _playersCardsToLose;
+        private List<Player> _playersToStealFrom;
 
         // <playerId, roadLength>
         private Tuple<int, int> _longestRoad; 
@@ -102,6 +104,41 @@ namespace Jatan.GameLogic
             get { return new List<Player>(_players); }
         }
 
+        /// <summary>
+        /// Gets a list of players who need to discard cards.
+        /// </summary>
+        public List<Player> PlayersSelectingCardsToLose
+        {
+            get { return new List<Player>(_playersCardsToLose.Keys); }
+        }
+
+        /// <summary>
+        /// Gets a list of players which can currently be robbed.
+        /// </summary>
+        public List<Player> PlayersAvailableToRob
+        {
+            get {  return new List<Player>(_playersToStealFrom); }
+        }
+
+        /// <summary>
+        /// Gets the current player scores.
+        /// </summary>
+        public Dictionary<int, int> PlayerScores
+        {
+            get
+            {
+                var result = new Dictionary<int, int>();
+                foreach (var p in Players)
+                {
+                    var points = GetTotalPointsForPlayer(p.Id);
+                    if (points.Succeeded)
+                        result.Add(p.Id, points.Data);
+                }
+                return result;
+            }
+            
+        }
+
         #endregion
 
         /// <summary>
@@ -117,6 +154,8 @@ namespace Jatan.GameLogic
             _developmentCardDeck = new CardDeck<DevelopmentCards>();
             _dice = new Dice();
             _tradeHelper = new TradeHelper();
+            _playersCardsToLose = new Dictionary<Player, int>();
+            _playersToStealFrom = new List<Player>();
         }
 
         /// <summary>
@@ -141,6 +180,9 @@ namespace Jatan.GameLogic
             _gameBoard.Setup();
             _gameBoard.RobberMode = _gameSettings.RobberMode;
             _dice.ClearLog();
+            _playersCardsToLose.Clear();
+            _playersToStealFrom.Clear();
+            _tradeHelper.ClearAllOffers();
             _gameState = GameStates.InitialPlacement;
             _playerTurnState = PlayerTurnState.PlacingBuilding; // TODO: Possibly wait for something to trigger the game start.
         }
@@ -168,17 +210,18 @@ namespace Jatan.GameLogic
             if (diceRoll == 7)
             {
                 // Possibly make players lose cards
-                // TODO: Check which players should lose cards and let them decide which
-
-                // Set the PlacingRobber player state.
-                if (_gameSettings.RobberMode != RobberMode.None)
+                ComputePlayersCardsToLose();
+                if (_playersCardsToLose.Any())
                 {
-                    // TODO: This will need to work even if some players have to lose cards.
-                    //_playerTurnState = PlayerTurnState.PlacingRobber;
+                    // Some players need to lose cards. Change player state.
+                    // We will stay in this state until the unlucky players have selected cards to lose.
+                    _playerTurnState = PlayerTurnState.AnyPlayerSelectingCardsToLose;
                 }
-
-                // TODO: Remove this. Temporarily skip the 7 logic.
-                _playerTurnState = PlayerTurnState.TakeAction;
+                else
+                {
+                    // No players need to lose any cards. Immediately let the player move the robber.
+                    _playerTurnState = _gameSettings.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
+                }
             }
             else
             {
@@ -200,6 +243,119 @@ namespace Jatan.GameLogic
             }
 
             return ActionResult<int>.CreateSuccess(diceRoll);
+        }
+
+        /// <summary>
+        /// Makes a certain player discard resources. Used when a 7 is rolled
+        /// and the player has too many cards. Can be called by any player.
+        /// </summary>
+        public ActionResult PlayerDiscardResources(int playerId, ResourceCollection toDiscard)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.AnyPlayerSelectingCardsToLose);
+            if (validation.Failed) return validation;
+
+            var apr = GetPlayerFromId(playerId);
+            if (apr.Failed) return apr;
+            var player = apr.Data;
+
+            if (!_playersCardsToLose.ContainsKey(player))
+                return ActionResult.CreateFailed("Discarding resources is not required.");
+
+            var toDiscardCount = toDiscard.GetResourceCount();
+            var requiredCount = _playersCardsToLose[player];
+            if (toDiscardCount != requiredCount)
+                return ActionResult.CreateFailed(string.Format("Incorrect number of cards to discard. Selected: {0}. Required: {1}.", toDiscardCount, requiredCount));
+
+            if(!player.RemoveResources(toDiscard))
+                return ActionResult.CreateFailed("Player does not have the cards selected to discard.");
+
+            // Success. Remove player from pending discard list.
+            _playersCardsToLose.Remove(player);
+
+            // If the player-discard list is empty now, let the active player place the robber.
+            if (_playersCardsToLose.Count == 0)
+            {
+                _playerTurnState = _gameSettings.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
+            }
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Moves the robber to a new location. Can only be called by the active player.
+        /// </summary>
+        public ActionResult PlayerMoveRobber(int playerId, Hexagon newLocation)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.PlacingRobber, playerId);
+            if (validation.Failed) return validation;
+
+            var apr = GetPlayerFromId(playerId);
+            if (apr.Failed) return apr;
+            var activePlayer = apr.Data;
+
+            var moveResult = _gameBoard.MoveRobber(playerId, newLocation);
+            if (moveResult.Failed) return moveResult;
+
+            // Success. Check for nearby players which can be robbed.
+            var touchingPlayers = moveResult.Data;
+            if (touchingPlayers != null && touchingPlayers.Any())
+            {
+                var playersWithCards = FilterOutPlayersWithNoCards(touchingPlayers.Where(pid => pid != playerId));
+                if (playersWithCards.Any())
+                {
+                    _playersToStealFrom.Clear();
+                    _playersToStealFrom.AddRange(playersWithCards);
+                    _playerTurnState = PlayerTurnState.SelectingPlayerToStealFrom;
+                }
+                else
+                {
+                    // No one to steal from.
+                    _playerTurnState = PlayerTurnState.TakeAction;
+                }
+            }
+            else
+            {
+                _playerTurnState = PlayerTurnState.TakeAction;
+            }
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Steals a random resource card from a player. Initiated by moving the robber.
+        /// Can only be called by the main player. On success, returns the stolen card.
+        /// </summary>
+        public ActionResult<ResourceTypes> PlayerStealResourceCard(int playerId, int robbedPlayerId)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.SelectingPlayerToStealFrom, playerId);
+            if (validation.Failed) return validation.ToGeneric<ResourceTypes>();
+
+            var apr = GetPlayerFromId(playerId);
+            if (apr.Failed) return apr.ToGeneric<ResourceTypes>();
+            var activePlayer = apr.Data;
+
+            var pr = GetPlayerFromId(robbedPlayerId);
+            if (pr.Failed) return pr.ToGeneric<ResourceTypes>();
+            var robbedPlayer = pr.Data;
+
+            if (_playersToStealFrom.All(p => p.Id != robbedPlayerId))
+                return ActionResult.CreateFailed("This player cannot be robbed.").ToGeneric<ResourceTypes>();
+
+            if (robbedPlayer.NumberOfResourceCards == 0)
+                return ActionResult.CreateFailed("This player has no resource cards to steal.").ToGeneric<ResourceTypes>();
+
+            var removeResult = robbedPlayer.ResourceCards.RemoveRandom();
+            if (removeResult.Failed) return removeResult;
+
+            // Success
+            var typeStolen = removeResult.Data;
+            activePlayer.ResourceCards[typeStolen]++;
+
+            // Change player state
+            _playerTurnState = PlayerTurnState.TakeAction;
+            _playersToStealFrom.Clear();
+
+            return new ActionResult<ResourceTypes>(typeStolen, true);
         }
 
         /// <summary>
@@ -663,6 +819,41 @@ namespace Jatan.GameLogic
                 }
                 
             }
+        }
+
+        private void ComputePlayersCardsToLose()
+        {
+            // When a 7 is rolled, players will have to lose half (rounded down)
+            // of their cards if they have more than a certain amount.
+            // This method determines which players need to lose cards and how many.
+
+            _playersCardsToLose.Clear();
+            foreach (var p in Players)
+            {
+                if (p.NumberOfResourceCards >= _gameSettings.CardCountLossThreshold)
+                {
+                    int cardsToLose = (int)Math.Floor((double)p.NumberOfResourceCards / 2d);
+                    _playersCardsToLose.Add(p, cardsToLose);
+                }
+            }
+        }
+
+        private IList<Player> FilterOutPlayersWithNoCards(IEnumerable<int> playerIds)
+        {
+            var resultPlayers = new List<Player>();
+            foreach (var id in playerIds)
+            {
+                var pr = GetPlayerFromId(id);
+                if (pr.Succeeded && pr.Data != null)
+                {
+                    var player = pr.Data;
+                    if (player.NumberOfResourceCards > 0)
+                    {
+                        resultPlayers.Add(player);
+                    }
+                }
+            }
+            return resultPlayers;
         }
 
         private ActionResult<int> GetTotalPointsForPlayer(int playerId)
