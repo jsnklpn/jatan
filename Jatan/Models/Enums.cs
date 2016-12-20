@@ -187,7 +187,22 @@ namespace Jatan.Models
         /// <summary>
         /// The player is requesting a trade from another player.
         /// </summary>
-        RequestingPlayerTrade
+        RequestingPlayerTrade,
+
+        /// <summary>
+        /// Progress card: Player must name 1 type of resource. Other players must give the player their cards of that type.
+        /// </summary>
+        MonopolySelectingResource,
+
+        /// <summary>
+        /// Progress card: Player may immediately place 2 free roads on the board.
+        /// </summary>
+        RoadBuildingSelectingRoads,
+
+        /// <summary>
+        /// Progress card: If you play this card you may immediately take any 2 resource cards from the supply stacks.
+        /// </summary>
+        YearOfPlentySelectingResources
     }
 
     /// <summary>

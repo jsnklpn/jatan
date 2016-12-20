@@ -24,6 +24,7 @@ namespace Jatan.GameLogic
         private TradeHelper _tradeHelper;
         private Dictionary<Player, int> _playersCardsToLose;
         private List<Player> _playersToStealFrom;
+        private int _roadBuildingRoadsRemaining;
 
         // <playerId, roadLength>
         private Tuple<int, int> _longestRoad; 
@@ -179,6 +180,7 @@ namespace Jatan.GameLogic
             SetupDevelopmentCards();
             _gameBoard.Setup();
             _gameBoard.RobberMode = _gameSettings.RobberMode;
+            _roadBuildingRoadsRemaining = 0;
             _dice.ClearLog();
             _playersCardsToLose.Clear();
             _playersToStealFrom.Clear();
@@ -577,13 +579,7 @@ namespace Jatan.GameLogic
             System.Diagnostics.Debug.Assert(placement.Succeeded);
 
             // When we place a road, do a check to see if we deserve the longest road.
-            if (_longestRoad.Item1 != playerId)
-            {
-                var newRoadLength = _gameBoard.GetRoadLengthForPlayer(playerId);
-                // Must be at least 5 (by default) roads to have the longest road.
-                if (newRoadLength >= _gameSettings.MinimumLongestRoad && newRoadLength > _longestRoad.Item2)
-                    _longestRoad = Tuple.Create(playerId, newRoadLength);
-            }
+            CheckForLongestRoad(playerId);
 
             // Update game and player states.
             if (_gameState == GameStates.InitialPlacement)
@@ -703,15 +699,107 @@ namespace Jatan.GameLogic
             }
             else if (cardToPlay == DevelopmentCards.Monopoly)
             {
-                // TODO
+                _playerTurnState = PlayerTurnState.MonopolySelectingResource;
             }
             else if (cardToPlay == DevelopmentCards.YearOfPlenty)
             {
-                // TODO
+                _playerTurnState = PlayerTurnState.YearOfPlentySelectingResources;
             }
             else if (cardToPlay == DevelopmentCards.RoadBuilding)
             {
-                // TODO
+                _roadBuildingRoadsRemaining = 2;
+                _playerTurnState = PlayerTurnState.RoadBuildingSelectingRoads;
+            }
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Selects the resource type after the Monopoly card is played. Can only be called by the active player.
+        /// </summary>
+        public ActionResult PlayerSelectResourceForMonopoly(int playerId, ResourceTypes resource)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.MonopolySelectingResource, playerId);
+            if (validation.Failed) return validation;
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+            var activePlayer = pr.Data;
+
+            // Remove all the resources of the specified type from
+            // the other players and give them to the active player.
+            var otherPlayers = Players.Where(p => p.Id != playerId);
+            var resCount = 0;
+            foreach (var otherPlayer in otherPlayers)
+            {
+                resCount += otherPlayer.RemoveAllResources(resource);
+            }
+            activePlayer.ResourceCards[resource] += resCount;
+
+            _playerTurnState = PlayerTurnState.TakeAction;
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Selects the two resources after the YearOfPlenty card is played. Can only be called by the active player.
+        /// </summary>
+        public ActionResult PlayerSelectResourcesForYearOfPlenty(int playerId, ResourceTypes res1, ResourceTypes res2)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.YearOfPlentySelectingResources, playerId);
+            if (validation.Failed) return validation;
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+            var activePlayer = pr.Data;
+
+            activePlayer.ResourceCards[res1]++;
+            activePlayer.ResourceCards[res2]++;
+
+            _playerTurnState = PlayerTurnState.TakeAction;
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Places a road for the given player at the given location after the RoadBuilding card has been played.
+        /// Can only be called by the active player.
+        /// </summary>
+        public ActionResult PlayerPlaceRoadForRoadBuilding(int playerId, HexEdge location)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.RoadBuildingSelectingRoads, playerId);
+            if (validation.Failed) return validation;
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+            var player = pr.Data;
+
+            // Make sure the player doesn't place too many roads
+            if (_roadBuildingRoadsRemaining <= 0)
+                return ActionResult.CreateFailed("Cannot place more than 2 roads with the RoadBuilding card.");
+
+            var placementValidation = _gameBoard.ValidateRoadPlacement(playerId, location, false);
+            if (placementValidation.Failed) return placementValidation;
+
+            var purchaseResult = player.Purchase(PurchasableItems.Road, true);
+            if (purchaseResult.Failed)
+            {
+                // If this failed, it means that the player has no more roads available. This turn state has to end.
+                _roadBuildingRoadsRemaining = 0;
+                _playerTurnState = PlayerTurnState.TakeAction;
+                return purchaseResult;
+            }
+
+            var rr = _gameBoard.PlaceRoad(player.Id, location, false);
+            if (rr.Failed) return rr;
+            
+            // When we place a road, do a check to see if we deserve the longest road.
+            CheckForLongestRoad(playerId);
+
+            _roadBuildingRoadsRemaining--;
+            if (_roadBuildingRoadsRemaining <= 0)
+            {
+                _playerTurnState = PlayerTurnState.TakeAction;
             }
 
             return ActionResult.CreateSuccess();
@@ -727,6 +815,7 @@ namespace Jatan.GameLogic
 
             // Clear any trade offers, just in case.
             _tradeHelper.ClearAllOffers();
+            _roadBuildingRoadsRemaining = 0;
 
             AdvanceToNextPlayerTurn();
 
@@ -792,6 +881,9 @@ namespace Jatan.GameLogic
                 case PlayerTurnState.AnyPlayerSelectingCardsToLose:
                 case PlayerTurnState.SelectingPlayerToStealFrom:
                 case PlayerTurnState.TakeAction:
+                case PlayerTurnState.MonopolySelectingResource:
+                case PlayerTurnState.RoadBuildingSelectingRoads:
+                case PlayerTurnState.YearOfPlentySelectingResources:
                     validAction = (_gameState == GameStates.GameInProgress);
                     break;
             }
@@ -880,6 +972,14 @@ namespace Jatan.GameLogic
                 }
             }
             return resultPlayers;
+        }
+
+        private void CheckForLongestRoad(int playerId)
+        {
+            var newRoadLength = _gameBoard.GetRoadLengthForPlayer(playerId);
+            // Must be at least 5 (by default) roads to have the longest road.
+            if (newRoadLength >= _gameSettings.MinimumLongestRoad && newRoadLength > _longestRoad.Item2)
+                _longestRoad = Tuple.Create(playerId, newRoadLength);
         }
 
         private ActionResult<int> GetTotalPointsForPlayer(int playerId)
