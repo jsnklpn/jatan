@@ -1,0 +1,31 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+@section scripts
+{
+    <script src="~/Scripts/jquery.signalR-2.2.1.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/Scripts/Game/game.js"></script>
+}
+
+@section css
+{
+    <link href="~/Content/game.css" rel="stylesheet" type="text/css" />
+}
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="gameLowerPanel">
+    <div id="chatBox">
+        <ul id="chatBoxList">
+            <li>Welcome to Jatan!</li>
+        </ul>
+        <div>
+            <input id="chatBoxInputText" type="text" placeholder=" Send message"/>
+        </div>
+    </div>
+    <div id="lowerControls">
+        <p>There are more controls here</p>
+    </div>
+</div>
