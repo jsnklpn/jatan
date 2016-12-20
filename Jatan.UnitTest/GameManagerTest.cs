@@ -270,6 +270,110 @@ namespace Jatan.UnitTest
             Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
         }
 
+        [TestMethod]
+        public void TestPlayMonopolyCard()
+        {
+            var manager = DoInitialPlacementsAndRoll(false);
+            var activePlayer = manager.ActivePlayer;
+            var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
+            var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
+            Assert.IsNotNull(activePlayer);
+            Assert.IsNotNull(player1);
+            Assert.IsNotNull(player2);
+
+            activePlayer.RemoveAllResources();
+            player1.RemoveAllResources();
+            player2.RemoveAllResources();
+
+            activePlayer.AddResources(new ResourceCollection(wood: 1));
+            player1.AddResources(new ResourceCollection(wood: 5, ore: 2, sheep: 1));
+            player2.AddResources(new ResourceCollection(wheat: 6, sheep: 3, brick: 1));
+
+            var pr = manager.PlayerPlayDevelopmentCard(activePlayer.Id, DevelopmentCards.Monopoly);
+            Assert.IsTrue(pr.Failed, "Card play should fail. The player does not have the card yet.");
+
+            activePlayer.DevelopmentCards.Add(DevelopmentCards.Monopoly);
+
+            pr = manager.PlayerPlayDevelopmentCard(activePlayer.Id, DevelopmentCards.Monopoly);
+            Assert.IsTrue(pr.Succeeded, "Card play should succeed.");
+            Assert.AreEqual(PlayerTurnState.MonopolySelectingResource, manager.PlayerTurnState, "Player should be in the 'MonopolySelectingResource' state.");
+
+            // Now the player must choose a card to monopolize
+
+            pr = manager.PlayerSelectResourceForMonopoly(activePlayer.Id, ResourceTypes.Sheep);
+            Assert.IsTrue(pr.Succeeded, "Resource selection should succeed.");
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
+
+            Assert.AreEqual(4, activePlayer.ResourceCards[ResourceTypes.Sheep]);
+            Assert.AreEqual(0, player1.ResourceCards[ResourceTypes.Sheep]);
+            Assert.AreEqual(0, player2.ResourceCards[ResourceTypes.Sheep]);
+        }
+
+        [TestMethod]
+        public void TestPlayRoadBuildingCard()
+        {
+            var manager = DoInitialPlacementsAndRoll(false);
+            var activePlayer = manager.ActivePlayer;
+            Assert.IsNotNull(activePlayer);
+
+            var pr = manager.PlayerPlayDevelopmentCard(activePlayer.Id, DevelopmentCards.RoadBuilding);
+            Assert.IsTrue(pr.Failed, "Card play should fail. The player does not have the card yet.");
+
+            activePlayer.DevelopmentCards.Add(DevelopmentCards.RoadBuilding);
+
+            pr = manager.PlayerPlayDevelopmentCard(activePlayer.Id, DevelopmentCards.RoadBuilding);
+            Assert.IsTrue(pr.Succeeded, "Card play should succeed.");
+            Assert.AreEqual(PlayerTurnState.RoadBuildingSelectingRoads, manager.PlayerTurnState, "Player should be in the 'RoadBuildingSelectingRoads' state.");
+
+            // Now the player gets to place 2 roads.
+
+            var roadCount = manager.GameBoard.GetRoadCountForPlayer(activePlayer.Id);
+            Assert.AreEqual(2, roadCount);
+
+            pr = manager.PlayerPlaceRoadForRoadBuilding(activePlayer.Id, new Hexagon(0, 1).GetEdge(EdgeDir.Right));
+            roadCount = manager.GameBoard.GetRoadCountForPlayer(activePlayer.Id);
+            Assert.IsTrue(pr.Succeeded, "Road building should succeed.");
+            Assert.AreEqual(PlayerTurnState.RoadBuildingSelectingRoads, manager.PlayerTurnState, "Player should still be in the 'RoadBuildingSelectingRoads' state.");
+            Assert.AreEqual(3, roadCount);
+
+            pr = manager.PlayerPlaceRoadForRoadBuilding(activePlayer.Id, new Hexagon(0, 1).GetEdge(EdgeDir.TopRight));
+            roadCount = manager.GameBoard.GetRoadCountForPlayer(activePlayer.Id);
+            Assert.IsTrue(pr.Succeeded, "Road building should succeed.");
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should still be in the 'TakeAction' state.");
+            Assert.AreEqual(4, roadCount);
+        }
+
+        [TestMethod]
+        public void TestPlayYearOfPlentyCard()
+        {
+            var manager = DoInitialPlacementsAndRoll(false);
+            var activePlayer = manager.ActivePlayer;
+            Assert.IsNotNull(activePlayer);
+
+            activePlayer.RemoveAllResources();
+
+            var pr = manager.PlayerPlayDevelopmentCard(activePlayer.Id, DevelopmentCards.YearOfPlenty);
+            Assert.IsTrue(pr.Failed, "Card play should fail. The player does not have the card yet.");
+
+            activePlayer.DevelopmentCards.Add(DevelopmentCards.YearOfPlenty);
+
+            pr = manager.PlayerPlayDevelopmentCard(activePlayer.Id, DevelopmentCards.YearOfPlenty);
+            Assert.IsTrue(pr.Succeeded, "Card play should succeed.");
+            Assert.AreEqual(PlayerTurnState.YearOfPlentySelectingResources, manager.PlayerTurnState, "Player should be in the 'YearOfPlentySelectingResources' state.");
+
+            // Now the player must choose 2 resources to collect
+
+            Assert.AreEqual(0, activePlayer.ResourceCards[ResourceTypes.Wood]);
+            Assert.AreEqual(0, activePlayer.ResourceCards[ResourceTypes.Brick]);
+
+            pr = manager.PlayerSelectResourcesForYearOfPlenty(activePlayer.Id, ResourceTypes.Wood, ResourceTypes.Brick);
+            Assert.IsTrue(pr.Succeeded, "Resource selection should succeed.");
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
+
+            Assert.AreEqual(1, activePlayer.ResourceCards[ResourceTypes.Wood]);
+            Assert.AreEqual(1, activePlayer.ResourceCards[ResourceTypes.Brick]);
+        }
+
         private GameManager DoInitialPlacementsAndRoll(bool allowSevenRoll)
         {
             var manager = DoInitialPlacements(allowSevenRoll);
@@ -291,7 +395,7 @@ namespace Jatan.UnitTest
             if (!allowSevenRoll)
             {
                 var diceFieldInfo = typeof(GameManager).GetField("_dice", BindingFlags.NonPublic | BindingFlags.Instance);
-                var dice = diceFieldInfo.GetValue(manager) as Dice;
+                var dice = (diceFieldInfo != null) ? diceFieldInfo.GetValue(manager) as Dice : null;
                 if (dice != null)
                 {
                     dice.ExcludeSet.Add(7);
