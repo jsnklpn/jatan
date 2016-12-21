@@ -25,7 +25,7 @@ namespace Jatan.UnitTest
             
             manager.StartNewGame();
 
-            Assert.AreEqual(GameStates.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
+            Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
             Assert.AreEqual(PlayerTurnState.PlacingBuilding, manager.PlayerTurnState, "The player state should be in building placement mode.");
 
             // First, player 0 must place 1 settlement
@@ -44,7 +44,7 @@ namespace Jatan.UnitTest
 
             ar = manager.PlayerPlaceBuilding(PLAYER_0, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.Top));
             Assert.IsTrue(ar.Succeeded, "The player should be able to place a settlement.");
-            Assert.AreEqual(GameStates.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
+            Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
             Assert.AreEqual(PlayerTurnState.PlacingRoad, manager.PlayerTurnState, "The player state should be in road placement mode.");
 
             // Now, player 0 is expected to place a road.
@@ -61,7 +61,7 @@ namespace Jatan.UnitTest
 
             ar = manager.PlayerPlaceBuilding(PLAYER_1, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.BottomRight));
             Assert.IsTrue(ar.Succeeded, "The player should be able to place a settlement.");
-            Assert.AreEqual(GameStates.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
+            Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
             Assert.AreEqual(PlayerTurnState.PlacingRoad, manager.PlayerTurnState, "The player state should be in road placement mode.");
 
             // Now, player 1 is expected to place a road.
@@ -75,7 +75,7 @@ namespace Jatan.UnitTest
 
             ar = manager.PlayerPlaceBuilding(PLAYER_2, BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.BottomLeft));
             Assert.IsTrue(ar.Succeeded, "The player should be able to place a settlement.");
-            Assert.AreEqual(GameStates.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
+            Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
             Assert.AreEqual(PlayerTurnState.PlacingRoad, manager.PlayerTurnState, "The player state should be in road placement mode.");
 
             ar = manager.PlayerPlaceRoad(PLAYER_2, Hexagon.Zero.GetEdge(EdgeDir.Left));
@@ -89,7 +89,7 @@ namespace Jatan.UnitTest
 
             ar = manager.PlayerPlaceBuilding(PLAYER_2, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.BottomLeft));
             Assert.IsTrue(ar.Succeeded, "The player should be able to place a settlement.");
-            Assert.AreEqual(GameStates.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
+            Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
             Assert.AreEqual(PlayerTurnState.PlacingRoad, manager.PlayerTurnState, "The player state should be in road placement mode.");
 
             ar = manager.PlayerPlaceRoad(PLAYER_2, otherHex.GetEdge(EdgeDir.Left));
@@ -101,7 +101,7 @@ namespace Jatan.UnitTest
 
             ar = manager.PlayerPlaceBuilding(PLAYER_1, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.BottomRight));
             Assert.IsTrue(ar.Succeeded, "The player should be able to place a settlement.");
-            Assert.AreEqual(GameStates.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
+            Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
             Assert.AreEqual(PlayerTurnState.PlacingRoad, manager.PlayerTurnState, "The player state should be in road placement mode.");
 
             ar = manager.PlayerPlaceRoad(PLAYER_1, otherHex.GetEdge(EdgeDir.Right));
@@ -113,7 +113,7 @@ namespace Jatan.UnitTest
 
             ar = manager.PlayerPlaceBuilding(PLAYER_0, BuildingTypes.Settlement, otherHex.GetPoint(PointDir.Top));
             Assert.IsTrue(ar.Succeeded, "The player should be able to place a settlement.");
-            Assert.AreEqual(GameStates.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
+            Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
             Assert.AreEqual(PlayerTurnState.PlacingRoad, manager.PlayerTurnState, "The player state should be in road placement mode.");
 
             ar = manager.PlayerPlaceRoad(PLAYER_0, otherHex.GetEdge(EdgeDir.TopRight));
@@ -123,7 +123,7 @@ namespace Jatan.UnitTest
             // All done. The game should be started now.
             //
             Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "It should be player 0's turn.");
-            Assert.AreEqual(GameStates.GameInProgress, manager.GameState, "The game state should be in the main game phase.");
+            Assert.AreEqual(GameState.GameInProgress, manager.GameState, "The game state should be in the main game phase.");
             Assert.AreEqual(PlayerTurnState.NeedToRoll, manager.PlayerTurnState, "The player state should 'NeedToRoll'.");
         }
 
@@ -431,7 +431,7 @@ namespace Jatan.UnitTest
             manager.PlayerPlaceRoad(PLAYER_0, otherHex.GetEdge(EdgeDir.TopRight));
 
             Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "It should be player 0's turn.");
-            Assert.AreEqual(GameStates.GameInProgress, manager.GameState, "The game state should be in the main game phase.");
+            Assert.AreEqual(GameState.GameInProgress, manager.GameState, "The game state should be in the main game phase.");
             Assert.AreEqual(PlayerTurnState.NeedToRoll, manager.PlayerTurnState, "The player state should 'NeedToRoll'.");
 
             return manager;

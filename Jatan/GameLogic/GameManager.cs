@@ -18,7 +18,7 @@ namespace Jatan.GameLogic
         private List<Player> _players;
         private int _playerTurnIndex;
         private CardDeck<DevelopmentCards> _developmentCardDeck;
-        private GameStates _gameState;
+        private GameState _gameState;
         private PlayerTurnState _playerTurnState;
         private Dice _dice;
         private TradeHelper _tradeHelper;
@@ -60,7 +60,7 @@ namespace Jatan.GameLogic
         /// <summary>
         /// Gets the current state of the game.
         /// </summary>
-        public GameStates GameState
+        public GameState GameState
         {
             get { return _gameState; }
         }
@@ -148,7 +148,7 @@ namespace Jatan.GameLogic
         public GameManager()
         {
             _gameSettings = new GameSettings();
-            _gameState = GameStates.NotStarted;
+            _gameState = GameState.NotStarted;
             _playerTurnState = PlayerTurnState.None;
             _gameBoard = new GameBoard();
             _players = new List<Player>();
@@ -185,7 +185,7 @@ namespace Jatan.GameLogic
             _playersCardsToLose.Clear();
             _playersToStealFrom.Clear();
             _tradeHelper.ClearAllOffers();
-            _gameState = GameStates.InitialPlacement;
+            _gameState = GameState.InitialPlacement;
             _playerTurnState = PlayerTurnState.PlacingBuilding; // TODO: Possibly wait for something to trigger the game start.
         }
 
@@ -556,7 +556,7 @@ namespace Jatan.GameLogic
             if (pr.Failed) return pr;
             var player = pr.Data;
 
-            bool startOfGame = (_gameState == GameStates.InitialPlacement);
+            bool startOfGame = (_gameState == GameState.InitialPlacement);
 
             // Make sure the player doesn't place too many roads in the intial placement phase
             if (startOfGame)
@@ -582,7 +582,7 @@ namespace Jatan.GameLogic
             CheckForLongestRoad(playerId);
 
             // Update game and player states.
-            if (_gameState == GameStates.InitialPlacement)
+            if (_gameState == GameState.InitialPlacement)
             {
                 var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
                 if (LastPlayerIsActive && buildingCount == 1)
@@ -596,7 +596,7 @@ namespace Jatan.GameLogic
                     AdvanceToNextPlayerTurn();
                 }
             }
-            else if (_gameState == GameStates.GameInProgress)
+            else if (_gameState == GameState.GameInProgress)
             {
                 _playerTurnState = PlayerTurnState.TakeAction;
             }
@@ -618,7 +618,7 @@ namespace Jatan.GameLogic
             if (pr.Failed) return pr;
             var player = pr.Data;
 
-            bool startOfGame = (_gameState == GameStates.InitialPlacement);
+            bool startOfGame = (_gameState == GameState.InitialPlacement);
 
             // Make sure the player doesn't place too many buildings in the intial placement phase
             if (startOfGame)
@@ -647,7 +647,7 @@ namespace Jatan.GameLogic
             System.Diagnostics.Debug.Assert(placement.Succeeded);
 
             // Update game and player states.
-            if (_gameState == GameStates.InitialPlacement)
+            if (_gameState == GameState.InitialPlacement)
             {
                 var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
                 if (buildingCount == 2)
@@ -659,7 +659,7 @@ namespace Jatan.GameLogic
 
                 _playerTurnState = PlayerTurnState.PlacingRoad;
             }
-            else if (_gameState == GameStates.GameInProgress)
+            else if (_gameState == GameState.GameInProgress)
             {
                 _playerTurnState = PlayerTurnState.TakeAction;
             }
@@ -872,7 +872,7 @@ namespace Jatan.GameLogic
                 // The following actions can be taken during the initial placement phase or during the normal phase.
                 case PlayerTurnState.PlacingRoad:
                 case PlayerTurnState.PlacingBuilding:
-                    validAction = (_gameState == GameStates.GameInProgress || _gameState == GameStates.InitialPlacement);
+                    validAction = (_gameState == GameState.GameInProgress || _gameState == GameState.InitialPlacement);
                     break;
                 // The following actions require the normal game phase to be in progress.
                 case PlayerTurnState.NeedToRoll:
@@ -884,7 +884,7 @@ namespace Jatan.GameLogic
                 case PlayerTurnState.MonopolySelectingResource:
                 case PlayerTurnState.RoadBuildingSelectingRoads:
                 case PlayerTurnState.YearOfPlentySelectingResources:
-                    validAction = (_gameState == GameStates.GameInProgress);
+                    validAction = (_gameState == GameState.GameInProgress);
                     break;
             }
             return validAction ? ActionResult.CreateSuccess() :
@@ -902,13 +902,13 @@ namespace Jatan.GameLogic
         private void AdvanceToNextPlayerTurn()
         {
             // Advances to the next player's turn.
-            if (_gameState == GameStates.GameInProgress)
+            if (_gameState == GameState.GameInProgress)
             {
                 _playerTurnIndex++;
                 _playerTurnIndex %= _players.Count;
                 _playerTurnState = PlayerTurnState.NeedToRoll;
             }
-            else if (_gameState == GameStates.InitialPlacement)
+            else if (_gameState == GameState.InitialPlacement)
             {
                 // During the initial placement phase, the turn index increases until the last player
                 // makes his placements. Then, the turn index counts down to the first player.
@@ -927,7 +927,7 @@ namespace Jatan.GameLogic
                     if (_playerTurnIndex < 0)
                     {
                         _playerTurnIndex = 0;
-                        _gameState = GameStates.GameInProgress;
+                        _gameState = GameState.GameInProgress;
                         _playerTurnState = PlayerTurnState.NeedToRoll;
                     }
                     else

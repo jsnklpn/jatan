@@ -116,7 +116,7 @@ namespace Jatan.Models
     /// <summary>
     /// Game states.
     /// </summary>
-    public enum GameStates
+    public enum GameState
     {
         /// <summary>
         /// The game has not started at all.
