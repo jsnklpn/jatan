@@ -218,10 +218,10 @@ namespace TestUI
         {
             return new PointF[]
             {
-                new PointF(0, 0.75f),
+                new PointF(0, 0.5f),
                 new PointF(0.5f, 0.25f),
                 new PointF(0.5f, -0.25f),
-                new PointF(0, -0.75f),
+                new PointF(0, -0.5f),
                 new PointF(-0.5f, -0.25f),
                 new PointF(-0.5f, 0.25f),
             };
@@ -268,7 +268,7 @@ namespace TestUI
         private PointF GetIdentityHexOffset(Hexagon hex)
         {
             var newX = hex.X - (hex.Y * 0.5f);
-            return new PointF(newX, -hex.Y);
+            return new PointF(newX, -0.75f * hex.Y);
         }
 
         private PointF[] HexEdgeToAbsolutePoints(HexEdge hexEdge)
