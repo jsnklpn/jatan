@@ -93,7 +93,7 @@ namespace Jatan.Core
         /// </summary>
         public override string ToString()
         {
-            return string.Format("[{0}, {1}, {2}]", Hex1, Hex2, Hex3);
+            return string.Format("[{0},{1},{2}]", Hex1, Hex2, Hex3);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace Jatan.Core
             }
             catch (Exception)
             {
-                throw new ArgumentException("Cannot parse HexPoint string. Must be in the format \"[(X1, Y1), (X2, Y2), (X3, Y3)]\"", "value");
+                throw new ArgumentException("Cannot parse HexPoint string. Must be in the format \"[(X1,Y1),(X2,Y2),(X3,Y3)]\"", "value");
             }
         }
 

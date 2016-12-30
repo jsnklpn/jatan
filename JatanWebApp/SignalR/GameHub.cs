@@ -26,9 +26,12 @@ namespace JatanWebApp.SignalR
             Clients.All.broadcastMessage(name, message);
         }
 
+        /// <summary>
+        /// Sends a full game manager update to the calling client.
+        /// </summary>
         public void GetGameManagerUpdate()
         {
-            Clients.All.updateGameManager(new GameManagerDTO(_gameManager));
+            Clients.Caller.updateGameManager(new GameManagerDTO(_gameManager));
         }
     }
 }

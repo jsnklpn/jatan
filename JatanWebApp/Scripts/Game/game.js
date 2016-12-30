@@ -4,6 +4,7 @@
 
 // Global variables
 
+var _serverGameHub = null; // signal-R
 var _currentGameManager = null;
 
 var _loadQueue = null;
@@ -134,30 +135,32 @@ function initSignalR() {
     };
 
     gameHub.client.updateGameManager = function (gameManager) {
-        _currentGameManager = gameManager;
-        drawGame(gameManager);
+        updateGameModel(gameManager);
     }
 
     // Start the connection.
     $.connection.hub.start().done(function () {
 
-        $("#chatBoxInputText").keypress(function (event) {
-            var keycode = (event.keyCode ? event.keyCode : event.which);
-            // Enter key pressed
-            if (keycode == "13") {
-                var msgToSend = $("#chatBoxInputText").val();
-                if (msgToSend.length > 0) {
+        // save a reference to the server hub object.
+        _serverGameHub = gameHub.server;
 
-                    // temp
-                    if (msgToSend.toLowerCase() === "update")
-                        gameHub.server.getGameManagerUpdate();
-                    else {
-                        gameHub.server.sendChatMessage("Jason", msgToSend);
-                        $("#chatBoxInputText").val("").focus();
-                    }
-                }
-            }
-        });
+        //$("#chatBoxInputText").keypress(function (event) {
+        //    var keycode = (event.keyCode ? event.keyCode : event.which);
+        //    // Enter key pressed
+        //    if (keycode == "13") {
+        //        var msgToSend = $("#chatBoxInputText").val();
+        //        if (msgToSend.length > 0) {
+
+        //            // temp
+        //            if (msgToSend.toLowerCase() === "update")
+        //                gameHub.server.getGameManagerUpdate();
+        //            else {
+        //                gameHub.server.sendChatMessage("Jason", msgToSend);
+        //                $("#chatBoxInputText").val("").focus();
+        //            }
+        //        }
+        //    }
+        //});
     });
 }
 
@@ -322,8 +325,9 @@ function writeTextToChat(text) {
     $("#chatBoxList").animate({ scrollTop: $("#chatBoxList")[0].scrollHeight }, 10);
 }
 
-function drawGame(gameManager) {
-    
+function updateGameModel(gameManager) {
+    _currentGameManager = gameManager;
+
 }
 
 

@@ -132,7 +132,7 @@ namespace Jatan.Core
         /// </summary>
         public override string ToString()
         {
-            return string.Format("({0}, {1})", X, Y);
+            return string.Format("({0},{1})", X, Y);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Jatan.Core
             }
             catch (Exception)
             {
-                throw new ArgumentException("Cannot parse Hexagon string. Must be in the format \"(X, Y)\"", "value");
+                throw new ArgumentException("Cannot parse Hexagon string. Must be in the format \"(X,Y)\"", "value");
             }
         }
 
