@@ -18,14 +18,14 @@ var _invalidateCanvas = true; // set to true to redraw canvas
 // We need to use these values because the actual image sizes vary slightly between items
 // of the same time. For example, the Ore tile is taller than the others because of its mountain.
 // Therefore, it will not be aligned the same as the other tiles if we use it's real image size.
-// TODO: Fill in with the correct values.
-var beachTileHitbox =   { width: 308, height: 252, centerX: 169,   centerY: 134 };
-var desertTileHitbox =  { width: 291, height: 221, centerX: 145.5, centerY: 110.5 };
-var woodTileHitbox =    { width: 291, height: 233, centerX: 145.5, centerY: 116.5 };
-var brickTileHitbox =   { width: 291, height: 231, centerX: 145.5, centerY: 115.5 };
-var sheepTileHitbox =   { width: 291, height: 220, centerX: 145.5, centerY: 110 };
-var oreTileHitbox =     { width: 291, height: 226, centerX: 145.5, centerY: 113 };
-var wheatTileHitbox =   { width: 291, height: 220, centerX: 145.5, centerY: 110 };
+var beachTileHitbox =   { width: 308, height: 250, centerX: 169,   centerY: 134 };
+var beachShadowHitbox = { width: 417, height: 350, centerX: 208.5, centerY: 170 };
+var desertTileHitbox =  { width: 291, height: 221, centerX: 145.5, centerY: 112 };
+var woodTileHitbox =    { width: 291, height: 233, centerX: 145.5, centerY: 126 };
+var brickTileHitbox =   { width: 291, height: 231, centerX: 145.5, centerY: 122 };
+var sheepTileHitbox =   { width: 291, height: 220, centerX: 145.5, centerY: 112 };
+var oreTileHitbox =     { width: 291, height: 226, centerX: 145.5, centerY: 118 };
+var wheatTileHitbox =   { width: 291, height: 220, centerX: 145.5, centerY: 112 };
 var cityHitbox =        { width: 192, height: 126, centerX: 96,    centerY: 63 };
 var house1Hitbox =      { width: 99,  height: 86,  centerX: 49.5,  centerY: 43 };
 var house2Hitbox =      { width: 100, height: 76,  centerX: 50,    centerY: 38 };
@@ -38,6 +38,7 @@ var road3Hitbox =       { width: 161, height: 83,  centerX: 80.5,  centerY: 41.5
 var _assetMap = {
     // Tiles
     "imgTileBeach": { src: "/Content/Images/board/tile_beach.png", data: null, hitbox: beachTileHitbox },
+    "imgTileBeachShadow": { src: "/Content/Images/board/tile_beach_shadow.png", data: null, hitbox: beachShadowHitbox },
     "imgTileDesert": { src: "/Content/Images/board/tile_desert.png", data: null, hitbox: desertTileHitbox },
     "imgTileWood": { src: "/Content/Images/board/tile_wood.png", data: null, hitbox: woodTileHitbox },
     "imgTileBrick": { src: "/Content/Images/board/tile_brick.png", data: null, hitbox: brickTileHitbox },
@@ -195,7 +196,7 @@ function onLoadQueueCompleted(event) {
     }
 
     // wait a second so the user can see that it completed
-    setTimeout(completedLoading, 500);
+    setTimeout(completedLoading, 50);
 }
 
 function completedLoading() {
@@ -221,7 +222,9 @@ function initCanvasStage() {
     var beachHeight = beachAsset.hitbox.height;
     // save the sprites in a list so we can add them to the container in the correct order.
     var beachTiles = [];
+    var beachShadows = [];
     var resTiles = [];
+    var roads = [];
     for (var row = 0; row < 5; row++) {
         var shiftX = 0;
         var numAcross = 5;
@@ -245,23 +248,58 @@ function initCanvasStage() {
             tile.addEventListener("mouseover", handleMouseOver);
             tile.addEventListener("mouseout", handleMouseOut);
 
+            // create drop shadow
+            var beachShadow = new createjs.Bitmap(_assetMap["imgTileBeachShadow"].data);
+            beachShadow.regX = _assetMap["imgTileBeachShadow"].hitbox.centerX;
+            beachShadow.regY = _assetMap["imgTileBeachShadow"].hitbox.centerY;
+            beachShadow.x = beach.x;
+            beachShadow.y = beach.y;
+
+            // create roads
+            var roadAssets = [_assetMap["imgRoad1"], _assetMap["imgRoad2"], _assetMap["imgRoad3"]];
+            var roadBitmaps = [new createjs.Bitmap(roadAssets[0].data), new createjs.Bitmap(roadAssets[1].data), new createjs.Bitmap(roadAssets[2].data)];
+            for (var i = 0; i < roadBitmaps.length; i++) {
+                roads.push(roadBitmaps[i]);
+                roadBitmaps[i].regX = roadAssets[i].hitbox.centerX;
+                roadBitmaps[i].regY = roadAssets[i].hitbox.centerY;
+
+                roadBitmaps[i].addEventListener("click", handleClick);
+                roadBitmaps[i].addEventListener("mouseover", handleMouseOver);
+                roadBitmaps[i].addEventListener("mouseout", handleMouseOut);
+            }
+            roadBitmaps[0].x = beach.x + beachWidth * 0.25;
+            roadBitmaps[0].y = beach.y - beachHeight * 0.39;
+            roadBitmaps[1].x = beach.x - beachWidth * 0.5;
+            roadBitmaps[1].y = beach.y;
+            roadBitmaps[2].x = beach.x - beachWidth * 0.25;
+            roadBitmaps[2].y = beach.y - beachHeight * 0.39;
+
+
+            beachShadows.push(beachShadow);
             beachTiles.push(beach);
             resTiles.push(tile);
         }
     }
 
     // Resource tiles need to always be drawn on top, so they get added after beaches.
+    for (var i = 0; i < beachShadows.length; i++) {
+        _boardContainer.addChild(beachShadows[i]);
+    }
     for (var i = 0; i < beachTiles.length; i++) {
         _boardContainer.addChild(beachTiles[i]);
     }
     for (var i = 0; i < resTiles.length; i++) {
         _boardContainer.addChild(resTiles[i]);
     }
-
+    for (var i = 0; i < roads.length; i++) {
+        _boardContainer.addChild(roads[i]);
+    }
+    
     _boardContainer.regX = _boardContainer.getBounds().width / 2;
     _boardContainer.regY = _boardContainer.getBounds().height / 2;
-    _boardContainer.scaleX = 0.6;
-    _boardContainer.scaleY = 0.6;
+    _boardContainer.scaleX = 0.65;
+    _boardContainer.scaleY = 0.65;
+    
     centerBoardInCanvas();
 
     _stage.addChild(_boardContainer);
@@ -299,10 +337,10 @@ function centerBoardInCanvas() {
 function handleMouseOver(event) {
     var obj = event.target;
     //obj.stage.setChildIndex(obj, obj.stage.numChildren - 1);
-    //obj.shadow = new createjs.Shadow("#fff", 0, 0, 30);
-    obj.filters = [new createjs.ColorFilter(1.1, 1.1, 1.1, 1, 0, 0, 0, 0)];
+    //obj.shadow = new createjs.Shadow("argb(255,255,255,0.5)", 0, 0, 30);
+    obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
     obj.cache(-500, -500, 1000, 1000);
-    _invalidateCanvas = true;
+    _stage.update();
 }
 
 function handleMouseOut(event) {

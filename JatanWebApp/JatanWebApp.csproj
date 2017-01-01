@@ -198,6 +198,7 @@
     <Content Include="Content\Images\board\road_yellow3.png" />
     <Content Include="Content\Images\board\thief.png" />
     <Content Include="Content\Images\board\tile_beach.png" />
+    <Content Include="Content\Images\board\tile_beach_shadow.png" />
     <Content Include="Content\Images\board\tile_brick.png" />
     <Content Include="Content\Images\board\tile_desert.png" />
     <Content Include="Content\Images\board\tile_ore.png" />
