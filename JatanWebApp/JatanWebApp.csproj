@@ -154,6 +154,7 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\game-styles.css" />
+    <Content Include="Content\Images\board\boat.png" />
     <Content Include="Content\Images\board\city.png" />
     <Content Include="Content\Images\board\city_blue.png" />
     <Content Include="Content\Images\board\city_green.png" />
