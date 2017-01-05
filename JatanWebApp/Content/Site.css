@@ -16,3 +16,19 @@
     white-space: normal;
 }
 
+/* The logo needs more room */
+.navbar-brand {
+    padding-top: 9px;
+}
+
+.jatan-logo-image {
+    /*height: 30px;*/
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+}
+
+.jatan-logo-image:hover {
+    -webkit-filter: grayscale(0);
+    filter: grayscale(0);
+}
+

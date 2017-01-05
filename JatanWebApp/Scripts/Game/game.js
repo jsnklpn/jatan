@@ -10,8 +10,12 @@ var _currentGameManager = null;
 var _loadQueue = null;
 var _canvas = null;
 var _stage = null;
+var _water = null;
 var _boardContainer = null;
 var _invalidateCanvas = true; // set to true to redraw canvas
+
+var _boardDragMouseOffsetX = null;
+var _boardDragMouseOffsetY = null;
 
 // These hitboxes are the "game" size of image assets.
 // These values are used for setting the proper center-point of the image and for alignment.
@@ -206,15 +210,14 @@ function completedLoading() {
 
 function initCanvasStage() {
 
-    resizeCanvas();
-
     _stage = new createjs.Stage("gameCanvas");
-    _stage.enableMouseOver(30);
+    //_stage.enableMouseOver(10);
     _boardContainer = new createjs.Container();
 
     // draw water
-    var water = new createjs.Bitmap(_assetMap["imgWater"].data);
-    _stage.addChild(water);
+    _water = new createjs.Bitmap(_assetMap["imgWater"].data);
+    _water.mouseEnabled = false;
+    _stage.addChild(_water);
 
     // draw hexagons
     var beachAsset = _assetMap["imgTileBeach"];
@@ -232,6 +235,7 @@ function initCanvasStage() {
         if (row === 1 || row === 3) { shiftX = beachWidth / 2; numAcross = 4; }
         for (var col = 0; col < numAcross; col++) {
             var beach = new createjs.Bitmap(beachAsset.data);
+            //beach.mouseEnabled = false;
             beach.regX = beachAsset.hitbox.centerX;
             beach.regY = beachAsset.hitbox.centerY;
             beach.x = (beachWidth / 2) + col * beachWidth + shiftX;
@@ -243,13 +247,14 @@ function initCanvasStage() {
             tile.regY = _assetMap[srcKey].hitbox.centerY;
             tile.x = beach.x; // center on beach tile
             tile.y = beach.y; // center on beach tile
-
+            
             tile.addEventListener("click", handleClick);
             tile.addEventListener("mouseover", handleMouseOver);
             tile.addEventListener("mouseout", handleMouseOut);
 
             // create drop shadow
             var beachShadow = new createjs.Bitmap(_assetMap["imgTileBeachShadow"].data);
+            beachShadow.mouseEnabled = false;
             beachShadow.regX = _assetMap["imgTileBeachShadow"].hitbox.centerX;
             beachShadow.regY = _assetMap["imgTileBeachShadow"].hitbox.centerY;
             beachShadow.x = beach.x;
@@ -259,7 +264,7 @@ function initCanvasStage() {
             var roadAssets = [_assetMap["imgRoad1"], _assetMap["imgRoad2"], _assetMap["imgRoad3"]];
             var roadBitmaps = [new createjs.Bitmap(roadAssets[0].data), new createjs.Bitmap(roadAssets[1].data), new createjs.Bitmap(roadAssets[2].data)];
             for (var i = 0; i < roadBitmaps.length; i++) {
-                roads.push(roadBitmaps[i]);
+                //roads.push(roadBitmaps[i]);
                 roadBitmaps[i].regX = roadAssets[i].hitbox.centerX;
                 roadBitmaps[i].regY = roadAssets[i].hitbox.centerY;
 
@@ -300,9 +305,11 @@ function initCanvasStage() {
     _boardContainer.scaleX = 0.65;
     _boardContainer.scaleY = 0.65;
     
-    centerBoardInCanvas();
-
     _stage.addChild(_boardContainer);
+
+    // allow user to move and scale the board with the mouse
+    initMouseWheelScaling();
+
     checkRender(); // start animation loop
 }
 
@@ -310,6 +317,7 @@ function checkRender() {
     if (resizeCanvas()) {
         _invalidateCanvas = true;
         centerBoardInCanvas();
+        resizeWaterBackground();
     }
     if (_invalidateCanvas) {
         _invalidateCanvas = false;
@@ -329,15 +337,91 @@ function resizeCanvas() {
     return false;
 }
 
+function resizeWaterBackground() {
+    var scaleX = 1;
+    var scaleY = 1;
+    if (_water.image.width < _canvas.width) {
+        scaleX = _canvas.width / _water.image.width;
+    }
+    if (_water.image.height < _canvas.height) {
+        scaleY = _canvas.height / _water.image.height;
+    }
+    if (scaleX > scaleY) {
+        _water.scaleX = scaleX;
+        _water.scaleY = scaleX;
+    } else {
+        _water.scaleX = scaleY;
+        _water.scaleY = scaleY;
+    }
+}
+
 function centerBoardInCanvas() {
+    // TODO: This should use offsets
     _boardContainer.x = _canvas.width / 2;
     _boardContainer.y = _canvas.height / 2;
+}
+
+function initMouseWheelScaling() {
+    var maxScale = 1.0;
+    var minScale = 0.4;
+    var scaleStep = 0.02;
+    $("#gameCanvas").bind('mousewheel DOMMouseScroll', function (event) {
+        if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
+            // scroll up
+            if (_boardContainer.scaleX < maxScale) {
+                if (_boardContainer.scaleX >= (maxScale - scaleStep)) {
+                    _boardContainer.scaleX = maxScale;
+                    _boardContainer.scaleY = maxScale;
+                } else {
+                    _boardContainer.scaleX += scaleStep;
+                    _boardContainer.scaleY += scaleStep;
+                }
+                _invalidateCanvas = true;
+            }
+        }
+        else {
+            // scroll down
+            if (_boardContainer.scaleX > minScale) {
+                if (_boardContainer.scaleX <= (minScale + scaleStep)) {
+                    _boardContainer.scaleX = minScale;
+                    _boardContainer.scaleY = minScale;
+                } else {
+                    _boardContainer.scaleX -= scaleStep;
+                    _boardContainer.scaleY -= scaleStep;
+                }
+                _invalidateCanvas = true;
+            }
+        }
+    });
+    // make grame board draggable
+    _boardContainer.on("pressmove", function (event) {
+        // save offset so we can drag any part of the board.
+        if (_boardDragMouseOffsetX === null) {
+            _boardDragMouseOffsetX = _boardContainer.x - event.stageX;
+            _boardDragMouseOffsetY = _boardContainer.y - event.stageY;
+        }
+
+        _boardContainer.x = event.stageX + _boardDragMouseOffsetX;
+        _boardContainer.y = event.stageY + _boardDragMouseOffsetY;
+
+        // Don't let the board leave the canvas.
+        if (_boardContainer.x > _canvas.width) _boardContainer.x = _canvas.width;
+        else if (_boardContainer.x < 0) _boardContainer.x = 0;
+        if (_boardContainer.y > _canvas.height) _boardContainer.y = _canvas.height;
+        else if (_boardContainer.y < 0) _boardContainer.y = 0;
+
+        _invalidateCanvas = true;
+    });
+    _boardContainer.on("pressup", function (event) {
+        _boardDragMouseOffsetX = null;
+        _boardDragMouseOffsetY = null;
+    });
 }
 
 function handleMouseOver(event) {
     var obj = event.target;
     //obj.stage.setChildIndex(obj, obj.stage.numChildren - 1);
-    //obj.shadow = new createjs.Shadow("argb(255,255,255,0.5)", 0, 0, 30);
+    //obj.shadow = new createjs.Shadow("#fff", 0, 0, 30);
     obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
     obj.cache(-500, -500, 1000, 1000);
     _stage.update();
@@ -365,7 +449,7 @@ function writeTextToChat(text) {
 
 function updateGameModel(gameManager) {
     _currentGameManager = gameManager;
-
+    // TODO
 }
 
 
