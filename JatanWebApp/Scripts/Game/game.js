@@ -183,7 +183,7 @@ function loadGameResources() {
 function onLoadQueueProgressChanged(event) {
     var progressString = (Math.floor(100 * event.progress)).toString() + "%";
     $("#percentLoadedText").text(progressString);
-    $("#resourceRrogressBar").css("width", progressString);
+    $("#resourceProgressBar").css("width", progressString);
 }
 
 function onLoadQueueCompleted(event) {
