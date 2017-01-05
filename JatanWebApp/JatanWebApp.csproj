@@ -161,6 +161,8 @@
     <Content Include="Content\Images\board\city_pink.png" />
     <Content Include="Content\Images\board\city_red.png" />
     <Content Include="Content\Images\board\city_yellow.png" />
+    <Content Include="Content\Images\board\dock1.png" />
+    <Content Include="Content\Images\board\dock2.png" />
     <Content Include="Content\Images\board\house1.png" />
     <Content Include="Content\Images\board\house2.png" />
     <Content Include="Content\Images\board\house3.png" />

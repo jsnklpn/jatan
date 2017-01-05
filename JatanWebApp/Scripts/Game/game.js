@@ -97,7 +97,10 @@ var _assetMap = {
     "imgRoad2Yellow": { src: "/Content/Images/board/road_yellow2.png", data: null, hitbox: road2Hitbox },
     "imgRoad3Yellow": { src: "/Content/Images/board/road_yellow3.png", data: null, hitbox: road3Hitbox },
     // Other
-    "imgThief": { src: "/Content/Images/board/thief.png", data: null }
+    "imgThief": { src: "/Content/Images/board/thief.png", data: null, hitbox: null },
+    "imgBoat": { src: "/Content/Images/board/boat.png", data: null, hitbox: null },
+    "imgDock1": { src: "/Content/Images/board/dock1.png", data: null, hitbox: null },
+    "imgDock2": { src: "/Content/Images/board/dock2.png", data: null, hitbox: null }
 };
 
 // Enums

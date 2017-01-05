@@ -16,6 +16,9 @@
     white-space: normal;
 }
 
+/* ====================== */
+/*      PROGRESS BAR      */
+/* ====================== */
 .progress {
     background: rgba(224, 224, 224, 1);
     background: -webkit-linear-gradient(top, rgba(171, 171, 171, 1) 0%, rgba(224, 224, 224, 1) 100%);
@@ -30,13 +33,15 @@
     background: linear-gradient(to bottom, #ecd200 0%, #e27a00 100%);
 }
 
+/* ====================== */
+/*         NAVBAR         */
+/* ====================== */
+
 /* The logo needs more room */
 .navbar-brand {
     padding-top: 9px;
 }
-
-.jatan-logo-image {
-    /*height: 30px;*/
+/*.jatan-logo-image {
     -webkit-filter: grayscale(100%);
     filter: grayscale(100%);
 }
@@ -44,5 +49,75 @@
 .jatan-logo-image:hover {
     -webkit-filter: grayscale(0);
     filter: grayscale(0);
+}*/
+
+/* http://work.smarchal.com/twbscolor/css/ffecd9ffc3887e57454f372c0 */
+.navbar-default {
+  background-color: #ffecd9;
+  border-color: #ffc388;
+}
+.navbar-default .navbar-brand {
+  color: #7e5745;
+}
+.navbar-default .navbar-brand:hover,
+.navbar-default .navbar-brand:focus {
+  color: #4f372c;
+}
+.navbar-default .navbar-text {
+  color: #7e5745;
+}
+.navbar-default .navbar-nav > li > a {
+  color: #7e5745;
+}
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+  color: #4f372c;
+}
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+  color: #4f372c;
+  background-color: #ffc388;
+}
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+  color: #4f372c;
+  background-color: #ffc388;
+}
+.navbar-default .navbar-toggle {
+  border-color: #ffc388;
+}
+.navbar-default .navbar-toggle:hover,
+.navbar-default .navbar-toggle:focus {
+  background-color: #ffc388;
+}
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: #7e5745;
+}
+.navbar-default .navbar-collapse,
+.navbar-default .navbar-form {
+  border-color: #7e5745;
+}
+.navbar-default .navbar-link {
+  color: #7e5745;
+}
+.navbar-default .navbar-link:hover {
+  color: #4f372c;
 }
 
+@media (max-width: 767px) {
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a {
+    color: #7e5745;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: #4f372c;
+  }
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
+  .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: #4f372c;
+    background-color: #ffc388;
+  }
+}

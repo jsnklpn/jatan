@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
+    <title>Jatan</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
     @RenderSection("css", false)
@@ -23,11 +23,14 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                <li>@Html.ActionLink("About", "About", "Home")</li>
+                <li>@Html.ActionLink("Create Game", "Index", "Home")</li>
+                <li>@Html.ActionLink("Join Game", "Index", "Home")</li>
+                <li>@Html.ActionLink("Top Players", "Index", "Home")</li>
+                <li>@Html.ActionLink("Past Games", "Index", "Home")</li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+                <li>@Html.ActionLink("Settings", "Index", "Home")</li>
+                <li>@Html.ActionLink("Log In", "Index", "Home")</li>
             </ul>
         </div>
     </div>

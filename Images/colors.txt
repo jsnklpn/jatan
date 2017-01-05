@@ -1,0 +1,5 @@
+orange: #e27a00
+yellow-orange: #ecbd00
+yellow: #ecd200
+
+tan: rgb(255, 236, 215), #ffecd7
