@@ -23,14 +23,14 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li>@Html.ActionLink("Create Game", "Index", "Home")</li>
-                <li>@Html.ActionLink("Join Game", "Index", "Home")</li>
-                <li>@Html.ActionLink("Top Players", "Index", "Home")</li>
-                <li>@Html.ActionLink("Past Games", "Index", "Home")</li>
+                <li><a href="@Url.Action("Index", "Home")"><span class="glyphicon mr-1 glyphicon-tree-conifer"></span>Create Game</a></li>
+                <li><a href="@Url.Action("Index", "Home")"><span class="glyphicon mr-1 glyphicon-globe"></span>Join Game</a></li>
+                <li><a href="@Url.Action("Index", "Home")"><span class="glyphicon mr-1 glyphicon-stats"></span>Top Players</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li>@Html.ActionLink("Settings", "Index", "Home")</li>
-                <li>@Html.ActionLink("Log In", "Index", "Home")</li>
+                <li><a href="@Url.Action("Index", "Home")"><span class="glyphicon mr-1 glyphicon-wrench"></span>Settings</a></li>
+                <li><a href="@Url.Action("Index", "Home")"><span class="glyphicon mr-1 glyphicon-log-in"></span>Log In</a></li>
+                <li><a href="@Url.Action("Index", "Home")"><span class="glyphicon mr-1 glyphicon-log-out"></span>Log Out</a></li>
             </ul>
         </div>
     </div>

@@ -16,6 +16,10 @@
     white-space: normal;
 }
 
+.mr-1 {
+    margin-right: 0.5em;
+}
+
 /* ====================== */
 /*      PROGRESS BAR      */
 /* ====================== */
@@ -41,15 +45,6 @@
 .navbar-brand {
     padding-top: 9px;
 }
-/*.jatan-logo-image {
-    -webkit-filter: grayscale(100%);
-    filter: grayscale(100%);
-}
-
-.jatan-logo-image:hover {
-    -webkit-filter: grayscale(0);
-    filter: grayscale(0);
-}*/
 
 /* http://work.smarchal.com/twbscolor/css/ffecd9ffc3887e57454f372c0 */
 .navbar-default {

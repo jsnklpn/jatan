@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Jatan.GameLogic;
+using JatanWebApp.SignalR.DTO;
 using Microsoft.AspNet.SignalR;
 
 namespace JatanWebApp.SignalR
@@ -31,7 +32,8 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public void GetGameManagerUpdate()
         {
-            Clients.Caller.updateGameManager(new GameManagerDTO(_gameManager));
+            var managerDto = new GameManagerDTO(_gameManager, 0, true);
+            Clients.Caller.updateGameManager(managerDto);
         }
     }
 }

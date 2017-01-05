@@ -5,7 +5,7 @@ using System.Web;
 using Jatan.Core;
 using Jatan.Models;
 
-namespace JatanWebApp.SignalR
+namespace JatanWebApp.SignalR.DTO
 {
     /// <summary>
     /// Gameboard data transfer object.
@@ -19,12 +19,15 @@ namespace JatanWebApp.SignalR
         public Hexagon RobberLocation { get; set; }
         public RobberMode RobberMode { get; set; }
 
-        public GameBoardDTO(GameBoard board)
+        public GameBoardDTO(GameBoard board, bool includeBoardConstants)
         {
-            this.ResourceTiles = new Dictionary<Hexagon, ResourceTile>(board.ResourceTiles);
+            if (includeBoardConstants)
+            {
+                this.ResourceTiles = new Dictionary<Hexagon, ResourceTile>(board.ResourceTiles);
+                this.Ports = new Dictionary<HexEdge, Port>(board.Ports);
+            }
             this.Roads = new Dictionary<HexEdge, Road>(board.Roads);
             this.Buildings = new Dictionary<HexPoint, Building>(board.Buildings);
-            this.Ports = new Dictionary<HexEdge, Port>(board.Ports);
             this.RobberLocation = board.RobberLocation;
             this.RobberMode = board.RobberMode;
         }

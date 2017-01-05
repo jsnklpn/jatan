@@ -21,6 +21,7 @@ namespace Jatan.GameLogic
         private GameState _gameState;
         private PlayerTurnState _playerTurnState;
         private Dice _dice;
+        private int _currentDiceRoll;
         private TradeHelper _tradeHelper;
         private Dictionary<Player, int> _playersCardsToLose;
         private List<Player> _playersToStealFrom;
@@ -140,6 +141,14 @@ namespace Jatan.GameLogic
             
         }
 
+        /// <summary>
+        /// Gets the current dice roll value. If there is none, this will return 0.
+        /// </summary>
+        public int CurrentDiceRoll
+        {
+            get { return _currentDiceRoll; }
+        }
+
         #endregion
 
         /// <summary>
@@ -182,6 +191,7 @@ namespace Jatan.GameLogic
             _gameBoard.RobberMode = _gameSettings.RobberMode;
             _roadBuildingRoadsRemaining = 0;
             _dice.ClearLog();
+            _currentDiceRoll = 0;
             _playersCardsToLose.Clear();
             _playersToStealFrom.Clear();
             _tradeHelper.ClearAllOffers();
@@ -243,6 +253,9 @@ namespace Jatan.GameLogic
                 // Nothing special to do, just advance to next turn state.
                 _playerTurnState = PlayerTurnState.TakeAction;
             }
+
+            // Save the current roll so we can pass it along to other players.
+            _currentDiceRoll = diceRoll;
 
             return ActionResult<int>.CreateSuccess(diceRoll);
         }
@@ -818,6 +831,8 @@ namespace Jatan.GameLogic
             _roadBuildingRoadsRemaining = 0;
 
             AdvanceToNextPlayerTurn();
+
+            _currentDiceRoll = 0;
 
             return ActionResult.CreateSuccess();
         }

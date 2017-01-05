@@ -1,0 +1,47 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using Jatan.Models;
+
+namespace JatanWebApp.SignalR.DTO
+{
+    /// <summary>
+    /// Player data transfer object.
+    /// </summary>
+    public class PlayerDTO
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public uint Color { get; set; }
+        public List<DevelopmentCards> DevelopmentCardsInPlay { get; set; }
+        public int NumberOfResourceCards { get; set; }
+        public int VictoryPointsFromCards { get; set; }
+        public int ArmySize { get; set; }
+
+        // Private data
+        public ResourceCollection ResourceCards { get; set; }
+        public List<DevelopmentCards> DevelopmentCards { get; set; }
+
+        /// <summary>
+        /// PlayerDTO constructor.
+        /// </summary>
+        /// <param name="player">The original player model.</param>
+        /// <param name="includePrivateData">Include private player data, such as the cards they have in their hand.</param>
+        public PlayerDTO(Player player, bool includePrivateData)
+        {
+            this.Id = player.Id;
+            this.Name = player.Name;
+            this.Color = player.Color;
+            this.DevelopmentCardsInPlay = new List<DevelopmentCards>(player.DevelopmentCardsInPlay);
+            this.NumberOfResourceCards = player.NumberOfResourceCards;
+            this.VictoryPointsFromCards = player.VictoryPointsFromCards;
+            this.ArmySize = player.ArmySize;
+            if (includePrivateData)
+            {
+                this.ResourceCards = player.ResourceCards.Copy();
+                this.DevelopmentCards = new List<DevelopmentCards>(player.DevelopmentCards);
+            }
+        }
+    }
+}

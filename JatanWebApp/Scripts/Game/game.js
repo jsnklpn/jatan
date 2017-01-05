@@ -4,8 +4,11 @@
 
 // Global variables
 
-var _serverGameHub = null; // signal-R
+var _serverGameHub = null; // signal-R hub
 var _currentGameManager = null;
+// Resource tiles and ports are not sent with every manager update, so we save a separate reference to them
+var _currentResourceTiles = null; 
+var _currentPorts = null;
 
 var _loadQueue = null;
 var _canvas = null;
@@ -123,6 +126,39 @@ var _resourceToAssetKeys = [
     "imgTileOre"
 ];
 
+// These hex keys are ordered in the same order that the tile Bitmaps are added to the canvas stage.
+var _hexKeys = [
+    "(0,2)",
+    "(1,2)",
+    "(2,2)",
+
+    "(-1,1)",
+    "(0,1)",
+    "(1,1)",
+    "(2,1)",
+
+    "(-2,0)",
+    "(-1,0)",
+    "(0,0)",
+    "(1,0)",
+    "(2,0)",
+
+    "(-2,-1)",
+    "(-1,-1)",
+    "(0,-1)",
+    "(1,-1)",
+
+    "(-2,-2)",
+    "(-1,-2)",
+    "(0,-2)"
+];
+
+// Populated when resource tiles are drawn
+var _hexToImageMap = {};
+
+// Used for positioning resource tiles and ports. Populated on beach bitmap creation.
+var _beachBitmaps = [];
+
 $(function () {
     _canvas = $("#gameCanvas")[0];
     initSignalR();
@@ -152,6 +188,8 @@ function initSignalR() {
         // save a reference to the server hub object.
         _serverGameHub = gameHub.server;
 
+        initButtons();
+
         //$("#chatBoxInputText").keypress(function (event) {
         //    var keycode = (event.keyCode ? event.keyCode : event.which);
         //    // Enter key pressed
@@ -169,6 +207,12 @@ function initSignalR() {
         //        }
         //    }
         //});
+    });
+}
+
+function initButtons() {
+    $("#btnUpdateGameManager").click(function () {
+        _serverGameHub.getGameManagerUpdate();
     });
 }
 
@@ -227,33 +271,23 @@ function initCanvasStage() {
     var beachWidth = beachAsset.hitbox.width;
     var beachHeight = beachAsset.hitbox.height;
     // save the sprites in a list so we can add them to the container in the correct order.
-    var beachTiles = [];
+    _beachBitmaps.length = 0; // clear the array
     var beachShadows = [];
-    var resTiles = [];
     var roads = [];
+    var hexIndex = 0;
     for (var row = 0; row < 5; row++) {
         var shiftX = 0;
         var numAcross = 5;
         if (row === 0 || row === 4) { shiftX = beachWidth; numAcross = 3; }
         if (row === 1 || row === 3) { shiftX = beachWidth / 2; numAcross = 4; }
         for (var col = 0; col < numAcross; col++) {
+            var hexKey = _hexKeys[hexIndex++];
             var beach = new createjs.Bitmap(beachAsset.data);
             //beach.mouseEnabled = false;
             beach.regX = beachAsset.hitbox.centerX;
             beach.regY = beachAsset.hitbox.centerY;
             beach.x = (beachWidth / 2) + col * beachWidth + shiftX;
             beach.y = (beachHeight / 2) + row * (beachHeight * 0.75);
-
-            var srcKey = _resourceToAssetKeys[Math.floor(Math.random() * _resourceToAssetKeys.length)];
-            var tile = new createjs.Bitmap(_assetMap[srcKey].data);
-            tile.regX = _assetMap[srcKey].hitbox.centerX;
-            tile.regY = _assetMap[srcKey].hitbox.centerY;
-            tile.x = beach.x; // center on beach tile
-            tile.y = beach.y; // center on beach tile
-            
-            tile.addEventListener("click", handleClick);
-            tile.addEventListener("mouseover", handleMouseOver);
-            tile.addEventListener("mouseout", handleMouseOut);
 
             // create drop shadow
             var beachShadow = new createjs.Bitmap(_assetMap["imgTileBeachShadow"].data);
@@ -264,28 +298,27 @@ function initCanvasStage() {
             beachShadow.y = beach.y;
 
             // create roads
-            var roadAssets = [_assetMap["imgRoad1"], _assetMap["imgRoad2"], _assetMap["imgRoad3"]];
-            var roadBitmaps = [new createjs.Bitmap(roadAssets[0].data), new createjs.Bitmap(roadAssets[1].data), new createjs.Bitmap(roadAssets[2].data)];
-            for (var i = 0; i < roadBitmaps.length; i++) {
-                //roads.push(roadBitmaps[i]);
-                roadBitmaps[i].regX = roadAssets[i].hitbox.centerX;
-                roadBitmaps[i].regY = roadAssets[i].hitbox.centerY;
+            //var roadAssets = [_assetMap["imgRoad1"], _assetMap["imgRoad2"], _assetMap["imgRoad3"]];
+            //var roadBitmaps = [new createjs.Bitmap(roadAssets[0].data), new createjs.Bitmap(roadAssets[1].data), new createjs.Bitmap(roadAssets[2].data)];
+            //for (var i = 0; i < roadBitmaps.length; i++) {
+            //    roads.push(roadBitmaps[i]);
+            //    roadBitmaps[i].regX = roadAssets[i].hitbox.centerX;
+            //    roadBitmaps[i].regY = roadAssets[i].hitbox.centerY;
 
-                roadBitmaps[i].addEventListener("click", handleClick);
-                roadBitmaps[i].addEventListener("mouseover", handleMouseOver);
-                roadBitmaps[i].addEventListener("mouseout", handleMouseOut);
-            }
-            roadBitmaps[0].x = beach.x + beachWidth * 0.25;
-            roadBitmaps[0].y = beach.y - beachHeight * 0.39;
-            roadBitmaps[1].x = beach.x - beachWidth * 0.5;
-            roadBitmaps[1].y = beach.y;
-            roadBitmaps[2].x = beach.x - beachWidth * 0.25;
-            roadBitmaps[2].y = beach.y - beachHeight * 0.39;
+            //    roadBitmaps[i].addEventListener("click", handleClick);
+            //    roadBitmaps[i].addEventListener("mouseover", handleMouseOver);
+            //    roadBitmaps[i].addEventListener("mouseout", handleMouseOut);
+            //}
+            //roadBitmaps[0].x = beach.x + beachWidth * 0.25;
+            //roadBitmaps[0].y = beach.y - beachHeight * 0.39;
+            //roadBitmaps[1].x = beach.x - beachWidth * 0.5;
+            //roadBitmaps[1].y = beach.y;
+            //roadBitmaps[2].x = beach.x - beachWidth * 0.25;
+            //roadBitmaps[2].y = beach.y - beachHeight * 0.39;
 
 
             beachShadows.push(beachShadow);
-            beachTiles.push(beach);
-            resTiles.push(tile);
+            _beachBitmaps.push(beach);
         }
     }
 
@@ -293,15 +326,12 @@ function initCanvasStage() {
     for (var i = 0; i < beachShadows.length; i++) {
         _boardContainer.addChild(beachShadows[i]);
     }
-    for (var i = 0; i < beachTiles.length; i++) {
-        _boardContainer.addChild(beachTiles[i]);
+    for (var i = 0; i < _beachBitmaps.length; i++) {
+        _boardContainer.addChild(_beachBitmaps[i]);
     }
-    for (var i = 0; i < resTiles.length; i++) {
-        _boardContainer.addChild(resTiles[i]);
-    }
-    for (var i = 0; i < roads.length; i++) {
-        _boardContainer.addChild(roads[i]);
-    }
+    //for (var i = 0; i < roads.length; i++) {
+    //    _boardContainer.addChild(roads[i]);
+    //}
     
     _boardContainer.regX = _boardContainer.getBounds().width / 2;
     _boardContainer.regY = _boardContainer.getBounds().height / 2;
@@ -314,6 +344,51 @@ function initCanvasStage() {
     initMouseWheelScaling();
 
     checkRender(); // start animation loop
+}
+
+function populateResourceTiles() {
+
+    // If we're here, then we should have a game manager instance from the server.
+    if (_currentGameManager === null || _currentResourceTiles === null) {
+        return;
+    }
+
+    var resTiles = [];
+    var tileIndex = 0;
+    for (var row = 0; row < 5; row++) {
+        var numAcross = 5;
+        if (row === 0 || row === 4) { numAcross = 3; }
+        if (row === 1 || row === 3) { numAcross = 4; }
+        for (var col = 0; col < numAcross; col++) {
+
+            var hexKey = _hexKeys[tileIndex];
+            var beach = _beachBitmaps[tileIndex];
+
+            var resource = _currentResourceTiles[hexKey]["Resource"];
+            var srcKey = _resourceToAssetKeys[resource];
+            var tile = new createjs.Bitmap(_assetMap[srcKey].data);
+            tile.regX = _assetMap[srcKey].hitbox.centerX;
+            tile.regY = _assetMap[srcKey].hitbox.centerY;
+            tile.x = beach.x; // center on beach tile
+            tile.y = beach.y; // center on beach tile
+
+            tile.addEventListener("click", handleClick);
+            tile.addEventListener("mouseover", handleMouseOver);
+            tile.addEventListener("mouseout", handleMouseOut);
+
+            resTiles.push(tile);
+
+            // save the bitmap to the hexmap so we can get which hex it refers to.
+            _hexToImageMap[hexKey] = tile;
+
+            tileIndex++;
+        }
+    }
+    for (var i = 0; i < resTiles.length; i++) {
+        _boardContainer.addChild(resTiles[i]);
+    }
+
+    _invalidateCanvas = true;
 }
 
 function checkRender() {
@@ -427,21 +502,25 @@ function handleMouseOver(event) {
     //obj.shadow = new createjs.Shadow("#fff", 0, 0, 30);
     obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
     obj.cache(-500, -500, 1000, 1000);
-    _stage.update();
+    _invalidateCanvas = true;
 }
 
 function handleMouseOut(event) {
     var obj = event.target;
-    obj.filters = [];
     //obj.shadow = null;
+    obj.filters = [];
     obj.updateCache();
     _invalidateCanvas = true;
 }
 
 function handleClick(event) {
     var obj = event.target;
-    //obj.skewX += 5;
-    //obj.rotation += 5;
+
+    var hex = getHexFromBitmap(obj);
+    if (hex !== null) {
+        console.log(hex + " clicked!");
+    }
+
     _invalidateCanvas = true;
 }
 
@@ -452,13 +531,42 @@ function writeTextToChat(text) {
 
 function updateGameModel(gameManager) {
     _currentGameManager = gameManager;
-    // TODO
+    var resourceTiles = gameManager["GameBoard"]["ResourceTiles"];
+    var ports = gameManager["GameBoard"]["Ports"];
+    if (resourceTiles) {
+        _currentResourceTiles = resourceTiles;
+        // if we haven't populated the resource tiles on the board yet, do it.
+        if (getDictLength(_hexToImageMap) === 0) {
+            populateResourceTiles();
+        }
+    }
+    if (ports) {
+        _currentPorts = ports;
+    }
+
+    // TODO ...
 }
 
 
 //===========================
 // Drawing helper functions
 //===========================
+
+function getDictLength(dict) {
+    return Object.keys(dict).length;
+}
+
+function getHexFromBitmap(bitmap) {
+    var hexKeys = Object.keys(_hexToImageMap);
+    for (var i = 0; i < hexKeys.length; i++) {
+        var hexKey = hexKeys[i];
+        var obj = _hexToImageMap[hexKey];
+        if (obj === bitmap) {
+            return hexKey;
+        }
+    }
+    return null;
+}
 
 function resourceToColor(resource) {
     if (resource === ResourceTypes.Brick)
