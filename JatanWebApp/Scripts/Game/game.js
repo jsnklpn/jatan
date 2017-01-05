@@ -116,6 +116,16 @@ var ResourceTypes = {
     Ore: 5
 };
 
+// The side of a hexagon that is pointed on the top and bottom.
+var EdgeDir = {
+    Right: 0,
+    BottomRight: 1,
+    BottomLeft: 2,
+    Left: 3,
+    TopLeft: 4,
+    TopRight: 5
+};
+
 // The indices of this array must match the ResourceTypes enum.
 var _resourceToAssetKeys = [
     "imgTileDesert",
@@ -153,11 +163,13 @@ var _hexKeys = [
     "(0,-2)"
 ];
 
-// Populated when resource tiles are drawn
-var _hexToImageMap = {};
+// Populated when beach tiles are drawn
+var _hexToBeachMap = {};
 
-// Used for positioning resource tiles and ports. Populated on beach bitmap creation.
-var _beachBitmaps = [];
+// Populated when resource tiles are drawn
+var _hexToResourceTileMap = {};
+
+var _portsPopulated = false;
 
 $(function () {
     _canvas = $("#gameCanvas")[0];
@@ -271,7 +283,7 @@ function initCanvasStage() {
     var beachWidth = beachAsset.hitbox.width;
     var beachHeight = beachAsset.hitbox.height;
     // save the sprites in a list so we can add them to the container in the correct order.
-    _beachBitmaps.length = 0; // clear the array
+    var beachBitmaps = [];
     var beachShadows = [];
     var roads = [];
     var hexIndex = 0;
@@ -288,6 +300,7 @@ function initCanvasStage() {
             beach.regY = beachAsset.hitbox.centerY;
             beach.x = (beachWidth / 2) + col * beachWidth + shiftX;
             beach.y = (beachHeight / 2) + row * (beachHeight * 0.75);
+            _hexToBeachMap[hexKey] = beach;
 
             // create drop shadow
             var beachShadow = new createjs.Bitmap(_assetMap["imgTileBeachShadow"].data);
@@ -318,7 +331,7 @@ function initCanvasStage() {
 
 
             beachShadows.push(beachShadow);
-            _beachBitmaps.push(beach);
+            beachBitmaps.push(beach);
         }
     }
 
@@ -326,8 +339,8 @@ function initCanvasStage() {
     for (var i = 0; i < beachShadows.length; i++) {
         _boardContainer.addChild(beachShadows[i]);
     }
-    for (var i = 0; i < _beachBitmaps.length; i++) {
-        _boardContainer.addChild(_beachBitmaps[i]);
+    for (var i = 0; i < beachBitmaps.length; i++) {
+        _boardContainer.addChild(beachBitmaps[i]);
     }
     //for (var i = 0; i < roads.length; i++) {
     //    _boardContainer.addChild(roads[i]);
@@ -362,7 +375,7 @@ function populateResourceTiles() {
         for (var col = 0; col < numAcross; col++) {
 
             var hexKey = _hexKeys[tileIndex];
-            var beach = _beachBitmaps[tileIndex];
+            var beach = _hexToBeachMap[hexKey];
 
             var resource = _currentResourceTiles[hexKey]["Resource"];
             var srcKey = _resourceToAssetKeys[resource];
@@ -379,7 +392,7 @@ function populateResourceTiles() {
             resTiles.push(tile);
 
             // save the bitmap to the hexmap so we can get which hex it refers to.
-            _hexToImageMap[hexKey] = tile;
+            _hexToResourceTileMap[hexKey] = tile;
 
             tileIndex++;
         }
@@ -389,6 +402,64 @@ function populateResourceTiles() {
     }
 
     _invalidateCanvas = true;
+}
+
+function populatePorts() {
+    // If we're here, then we should have a game manager instance from the server.
+    if (_currentGameManager === null || _currentResourceTiles === null) {
+        return;
+    }
+
+    var boatAsset = _assetMap["imgBoat"];
+    var dock1Asset = _assetMap["imgDock1"];
+    var dock2Asset = _assetMap["imgDock2"];
+
+    var hexEdges = Object.keys(_currentPorts);
+    for (var i = 0; i < hexEdges.length; i++) {
+        var hexEdge = hexEdges[i];
+        var resource = _currentPorts[hexEdge];
+        var tmp = gethexAndDirectionFromEdge(hexEdge);
+        var hex = tmp[0];
+        var dir = tmp[1];
+
+        var tile = _hexToResourceTileMap[hex];
+        var beach = _hexToBeachMap[hex];
+
+        // TODO
+        var dock1 = new createjs.Bitmap(dock1Asset.data);
+        dock1.x = beach.x;
+        dock1.y = beach.y;
+        
+        _boardContainer.addChild(dock1);
+    }
+
+    _portsPopulated = true;
+    _invalidateCanvas = true;
+}
+
+function gethexAndDirectionFromEdge(hexEdge) {
+    var hexes = hexEdgeToHexagons(hexEdge);
+    var primaryHex = null;
+    var otherHex = null;
+    if (jQuery.inArray(hexes[0], _hexKeys) !== -1) {
+        primaryHex = hexes[0];
+        otherHex = hexes[1];
+    } else {
+        primaryHex = hexes[1];
+        otherHex = hexes[0];
+    }
+    var primary = hexToValueArray(primaryHex);
+    var other = hexToValueArray(otherHex);
+    var x1 = primary[0]; var y1 = primary[1];
+    var x2 = other[0]; var y2 = other[1];
+    var direction = null;
+    if (x2 === (x1 + 0) && y2 === (y1 + 1)) { direction = EdgeDir.TopLeft; }
+    else if (x2 === (x1 + 1) && y2 === (y1 + 1)) { direction = EdgeDir.TopRight; }
+    else if (x2 === (x1 + 1) && y2 === (y1 + 0)) { direction = EdgeDir.Right; }
+    else if (x2 === (x1 + 0) && y2 === (y1 - 1)) { direction = EdgeDir.BottomRight; }
+    else if (x2 === (x1 - 1) && y2 === (y1 - 1)) { direction = EdgeDir.BottomLeft; }
+    else if (x2 === (x1 - 1) && y2 === (y1 + 0)) { direction = EdgeDir.Left; }
+    return [primaryHex, direction];
 }
 
 function checkRender() {
@@ -516,7 +587,7 @@ function handleMouseOut(event) {
 function handleClick(event) {
     var obj = event.target;
 
-    var hex = getHexFromBitmap(obj);
+    var hex = getHexFromResourceTileBitmap(obj);
     if (hex !== null) {
         console.log(hex + " clicked!");
     }
@@ -536,12 +607,15 @@ function updateGameModel(gameManager) {
     if (resourceTiles) {
         _currentResourceTiles = resourceTiles;
         // if we haven't populated the resource tiles on the board yet, do it.
-        if (getDictLength(_hexToImageMap) === 0) {
+        if (getDictLength(_hexToResourceTileMap) === 0) {
             populateResourceTiles();
         }
     }
     if (ports) {
         _currentPorts = ports;
+        if (!_portsPopulated) {
+            populatePorts();
+        }
     }
 
     // TODO ...
@@ -556,16 +630,36 @@ function getDictLength(dict) {
     return Object.keys(dict).length;
 }
 
-function getHexFromBitmap(bitmap) {
-    var hexKeys = Object.keys(_hexToImageMap);
+function getHexFromResourceTileBitmap(bitmap) {
+    var hexKeys = Object.keys(_hexToResourceTileMap);
     for (var i = 0; i < hexKeys.length; i++) {
         var hexKey = hexKeys[i];
-        var obj = _hexToImageMap[hexKey];
+        var obj = _hexToResourceTileMap[hexKey];
         if (obj === bitmap) {
             return hexKey;
         }
     }
     return null;
+}
+
+// Returns a list of hexagons from a hexedge. (e.g. "[(-2,0),(-3,0)]" returns the list ["(-2,0)", "(-3,0)"])
+function hexEdgeToHexagons(hexEdge) {
+    var ob1 = hexEdge.indexOf("(", 0);
+    var cb1 = hexEdge.indexOf(")", 0);
+    var ob2 = hexEdge.indexOf("(", cb1 + 1);
+    var cb2 = hexEdge.indexOf(")", cb1 + 1);
+    var hex1 = hexEdge.slice(ob1, cb1 + 1);
+    var hex2 = hexEdge.slice(ob2, cb2 + 1);
+    var hexes = [hex1, hex2];
+    return hexes;
+}
+
+function hexToValueArray(hex) {
+    var strX = hex.slice(1, hex.indexOf(","));
+    var strY = hex.slice(hex.indexOf(",") + 1, hex.indexOf(")"));
+    var x = parseInt(strX);
+    var y = parseInt(strY);
+    return [x, y];
 }
 
 function resourceToColor(resource) {
