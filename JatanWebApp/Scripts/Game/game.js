@@ -17,6 +17,7 @@ var _water = null;
 var _boardContainer = null;
 var _invalidateCanvas = true; // set to true to redraw canvas
 
+var _activeMouseButton = null;
 var _boardDragMouseOffsetX = null;
 var _boardDragMouseOffsetY = null;
 
@@ -175,6 +176,10 @@ var _hexToResourceTileMap = {};
 var _portsPopulated = false;
 
 $(function () {
+
+    // disable right click on canvas
+    $("body").on("contextmenu", "#gameCanvas", function (e) { return false; });
+
     _canvas = $("#gameCanvas")[0];
     initSignalR();
     loadGameResources();
@@ -469,6 +474,9 @@ function populatePorts() {
         var boat = new createjs.Bitmap(boatAsset.data);
         var dock1 = new createjs.Bitmap(dockAsset.data);
         var dock2 = new createjs.Bitmap(dockAsset.data);
+        boat.mouseEnabled = false;
+        dock1.mouseEnabled = false;
+        dock2.mouseEnabled = false;
         boat.regX = boatAsset.hitbox.centerX;
         boat.regY = boatAsset.hitbox.centerY;
         dock1.regX = dockAsset.hitbox.centerX;
@@ -655,13 +663,19 @@ function initMouseWheelScaling() {
         }
     });
     // make grame board draggable
+    _boardContainer.on("mousedown", function (event) {
+        // save active mouse button because pressmove event does not contain button data
+        _activeMouseButton = event.nativeEvent.button;
+    });
     _boardContainer.on("pressmove", function (event) {
+        // Right-click only
+        if (_activeMouseButton !== 2)
+            return;
         // save offset so we can drag any part of the board.
         if (_boardDragMouseOffsetX === null) {
             _boardDragMouseOffsetX = _boardContainer.x - event.stageX;
             _boardDragMouseOffsetY = _boardContainer.y - event.stageY;
         }
-
         _boardContainer.x = event.stageX + _boardDragMouseOffsetX;
         _boardContainer.y = event.stageY + _boardDragMouseOffsetY;
 
