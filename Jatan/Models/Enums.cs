@@ -225,4 +225,16 @@ namespace Jatan.Models
         /// </summary>
         None
     }
+
+    /// <summary>
+    /// Possible colors for a player.
+    /// </summary>
+    public enum PlayerColor
+    {
+        Blue,
+        Red,
+        Green,
+        Yellow,
+        Pink
+    }
 }

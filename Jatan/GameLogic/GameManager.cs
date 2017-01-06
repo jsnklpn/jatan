@@ -200,12 +200,50 @@ namespace Jatan.GameLogic
         }
 
         private int _idCounter;
+        private PlayerColor _colorCounter = PlayerColor.Blue;
         public void AddPlayer(string name)
         {
-            _players.Add(new Player(_idCounter++, name, 0));
+            _players.Add(new Player(_idCounter++, name, _colorCounter++));
         }
 
         #region public player methods
+
+        /// <summary>
+        /// Removes the specified player from the game.
+        /// The removed player will keep their buildings and roads on the board.
+        /// Also, A player that has left can still have the longest army or road, because there is
+        /// not a good way to give the points to the next best player in the case of a tie.
+        /// </summary>
+        public ActionResult PlayerAbandonGame(int playerId)
+        {
+            if (_players == null || !_players.Any())
+                return ActionResult.CreateFailed("There are no players to remove.");
+
+            if (!_players.Select(p => p.Id).Contains(playerId))
+                return ActionResult.CreateFailed("Player is not currently in this game.");
+
+            if (_gameState != GameState.GameInProgress)
+                return ActionResult.CreateFailed("Only a game in progress can be abandoned.");
+
+            if (ActivePlayer != null && ActivePlayer.Id == playerId)
+            {
+                // The player leaving is the active player.
+
+                _tradeHelper.ClearAllOffers();
+                _roadBuildingRoadsRemaining = 0;
+                _currentDiceRoll = 0;
+
+                AdvanceToNextPlayerTurn();
+            }
+            else // The player leaving is a non-active player
+            {
+                _tradeHelper.CancelCounterOffer(playerId);
+            }
+
+            _players.RemoveAll(p => p.Id == playerId);
+
+            return ActionResult.CreateSuccess();
+        }
 
         /// <summary>
         /// Rolls the dice and handles resources/robber logic. Can only be called by the active player.

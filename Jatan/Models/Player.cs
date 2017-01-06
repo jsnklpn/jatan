@@ -26,7 +26,7 @@ namespace Jatan.Models
         /// <summary>
         /// The color of the player pieces.
         /// </summary>
-        public uint Color { get; set; }
+        public PlayerColor Color { get; set; }
 
         /// <summary>
         /// Gets the remaining roads this player has.
@@ -90,7 +90,7 @@ namespace Jatan.Models
         /// <summary>
         /// Creates a new player.
         /// </summary>
-        public Player(int id, string name, uint color)
+        public Player(int id, string name, PlayerColor color)
         {
             Name = name;
             Id = id;

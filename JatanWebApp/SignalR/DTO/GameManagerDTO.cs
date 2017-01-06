@@ -14,6 +14,8 @@ namespace JatanWebApp.SignalR.DTO
     {
         public GameBoardDTO GameBoard { get; set; }
         public GameState GameState { get; set; }
+        public PlayerTurnState PlayerTurnState { get; set; }
+        public int ActivePlayerId { get; set; }
         public int CurrentDiceRoll { get; set; }
         public List<PlayerDTO> Players { get; set; }
 
@@ -21,6 +23,8 @@ namespace JatanWebApp.SignalR.DTO
         {
             this.GameBoard = new GameBoardDTO(manager.GameBoard, includeBoardConstants);
             this.GameState = manager.GameState;
+            this.PlayerTurnState = manager.PlayerTurnState;
+            this.ActivePlayerId = (manager.ActivePlayer != null) ? manager.ActivePlayer.Id : -1;
             this.CurrentDiceRoll = manager.CurrentDiceRoll;
             this.Players = new List<PlayerDTO>();
             foreach (var p in manager.Players)

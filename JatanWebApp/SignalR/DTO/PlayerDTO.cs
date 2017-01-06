@@ -13,7 +13,7 @@ namespace JatanWebApp.SignalR.DTO
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public uint Color { get; set; }
+        public PlayerColor Color { get; set; }
         public List<DevelopmentCards> DevelopmentCardsInPlay { get; set; }
         public int NumberOfResourceCards { get; set; }
         public int VictoryPointsFromCards { get; set; }

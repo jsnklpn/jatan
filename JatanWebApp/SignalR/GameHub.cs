@@ -29,10 +29,11 @@ namespace JatanWebApp.SignalR
 
         /// <summary>
         /// Sends a full game manager update to the calling client.
+        /// A full update includes constants like resources tiles and port locations.
         /// </summary>
-        public void GetGameManagerUpdate()
+        public void GetGameManagerUpdate(bool fullUpdate)
         {
-            var managerDto = new GameManagerDTO(_gameManager, 0, true);
+            var managerDto = new GameManagerDTO(_gameManager, 0, fullUpdate);
             Clients.Caller.updateGameManager(managerDto);
         }
     }

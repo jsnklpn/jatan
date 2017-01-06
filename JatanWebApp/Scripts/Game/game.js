@@ -15,11 +15,17 @@ var _canvas = null;
 var _stage = null;
 var _water = null;
 var _boardContainer = null;
-var _invalidateCanvas = true; // set to true to redraw canvas
+var _boardRoadContainer = null; // child to the board container
+var _boardBuildingContainer = null; // child to the board container
+var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
 
 var _activeMouseButton = null;
 var _boardDragMouseOffsetX = null;
 var _boardDragMouseOffsetY = null;
+
+var _hexToBeachMap = {}; // Populated when beach tiles are drawn
+var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
+var _portsPopulated = false;
 
 // These hitboxes are the "game" size of image assets.
 // These values are used for setting the proper center-point of the image and for alignment.
@@ -110,7 +116,7 @@ var _assetMap = {
     "imgDock2": { src: "/Content/Images/board/dock2.png", data: null, hitbox: dock2Hitbox }
 };
 
-// Enums
+// Resource types enum
 var ResourceTypes = {
     None: 0,
     Brick: 1,
@@ -128,6 +134,39 @@ var EdgeDir = {
     Left: 3,
     TopLeft: 4,
     TopRight: 5
+};
+
+// Game states
+var GameState = {
+    NotStarted: 0,
+    InitialPlacement: 1,
+    GameInProgress: 2,
+    EndOfGame: 3
+};
+
+// Player turn states. The states are needed for actions that require further action from the player.
+var PlayerTurnState = {
+    None: 0,
+    NeedToRoll: 1,
+    AnyPlayerSelectingCardsToLose: 2,
+    PlacingRobber: 3,
+    SelectingPlayerToStealFrom: 4,
+    TakeAction: 5,
+    PlacingRoad: 6,
+    PlacingBuilding: 7,
+    RequestingPlayerTrade: 8,
+    MonopolySelectingResource: 9,
+    RoadBuildingSelectingRoads: 10,
+    YearOfPlentySelectingResources: 11
+};
+
+// Player colors enum
+var PlayerColor = {
+    Blue: 0,
+    Red: 1,
+    Green: 2,
+    Yellow: 3,
+    Pink: 4
 };
 
 // The indices of this array must match the ResourceTypes enum.
@@ -167,13 +206,6 @@ var _hexKeys = [
     "(0,-2)"
 ];
 
-// Populated when beach tiles are drawn
-var _hexToBeachMap = {};
-
-// Populated when resource tiles are drawn
-var _hexToResourceTileMap = {};
-
-var _portsPopulated = false;
 
 $(function () {
 
@@ -232,7 +264,8 @@ function initSignalR() {
 
 function initButtons() {
     $("#btnUpdateGameManager").click(function () {
-        _serverGameHub.getGameManagerUpdate();
+        var fullUpdate = (!_portsPopulated || getDictLength(_hexToResourceTileMap) === 0);
+        _serverGameHub.getGameManagerUpdate(fullUpdate);
     });
 }
 
@@ -728,8 +761,23 @@ function writeTextToChat(text) {
 
 function updateGameModel(gameManager) {
     _currentGameManager = gameManager;
-    var resourceTiles = gameManager["GameBoard"]["ResourceTiles"];
-    var ports = gameManager["GameBoard"]["Ports"];
+    var board = gameManager["GameBoard"];
+
+    // board properties
+    var resourceTiles = board["ResourceTiles"];
+    var ports = board["Ports"];
+    var roads = board["Roads"];
+    var buildings = board["Buildings"];
+    var robberLocation = board["RobberLocation"];
+    var robberMode = board["RobberMode"];
+
+    // state properties
+    var gameState = gameManager["GameState"];
+    var playerTurnState = gameManager["PlayerTurnState"];
+    var activePlayerId = gameManager["ActivePlayerId"];
+    var currentDiceRoll = gameManager["CurrentDiceRoll"];
+    var players = gameManager["Players"];
+
     if (resourceTiles) {
         _currentResourceTiles = resourceTiles;
         // if we haven't populated the resource tiles on the board yet, do it.
@@ -754,6 +802,15 @@ function updateGameModel(gameManager) {
 
 function getDictLength(dict) {
     return Object.keys(dict).length;
+}
+
+function getAssetKeyFromColor(assetPrefix, playerColor) {
+    if (playerColor === PlayerColor.Blue) return assetPrefix + "Blue";
+    if (playerColor === PlayerColor.Green) return assetPrefix + "Green";
+    if (playerColor === PlayerColor.Red) return assetPrefix + "Red";
+    if (playerColor === PlayerColor.Yellow) return assetPrefix + "Yellow";
+    if (playerColor === PlayerColor.Pink) return assetPrefix + "Pink";
+    return assetPrefix;
 }
 
 function getHexFromResourceTileBitmap(bitmap) {
