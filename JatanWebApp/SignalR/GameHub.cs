@@ -33,7 +33,8 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public void GetGameManagerUpdate(bool fullUpdate)
         {
-            var managerDto = new GameManagerDTO(_gameManager, 0, fullUpdate);
+            var callerPlayerId = 0; // TODO: Get real ID
+            var managerDto = new GameManagerDTO(_gameManager, callerPlayerId, fullUpdate);
             Clients.Caller.updateGameManager(managerDto);
         }
     }

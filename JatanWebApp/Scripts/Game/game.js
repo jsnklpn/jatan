@@ -781,6 +781,7 @@ function updateGameModel(gameManager) {
     var robberMode = board["RobberMode"];
 
     // state properties
+    var myPlayerId = gameManager["MyPlayerId"];
     var gameState = gameManager["GameState"];
     var playerTurnState = gameManager["PlayerTurnState"];
     var activePlayerId = gameManager["ActivePlayerId"];
@@ -790,18 +791,59 @@ function updateGameModel(gameManager) {
     if (resourceTiles) {
         _currentResourceTiles = resourceTiles;
         // if we haven't populated the resource tiles on the board yet, do it.
-        if (getDictLength(_hexToResourceTileMap) === 0) {
+        if (getDictLength(_hexToResourceTileMap) === 0)
             populateResourceTiles();
-        }
     }
     if (ports) {
         _currentPorts = ports;
-        if (!_portsPopulated) {
+        if (!_portsPopulated)
             populatePorts();
-        }
     }
 
     // TODO ...
+    if (myPlayerId === activePlayerId) { // We are currently the active player.
+        switch (playerTurnState) { // TODO: Change board actions based on turn state.
+            case PlayerTurnState.None:
+                break;
+            case PlayerTurnState.TakeAction:
+                break;
+            case PlayerTurnState.NeedToRoll:
+                break;
+            case PlayerTurnState.PlacingBuilding:
+                break;
+            case PlayerTurnState.PlacingRoad:
+                break;
+            case PlayerTurnState.PlacingRobber:
+                break;
+            case PlayerTurnState.SelectingPlayerToStealFrom:
+                break;
+            case PlayerTurnState.AnyPlayerSelectingCardsToLose:
+                break;
+            case PlayerTurnState.RequestingPlayerTrade:
+                break;
+            case PlayerTurnState.MonopolySelectingResource:
+                break;
+            case PlayerTurnState.RoadBuildingSelectingRoads:
+                break;
+            case PlayerTurnState.YearOfPlentySelectingResources:
+                break;
+            default:
+                break;
+        }
+    } else { // We are waiting for another player to finish their turn.
+        switch (playerTurnState) {
+            case PlayerTurnState.RequestingPlayerTrade:
+                // TODO: Allow sending a counter offer
+                break;
+            case PlayerTurnState.AnyPlayerSelectingCardsToLose:
+                // TODO: Allow select cards to lose (a 7 was rolled)
+                break;
+            default:
+                break;
+        }
+    }
+
+
 }
 
 

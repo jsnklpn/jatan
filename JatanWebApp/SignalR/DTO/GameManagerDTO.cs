@@ -12,6 +12,7 @@ namespace JatanWebApp.SignalR.DTO
     /// </summary>
     public class GameManagerDTO
     {
+        public int MyPlayerId { get; set; }
         public GameBoardDTO GameBoard { get; set; }
         public GameState GameState { get; set; }
         public PlayerTurnState PlayerTurnState { get; set; }
@@ -21,6 +22,7 @@ namespace JatanWebApp.SignalR.DTO
 
         public GameManagerDTO(GameManager manager, int requestingPlayerId, bool includeBoardConstants)
         {
+            this.MyPlayerId = requestingPlayerId;
             this.GameBoard = new GameBoardDTO(manager.GameBoard, includeBoardConstants);
             this.GameState = manager.GameState;
             this.PlayerTurnState = manager.PlayerTurnState;
