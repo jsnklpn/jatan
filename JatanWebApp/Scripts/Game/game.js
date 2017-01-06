@@ -40,6 +40,9 @@ var house3Hitbox =      { width: 96,  height: 81,  centerX: 48,    centerY: 40.5
 var road1Hitbox =       { width: 163, height: 83,  centerX: 81.5,  centerY: 41.5 };
 var road2Hitbox =       { width: 42,  height: 95,  centerX: 21,    centerY: 47.5 };
 var road3Hitbox =       { width: 161, height: 83,  centerX: 80.5,  centerY: 41.5 };
+var dock1Hitbox =       { width: 123, height: 76,  centerX: 70,    centerY: 30 };
+var dock2Hitbox =       { width: 118, height: 74,  centerX: 65,    centerY: 30 };
+var boatHitbox =        { width: 65,  height: 71,  centerX: 32,    centerY: 44 };
 
 // Map to hold all game assets to be preloaded
 var _assetMap = {
@@ -101,9 +104,9 @@ var _assetMap = {
     "imgRoad3Yellow": { src: "/Content/Images/board/road_yellow3.png", data: null, hitbox: road3Hitbox },
     // Other
     "imgThief": { src: "/Content/Images/board/thief.png", data: null, hitbox: null },
-    "imgBoat": { src: "/Content/Images/board/boat.png", data: null, hitbox: null },
-    "imgDock1": { src: "/Content/Images/board/dock1.png", data: null, hitbox: null },
-    "imgDock2": { src: "/Content/Images/board/dock2.png", data: null, hitbox: null }
+    "imgBoat": { src: "/Content/Images/board/boat.png", data: null, hitbox: boatHitbox },
+    "imgDock1": { src: "/Content/Images/board/dock1.png", data: null, hitbox: dock1Hitbox },
+    "imgDock2": { src: "/Content/Images/board/dock2.png", data: null, hitbox: dock2Hitbox }
 };
 
 // Enums
@@ -411,8 +414,16 @@ function populatePorts() {
     }
 
     var boatAsset = _assetMap["imgBoat"];
-    var dock1Asset = _assetMap["imgDock1"];
-    var dock2Asset = _assetMap["imgDock2"];
+    var dockForwardAsset = _assetMap["imgDock1"];
+    var dockBackwardAsset = _assetMap["imgDock2"];
+    var dfw = dockForwardAsset.hitbox.width;
+    var dfh = dockForwardAsset.hitbox.height;
+    var dbw = dockBackwardAsset.hitbox.width;
+    var dbh = dockBackwardAsset.hitbox.height;
+
+    var beachAsset = _assetMap["imgTileBeach"];
+    var bw = beachAsset.hitbox.width;
+    var bh = beachAsset.hitbox.height;
 
     var hexEdges = Object.keys(_currentPorts);
     for (var i = 0; i < hexEdges.length; i++) {
@@ -421,16 +432,117 @@ function populatePorts() {
         var tmp = gethexAndDirectionFromEdge(hexEdge);
         var hex = tmp[0];
         var dir = tmp[1];
+        var hexValues = hexToValueArray(hex);
 
         var tile = _hexToResourceTileMap[hex];
         var beach = _hexToBeachMap[hex];
+        var forwardDock = false;
 
-        // TODO
-        var dock1 = new createjs.Bitmap(dock1Asset.data);
-        dock1.x = beach.x;
-        dock1.y = beach.y;
+        // Determine how the dock should be angled
+        if (dir === EdgeDir.TopLeft || dir === EdgeDir.BottomRight) {
+            forwardDock = false;
+        }
+        else if (dir === EdgeDir.TopRight || dir === EdgeDir.BottomLeft) {
+            forwardDock = true;
+        }
+        else if (dir === EdgeDir.Left) {
+            if (hexValues[1] <= 0) { // bottom half
+                forwardDock = true;
+            } else {// top half
+                forwardDock = false;
+            }
+        }
+        else if (dir === EdgeDir.Right) {
+            if (hexValues[1] <= 0) { // bottom half
+                forwardDock = false;
+            } else { // top half
+                forwardDock = true;
+            }
+        } else {
+            forwardDock = true;
+        }
         
+        var dockAsset = forwardDock ? dockForwardAsset : dockBackwardAsset;
+        var dw = forwardDock ? dfw : dbw;
+        var dh = forwardDock ? dfh : dbh;
+
+        var boat = new createjs.Bitmap(boatAsset.data);
+        var dock1 = new createjs.Bitmap(dockAsset.data);
+        var dock2 = new createjs.Bitmap(dockAsset.data);
+        boat.regX = boatAsset.hitbox.centerX;
+        boat.regY = boatAsset.hitbox.centerY;
+        dock1.regX = dockAsset.hitbox.centerX;
+        dock1.regY = dockAsset.hitbox.centerY;
+        dock2.regX = dockAsset.hitbox.centerX;
+        dock2.regY = dockAsset.hitbox.centerY;
+
+        if (dir === EdgeDir.Right) {
+            dock1.x = beach.x + (bw / 2 + dw / 4 + 10);
+            dock1.y = beach.y + (bh / 6 - dh / 4);
+            dock2.x = beach.x + (bw / 2 + dw / 4 + 10);
+            dock2.y = beach.y - (bh / 6 + dh / 2);
+            if (!forwardDock) {
+                dock1.y += bh / 6;
+                dock2.y += bh / 6;
+            }
+            boat.x = beach.x + bw;
+            boat.y = beach.y;
+            boat.y += (forwardDock ? -0.5 : 0.5) * boatAsset.hitbox.height;
+        }
+        else if (dir === EdgeDir.Left) {
+            dock1.x = beach.x - (bw / 2 + dw / 4 + 10);
+            dock1.y = beach.y + (bh / 6 - dh / 4);
+            dock2.x = beach.x - (bw / 2 + dw / 4 + 10);
+            dock2.y = beach.y - (bh / 6 + dh / 2);
+            if (forwardDock) {
+                dock1.y += bh / 6;
+                dock2.y += bh / 6;
+            }
+            boat.x = beach.x - bw;
+            boat.y = beach.y;
+            boat.y += (forwardDock ? 0.5 : -0.5) * boatAsset.hitbox.height;
+        }
+        else if (dir === EdgeDir.BottomRight) {
+            dock1.x = beach.x + dw / 2 - 10;
+            dock1.y = beach.y + bh / 2 + dh / 6;
+            dock2.x = beach.x + bw / 2 + dw / 4;
+            dock2.y = beach.y + bh / 6 + dw / 4;
+
+            boat.x = beach.x + (2 * bw) / 3;
+            boat.y = beach.y + (2 * bh) / 3;
+        }
+        else if (dir === EdgeDir.TopLeft) {
+            dock1.x = beach.x - (dw / 2 - 10);
+            dock1.y = beach.y - (bh / 2 + dh / 6);
+            dock2.x = beach.x - (bw / 2 + dw / 4);
+            dock2.y = beach.y - (bh / 6 + dw / 4);
+
+            boat.x = beach.x - (2 * bw) / 3;
+            boat.y = beach.y - (2 * bh) / 3;
+        }
+        else if (dir === EdgeDir.TopRight) {
+            dock1.x = beach.x + (dw / 2 - 10);
+            dock1.y = beach.y - (bh / 2 + dh / 6);
+            dock2.x = beach.x + (bw / 2 + dw / 4);
+            dock2.y = beach.y - (bh / 6 + dw / 4);
+
+            boat.x = beach.x + (2 * bw) / 3;
+            boat.y = beach.y - (2 * bh) / 3;
+        }
+        else if (dir === EdgeDir.BottomLeft) {
+            dock1.x = beach.x - (dw / 2 - 10);
+            dock1.y = beach.y + bh / 2 + dh / 6;
+            dock2.x = beach.x - (bw / 2 + dw / 4);
+            dock2.y = beach.y + bh / 6 + dw / 4;
+
+            boat.x = beach.x - (2 * bw) / 3;
+            boat.y = beach.y + (2 * bh) / 3;
+        }
+        
+
         _boardContainer.addChild(dock1);
+        _boardContainer.addChild(dock2);
+        _boardContainer.addChild(boat);
     }
 
     _portsPopulated = true;
