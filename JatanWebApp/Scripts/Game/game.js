@@ -15,6 +15,7 @@ var _canvas = null;
 var _stage = null;
 var _water = null;
 var _boardContainer = null;
+var _boardTileContainer = null; // child to the board container
 var _boardRoadContainer = null; // child to the board container
 var _boardBuildingContainer = null; // child to the board container
 var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
@@ -313,6 +314,14 @@ function initCanvasStage() {
     _stage = new createjs.Stage("gameCanvas");
     //_stage.enableMouseOver(10);
     _boardContainer = new createjs.Container();
+    
+    // Create multiple containers we can layer the images properly
+    _boardTileContainer = new createjs.Container();
+    _boardRoadContainer = new createjs.Container();
+    _boardBuildingContainer = new createjs.Container();
+    _boardContainer.addChild(_boardTileContainer);
+    _boardContainer.addChild(_boardRoadContainer);
+    _boardContainer.addChild(_boardBuildingContainer);
 
     // draw water
     _water = new createjs.Bitmap(_assetMap["imgWater"].data);
@@ -378,10 +387,10 @@ function initCanvasStage() {
 
     // Resource tiles need to always be drawn on top, so they get added after beaches.
     for (var i = 0; i < beachShadows.length; i++) {
-        _boardContainer.addChild(beachShadows[i]);
+        _boardTileContainer.addChild(beachShadows[i]);
     }
     for (var i = 0; i < beachBitmaps.length; i++) {
-        _boardContainer.addChild(beachBitmaps[i]);
+        _boardTileContainer.addChild(beachBitmaps[i]);
     }
     //for (var i = 0; i < roads.length; i++) {
     //    _boardContainer.addChild(roads[i]);
@@ -439,7 +448,7 @@ function populateResourceTiles() {
         }
     }
     for (var i = 0; i < resTiles.length; i++) {
-        _boardContainer.addChild(resTiles[i]);
+        _boardTileContainer.addChild(resTiles[i]);
     }
 
     _invalidateCanvas = true;
@@ -581,9 +590,9 @@ function populatePorts() {
         }
         
 
-        _boardContainer.addChild(dock1);
-        _boardContainer.addChild(dock2);
-        _boardContainer.addChild(boat);
+        _boardTileContainer.addChild(dock1);
+        _boardTileContainer.addChild(dock2);
+        _boardTileContainer.addChild(boat);
     }
 
     _portsPopulated = true;
