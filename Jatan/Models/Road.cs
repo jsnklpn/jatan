@@ -14,14 +14,14 @@ namespace Jatan.Models
         /// <summary>
         /// The player that owns this road.
         /// </summary>
-        public readonly int Player;
+        public readonly int PlayerId;
 
         /// <summary>
         /// Creates a new road.
         /// </summary>
-        public Road(int player)
+        public Road(int playerId)
         {
-            Player = player;
+            PlayerId = playerId;
         }
     }
 }

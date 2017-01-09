@@ -128,7 +128,7 @@ namespace TestUI
             if (linePoints != null)
             {
                 Pen p1 = new Pen(Color.Black, 5f);
-                Pen p2 = new Pen(PlayerToColor(road.Player), 4f);
+                Pen p2 = new Pen(PlayerToColor(road.PlayerId), 4f);
                 gfx.DrawLine(p1, linePoints[0], linePoints[1]);
                 gfx.DrawLine(p2, linePoints[0], linePoints[1]);
                 p1.Dispose();
@@ -141,7 +141,7 @@ namespace TestUI
             var centerPoint = HexPointToAbsolutePoint(point);
             if (centerPoint != PointF.Empty) // Should never draw a building at (0,0)...
             {
-                Brush b = new SolidBrush(PlayerToColor(building.Player));
+                Brush b = new SolidBrush(PlayerToColor(building.PlayerId));
                 Pen p = new Pen(Color.Black, 1f);
 
                 var relativeSize = (building.Type == BuildingTypes.Settlement) ? (RelativeTileWidth)*(1/5f) : (RelativeTileWidth)*(2/5f);

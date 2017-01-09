@@ -14,7 +14,7 @@ namespace Jatan.Models
         /// <summary>
         /// The player that owns this building.
         /// </summary>
-        public readonly int Player;
+        public readonly int PlayerId;
 
         /// <summary>
         /// The type of building.
@@ -24,9 +24,9 @@ namespace Jatan.Models
         /// <summary>
         /// Creates a new building
         /// </summary>
-        public Building(int player, BuildingTypes type)
+        public Building(int playerId, BuildingTypes type)
         {
-            Player = player;
+            PlayerId = playerId;
             Type = type;
         }
     }

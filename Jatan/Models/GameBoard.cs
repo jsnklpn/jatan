@@ -204,7 +204,7 @@ namespace Jatan.Models
         /// </summary>
         public IList<int> GetPlayersOnBoard()
         {
-            var players = _buildings.Values.Select(b => b.Player).Distinct().ToList();
+            var players = _buildings.Values.Select(b => b.PlayerId).Distinct().ToList();
             players.Sort();
             return players;
         }
@@ -238,16 +238,16 @@ namespace Jatan.Models
                     {
                         var building = _buildings[point];
                         int resourcesCollected = (building.Type == BuildingTypes.Settlement) ? 1 : 2;
-                        var playerCollectedResources = result[building.Player];
+                        var playerCollectedResources = result[building.PlayerId];
                         playerCollectedResources[activatedTile.Value.Resource] += resourcesCollected;
 
                         // The robber boost just adds +1 resource per player. Multiple buildings does not add extra boosts.
                         if (_robberMode == RobberMode.ResourceBoost && activatedTile.Key == _robberLocation)
                         {
-                            if (!playersBoosted.Contains(building.Player))
+                            if (!playersBoosted.Contains(building.PlayerId))
                             {
                                 playerCollectedResources[activatedTile.Value.Resource] += 1;
-                                playersBoosted.Add(building.Player);
+                                playersBoosted.Add(building.PlayerId);
                             }
                         }
                     }
@@ -278,7 +278,7 @@ namespace Jatan.Models
         /// <summary>
         /// Moves the robber to the given hex location and returns a list of players touching that hex (excluding the player moving it.)
         /// </summary>
-        public ActionResult<IList<int>> MoveRobber(int player, Hexagon location)
+        public ActionResult<IList<int>> MoveRobber(int playerId, Hexagon location)
         {
             if (!IsHexagonInBoard(location))
             {
@@ -294,7 +294,7 @@ namespace Jatan.Models
 
             var points = location.GetPoints();
             var buildingsTouching = _buildings.Where(b => points.Contains(b.Key));
-            var players = buildingsTouching.Select(b => b.Value.Player).Distinct().ToList();
+            var players = buildingsTouching.Select(b => b.Value.PlayerId).Distinct().ToList();
             players.Sort();
             return new ActionResult<IList<int>>(players, true);
         }
@@ -302,7 +302,7 @@ namespace Jatan.Models
         /// <summary>
         /// Returns a success result if this is a valid placement for a road.
         /// </summary>
-        public ActionResult ValidateRoadPlacement(int player, HexEdge edge, bool startOfGame)
+        public ActionResult ValidateRoadPlacement(int playerId, HexEdge edge, bool startOfGame)
         {
             if (!IsEdgeInBoard(edge))
             {
@@ -318,7 +318,7 @@ namespace Jatan.Models
             if (startOfGame)
             {
                 // Make sure this is touching a settlement owned by this player. It's the start of the game.
-                if (!IsPlayerBuildingHere(player, edge))
+                if (!IsPlayerBuildingHere(playerId, edge))
                 {
                     return new ActionResult(false, String.Format("The road location {0} is not near a settlement.", edge));
                 }
@@ -326,12 +326,12 @@ namespace Jatan.Models
             else
             {
                 // We must be near a settlement, city, or another road.
-                if (!IsPlayerBuildingHere(player, edge))
+                if (!IsPlayerBuildingHere(playerId, edge))
                 {
                     bool isTouchingRoad = false;
                     foreach (var surroundingRoad in edge.GetNeighborEdges())
                     {
-                        if (IsPlayerRoadHere(player, surroundingRoad))
+                        if (IsPlayerRoadHere(playerId, surroundingRoad))
                         {
                             isTouchingRoad = true;
                             break;
@@ -349,18 +349,18 @@ namespace Jatan.Models
         /// <summary>
         /// Places a new road onto the board.
         /// </summary>
-        public ActionResult PlaceRoad(int player, HexEdge edge, bool startOfGame)
+        public ActionResult PlaceRoad(int playerId, HexEdge edge, bool startOfGame)
         {
-            var validationResult = ValidateRoadPlacement(player, edge, startOfGame);
+            var validationResult = ValidateRoadPlacement(playerId, edge, startOfGame);
             if (validationResult.Failed) return validationResult;
-            _roads[edge] = new Road(player);
+            _roads[edge] = new Road(playerId);
             return ActionResult.CreateSuccess();
         }
 
         /// <summary>
         /// Returns a success result if this is a valid placement for a building.
         /// </summary>
-        public ActionResult ValidateBuildingPlacement(int player, BuildingTypes buildingType, HexPoint point, bool startOfGame)
+        public ActionResult ValidateBuildingPlacement(int playerId, BuildingTypes buildingType, HexPoint point, bool startOfGame)
         {
             if (!IsPointInBoard(point))
             {
@@ -369,7 +369,7 @@ namespace Jatan.Models
 
             if (_buildings.ContainsKey(point))
             {
-                if (_buildings[point].Player != player)
+                if (_buildings[point].PlayerId != playerId)
                     return new ActionResult(false, string.Format("The location {0} is already used by another player.", point));
 
                 // If this play has something here, make sure that it's not a city, which can't be upgraded.
@@ -391,7 +391,7 @@ namespace Jatan.Models
             if (!startOfGame)
             {
                 // Make sure the player has a road nearby.
-                bool roadNearby = point.GetNeighborEdges().Any(r => IsPlayerRoadHere(player, r));
+                bool roadNearby = point.GetNeighborEdges().Any(r => IsPlayerRoadHere(playerId, r));
                 if (!roadNearby)
                 {
                     return new ActionResult(false, string.Format("The location {0} is not touching a road.", point));
@@ -403,20 +403,20 @@ namespace Jatan.Models
         /// <summary>
         /// Places a new building onto the board. A player is allowed to upgrade a settlement to a city.
         /// </summary>
-        public ActionResult PlaceBuilding(int player, BuildingTypes buildingType, HexPoint point, bool startOfGame)
+        public ActionResult PlaceBuilding(int playerId, BuildingTypes buildingType, HexPoint point, bool startOfGame)
         {
-            var validationResult = ValidateBuildingPlacement(player, buildingType, point, startOfGame);
+            var validationResult = ValidateBuildingPlacement(playerId, buildingType, point, startOfGame);
             if (validationResult.Failed) return validationResult;
-            _buildings[point] = new Building(player, buildingType);
+            _buildings[point] = new Building(playerId, buildingType);
             return ActionResult.CreateSuccess();
         }
 
         /// <summary>
         /// Gets a list of all ports for a player.
         /// </summary>
-        public IList<Port> GetPortsForPlayer(int player)
+        public IList<Port> GetPortsForPlayer(int playerId)
         {
-            var playerPorts = _ports.Where(e => IsPlayerBuildingHere(player, e.Key))
+            var playerPorts = _ports.Where(e => IsPlayerBuildingHere(playerId, e.Key))
                                     .Select(e => e.Value)
                                     .ToList();
             return playerPorts;
@@ -425,34 +425,34 @@ namespace Jatan.Models
         /// <summary>
         /// Gets the number of buildings on the board for a player.
         /// </summary>
-        public int GetBuildingCountForPlayer(int player, BuildingTypes type)
+        public int GetBuildingCountForPlayer(int playerId, BuildingTypes type)
         {
-            return _buildings.Count(c => c.Value.Player == player && c.Value.Type == type);
+            return _buildings.Count(c => c.Value.PlayerId == playerId && c.Value.Type == type);
         }
 
         /// <summary>
         /// Gets the number of buildings (any) on the board for a player.
         /// </summary>
-        public int GetBuildingCountForPlayer(int player)
+        public int GetBuildingCountForPlayer(int playerId)
         {
-            return _buildings.Count(c => c.Value.Player == player);
+            return _buildings.Count(c => c.Value.PlayerId == playerId);
         }
 
         /// <summary>
         /// Gets the number of roads on the board for a player. This does not find the road length.
         /// </summary>
-        public int GetRoadCountForPlayer(int player)
+        public int GetRoadCountForPlayer(int playerId)
         {
-            return _roads.Count(r => r.Value.Player == player);
+            return _roads.Count(r => r.Value.PlayerId == playerId);
         }
 
         /// <summary>
         /// Gets the maximum road length for a player.
         /// </summary>
-        public int GetRoadLengthForPlayer(int player)
+        public int GetRoadLengthForPlayer(int playerId)
         {
             int absoluteMax = 0;
-            var allPlayerRoads = _roads.Where(r => r.Value.Player == player).Select(r => r.Key).ToList();
+            var allPlayerRoads = _roads.Where(r => r.Value.PlayerId == playerId).Select(r => r.Key).ToList();
             foreach (var startingRoad in allPlayerRoads)
             {
                 // We'll do this test using each road as the "starting" road.
@@ -464,7 +464,7 @@ namespace Jatan.Models
                 {
                     var currentRoad = roadStack.Pop();
                     var endOfPath = true;
-                    foreach (var permutation in GetRoadPermutations(player, currentRoad, allPlayerRoads))
+                    foreach (var permutation in GetRoadPermutations(playerId, currentRoad, allPlayerRoads))
                     {
                         roadStack.Push(permutation);
                         endOfPath = false;
@@ -603,41 +603,41 @@ namespace Jatan.Models
 
         #region Helper methods
 
-        private bool IsPlayerBuildingHere(int player, HexEdge edge)
+        private bool IsPlayerBuildingHere(int playerId, HexEdge edge)
         {
             foreach (var point in edge.GetPoints())
             {
-                if (IsPlayerBuildingHere(player, point))
+                if (IsPlayerBuildingHere(playerId, point))
                     return true;
             }
             return false;
         }
 
-        private bool IsPlayerBuildingHere(int player, HexPoint point)
+        private bool IsPlayerBuildingHere(int playerId, HexPoint point)
         {
             if (_buildings.ContainsKey(point))
             {
                 var b = _buildings[point];
-                return (b.Player == player);
+                return (b.PlayerId == playerId);
             }
             return false;
         }
 
-        private bool IsEnemyPlayerBuildingHere(int player, HexPoint point)
+        private bool IsEnemyPlayerBuildingHere(int playerId, HexPoint point)
         {
             if (_buildings.ContainsKey(point))
             {
                 var b = _buildings[point];
-                return (b.Player != player);
+                return (b.PlayerId != playerId);
             }
             return false;
         }
 
-        private bool IsPlayerRoadHere(int player, HexEdge edge)
+        private bool IsPlayerRoadHere(int playerId, HexEdge edge)
         {
             if (_roads.ContainsKey(edge))
             {
-                return (_roads[edge].Player == player);
+                return (_roads[edge].PlayerId == playerId);
             }
             return false;
         }
@@ -661,22 +661,22 @@ namespace Jatan.Models
 
         #region Road search
 
-        private IEnumerable<HexEdge> GetRoadPermutations(int player, HexEdge road, IEnumerable<HexEdge> allPlayerRoads)
+        private IEnumerable<HexEdge> GetRoadPermutations(int playerId, HexEdge road, IEnumerable<HexEdge> allPlayerRoads)
         {
             return road.GetNeighborEdges()
                        .Where(e => allPlayerRoads.Contains(e) &&
-                                   !IsEnemyPlayerBuildingHere(player, road.GetNeighborPoint(e))); // An enemy building can cut off a road.
+                                   !IsEnemyPlayerBuildingHere(playerId, road.GetNeighborPoint(e))); // An enemy building can cut off a road.
         }
 
-        private IEnumerable<HexEdge> GetRoadPermutations(int player, HexEdge road, IEnumerable<HexEdge> allPlayerRoads, IEnumerable<HexEdge> excludeRoads)
+        private IEnumerable<HexEdge> GetRoadPermutations(int playerId, HexEdge road, IEnumerable<HexEdge> allPlayerRoads, IEnumerable<HexEdge> excludeRoads)
         {
-            return GetRoadPermutations(player, road, allPlayerRoads)
+            return GetRoadPermutations(playerId, road, allPlayerRoads)
                    .Where(e => !excludeRoads.Contains(e));
         }
 
-        private IEnumerable<SearchRoad> GetRoadPermutations(int player, SearchRoad parentRoad, IEnumerable<HexEdge> allPlayerRoads)
+        private IEnumerable<SearchRoad> GetRoadPermutations(int playerId, SearchRoad parentRoad, IEnumerable<HexEdge> allPlayerRoads)
         {
-            return GetRoadPermutations(player, parentRoad.Edge, allPlayerRoads, parentRoad.GetEdgesToExcludeFromPermutations())
+            return GetRoadPermutations(playerId, parentRoad.Edge, allPlayerRoads, parentRoad.GetEdgesToExcludeFromPermutations())
                    .Select(e => new SearchRoad(e, parentRoad));
         }
 

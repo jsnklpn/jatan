@@ -161,6 +161,12 @@ var PlayerTurnState = {
     YearOfPlentySelectingResources: 11
 };
 
+// Types of player buildings
+var BuildingTypes = {
+    Settlement: 0,
+    City: 1
+};
+
 // Player colors enum
 var PlayerColor = {
     Blue: 0,
@@ -599,6 +605,115 @@ function populatePorts() {
     _invalidateCanvas = true;
 }
 
+function populateBuildings() {
+    if (_currentGameManager === null)
+        return;
+
+    // Clear the current buildings
+    _boardBuildingContainer.removeAllChildren();
+
+    var board = _currentGameManager["GameBoard"];
+    var buildings = board["Buildings"];
+
+    var pointKeys = Object.keys(buildings);
+    for (var i = 0; i < pointKeys.length; i++) {
+        var hexPoint = pointKeys[i];
+        var building = buildings[hexPoint];
+        var playerId = building["PlayerId"];
+        var player = getPlayerFromId(playerId);
+        var type = building["Type"];
+        var assetPrefix = (type === BuildingTypes.City) ? "imgCity" : ("imgHouse" + Math.floor(1+Math.random()*3).toString());
+        var assetKey = getAssetKeyFromColor(assetPrefix, player["Color"]);
+        var asset = _assetMap[assetKey];
+        var stageLoc = hexPointToCoordinates(hexPoint);
+        var bitmap = new createjs.Bitmap(asset.data);
+        bitmap.regX = asset.hitbox.centerX;
+        bitmap.regY = asset.hitbox.centerY;
+        bitmap.x = stageLoc[0];
+        bitmap.y = stageLoc[1];
+        _boardBuildingContainer.addChild(bitmap);
+    }
+}
+
+function populateRoads() {
+    if (_currentGameManager === null)
+        return;
+
+    // Clear the current roads
+    _boardRoadContainer.removeAllChildren();
+
+    var board = _currentGameManager["GameBoard"];
+    var roads = board["Roads"];
+
+    var roadEdgeKeys = Object.keys(roads);
+    for (var i = 0; i < roadEdgeKeys.length; i++) {
+        var hexEdge = roadEdgeKeys[i];
+        var road = roads[hexEdge];
+        var playerId = road["PlayerId"];
+        var player = getPlayerFromId(playerId);
+        var color = player["Color"];
+        var tmp = gethexAndDirectionFromEdge(hexEdge);
+        var hex = tmp[0];
+        var direction = tmp[1];
+        var roadType = null;
+        switch(direction) {
+            case EdgeDir.BottomLeft:
+            case EdgeDir.TopRight:
+                roadType = "1";
+                break;
+            case EdgeDir.Left:
+            case EdgeDir.Right:
+                roadType = "2";
+                break;
+            case EdgeDir.TopLeft:
+            case EdgeDir.BottomRight:
+                roadType = "3";
+                break;
+        }
+        if (roadType === null) continue;
+        var roadAssetKey = getAssetKeyFromColor("imgRoad" + roadType, player["Color"]);
+
+        var asset = _assetMap[roadAssetKey];
+        var bitmap = new createjs.Bitmap(asset.data);
+        bitmap.regX = asset.hitbox.centerX;
+        bitmap.regY = asset.hitbox.centerY;
+
+        // get beach tile position
+        var beachAsset = _assetMap["imgTileBeach"];
+        beach = _hexToBeachMap[hex];
+        beachWidth = beachAsset.hitbox.width;
+        beachHeight = beachAsset.hitbox.height;
+
+        if (direction === EdgeDir.Left) {
+            bitmap.x = beach.x - beachWidth * 0.5;
+            bitmap.y = beach.y;
+        }
+        else if (direction === EdgeDir.TopLeft) {
+            bitmap.x = beach.x - beachWidth * 0.25;
+            bitmap.y = beach.y - beachHeight * 0.39;
+        }
+        else if (direction === EdgeDir.TopRight) {
+            bitmap.x = beach.x + beachWidth * 0.25;
+            bitmap.y = beach.y - beachHeight * 0.39;
+        }
+
+        else if (direction === EdgeDir.Right) {
+            bitmap.x = beach.x + beachWidth * 0.5;
+            bitmap.y = beach.y;
+        }
+        else if (direction === EdgeDir.BottomRight) {
+            bitmap.x = beach.x + beachWidth * 0.25;
+            bitmap.y = beach.y + beachHeight * 0.39;
+        }
+        else if (direction === EdgeDir.BottomLeft) {
+            bitmap.x = beach.x - beachWidth * 0.25;
+            bitmap.y = beach.y + beachHeight * 0.39;
+        }
+
+        _boardRoadContainer.addChild(bitmap);
+    }
+}
+
 function gethexAndDirectionFromEdge(hexEdge) {
     var hexes = hexEdgeToHexagons(hexEdge);
     var primaryHex = null;
@@ -800,6 +915,9 @@ function updateGameModel(gameManager) {
             populatePorts();
     }
 
+    populateBuildings();
+    populateRoads();
+
     // TODO ...
     if (myPlayerId === activePlayerId) { // We are currently the active player.
         switch (playerTurnState) { // TODO: Change board actions based on turn state.
@@ -843,7 +961,8 @@ function updateGameModel(gameManager) {
         }
     }
 
-
+    // Draw when everything has been populated
+    _invalidateCanvas = true;
 }
 
 
@@ -862,6 +981,20 @@ function getAssetKeyFromColor(assetPrefix, playerColor) {
     if (playerColor === PlayerColor.Yellow) return assetPrefix + "Yellow";
     if (playerColor === PlayerColor.Pink) return assetPrefix + "Pink";
     return assetPrefix;
+}
+
+function getPlayerFromId(playerId) {
+    if (_currentGameManager === null)
+        return null;
+
+    var players = _currentGameManager["Players"];
+    for (var i = 0; i < players.length; i++) {
+        var player = players[i];
+        if (player["Id"] === playerId) {
+            return player;
+        }
+    }
+    return null;
 }
 
 function getHexFromResourceTileBitmap(bitmap) {
@@ -888,6 +1021,46 @@ function hexEdgeToHexagons(hexEdge) {
     return hexes;
 }
 
+// Returns a list of hexagons from a hexedge. (e.g. "[(-2,0),(-3,0),(-2,1)]" returns the list ["(-2,0)", "(-3,0)", "(-2,1)"])
+function hexPointToHexagons(hexEdge) {
+    var ob1 = hexEdge.indexOf("(", 0);
+    var cb1 = hexEdge.indexOf(")", 0);
+    var ob2 = hexEdge.indexOf("(", cb1 + 1);
+    var cb2 = hexEdge.indexOf(")", cb1 + 1);
+    var ob3 = hexEdge.indexOf("(", cb2 + 1);
+    var cb3 = hexEdge.indexOf(")", cb2 + 1);
+    var hex1 = hexEdge.slice(ob1, cb1 + 1);
+    var hex2 = hexEdge.slice(ob2, cb2 + 1);
+    var hex3 = hexEdge.slice(ob3, cb3 + 1);
+    var hexes = [hex1, hex2, hex3];
+    return hexes;
+}
+
+function hexPointToCoordinates(hexPoint) {
+    var hexagons = hexPointToHexagons(hexPoint);
+
+    // Find the stage offsets for hex coordinates. TODO: Move to init function
+    var center = _hexToBeachMap["(0,0)"];
+    var right = _hexToBeachMap["(1,0)"];
+    var bottom = _hexToBeachMap["(0,1)"];
+    var xOffsets = [right.x - center.x, right.y - center.y];
+    var yOffsets = [bottom.x - center.x, bottom.y - center.y];
+
+    var avgX = 0;
+    var avgY = 0;
+    for (var i = 0; i < hexagons.length; i++) {
+        var h = hexToValueArray(hexagons[i]);
+        var stageX = center.x + (h[0] * xOffsets[0]) + (h[1] * yOffsets[0]);
+        var stageY = center.y + (h[0] * xOffsets[1]) + (h[1] * yOffsets[1]);
+        avgX += stageX;
+        avgY += stageY;
+    }
+    avgX = avgX / hexagons.length;
+    avgY = avgY / hexagons.length;
+    return [avgX, avgY];
+}
+
+// returns a [x,y] number array from a "(x,y)" string
 function hexToValueArray(hex) {
     var strX = hex.slice(1, hex.indexOf(","));
     var strY = hex.slice(hex.indexOf(",") + 1, hex.indexOf(")"));
