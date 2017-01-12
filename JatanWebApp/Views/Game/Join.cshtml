@@ -4,7 +4,15 @@
     ViewBag.Title = "Join Game";
 }
 
-@foreach (var game in Model.AvailableGames)
+@if (Model.AvailableGames.Any())
 {
-    <div>@game</div>
+    foreach (var game in Model.AvailableGames)
+    {
+        <div>@game.Owner - @game.Name</div>
+    }
 }
+else
+{
+    <em>No games found.</em>
+}
+

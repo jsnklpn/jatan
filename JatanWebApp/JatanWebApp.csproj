@@ -182,6 +182,8 @@
     <Compile Include="SignalR\GameHub.cs" />
     <Compile Include="SignalR\DTO\GameManagerDTO.cs" />
     <Compile Include="SignalR\DTO\PlayerDTO.cs" />
+    <Compile Include="SignalR\GameLobby.cs" />
+    <Compile Include="SignalR\GameLobbyManager.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
