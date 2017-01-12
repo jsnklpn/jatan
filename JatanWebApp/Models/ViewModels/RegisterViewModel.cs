@@ -14,7 +14,7 @@ namespace JatanWebApp.Models.ViewModels
         public string Email { get; set; }
 
         [Required]
-        [StringLength(20, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 3)]
+        [RegularExpression(@"^[a-zA-Z0-9]{3,20}$", ErrorMessage = "The {0} must be between 3 and 20 characters and can only contain numbers and letters.")]
         [Display(Name = "Username")]
         public string Username { get; set; }
 
