@@ -1,0 +1,55 @@
+﻿@using JatanWebApp.Models.ViewModels
+@model LoginViewModel
+@{
+    ViewBag.Title = "Log In";
+    ViewBag.ShowNavbar = false;
+}
+
+<div>
+    <a href="@Url.Action("Index", "Home")" class="signin-logo">
+        <img src="~/Content/Images/site/jatanlogo-sun-transparent.png" class="signin-logo"/>
+    </a>
+    <div class="form-signin">
+        <section id="loginForm">
+            @using (Html.BeginForm("Login", "User", new {ReturnUrl = ViewBag.ReturnUrl}, FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
+            {
+                @Html.AntiForgeryToken()
+                <h4>Log in</h4>
+                <hr/>
+                @Html.ValidationSummary(true, "", new {@class = "text-danger"})
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Email)
+                    @Html.TextBoxFor(m => m.Email, new {@class = "form-control", placeholder = "Email address"})
+                    @Html.ValidationMessageFor(m => m.Email, "", new {@class = "text-danger"})
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Password)
+                    @Html.PasswordFor(m => m.Password, new {@class = "form-control", placeholder = "Password"})
+                    @Html.ValidationMessageFor(m => m.Password, "", new {@class = "text-danger"})
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Log in" class="form-control btn btn-primary"/>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox">
+                        <label>
+                            @Html.CheckBoxFor(m => m.RememberMe, new {@class = ""})
+                            @Html.DisplayNameFor(m => m.RememberMe)
+                        </label>
+                    </div>
+                </div>
+                <hr/>
+                <p class="small text-center text-muted">Don't have an account?</p>
+                @Html.ActionLink("Create a new account", "Register", null, new {@class = "form-control btn btn-default"})
+                @* Enable this once you have account confirmation enabled for password reset functionality
+                <p>
+                    @Html.ActionLink("Forgot your password?", "ForgotPassword")
+                </p>*@
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

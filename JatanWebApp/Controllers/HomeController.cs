@@ -13,17 +13,9 @@ namespace JatanWebApp.Controllers
             return View();
         }
 
-        public ActionResult About()
+        // GET: /Home/TopPlayers
+        public ActionResult TopPlayers()
         {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
             return View();
         }
     }

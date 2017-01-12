@@ -1,0 +1,10 @@
+﻿@using JatanWebApp.Models.ViewModels
+@model JoinGameViewModel
+@{
+    ViewBag.Title = "Join Game";
+}
+
+@foreach (var game in Model.AvailableGames)
+{
+    <div>@game</div>
+}
