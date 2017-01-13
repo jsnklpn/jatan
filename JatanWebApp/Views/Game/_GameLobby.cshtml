@@ -22,7 +22,10 @@
     }
     else if (Model.RequiresPassword)
     {
-        <td><a href="@Url.Action("Join", new { gameId = Model.Uid, password = "password" })" class="btn btn-block btn-success"><span class="glyphicon glyphicon-play-circle"></span> Join</a></td>
+        <td>
+            <input type="hidden" class="join-href" value="@Url.Action("Join", new { gameId = Model.Uid, password = "PASSWORD" })" />
+            <a href="#" class="enter-password-button btn btn-block btn-success"><span class="glyphicon glyphicon-play-circle"></span> Join</a>
+        </td>
     }
     else
     {

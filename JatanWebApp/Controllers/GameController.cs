@@ -55,8 +55,9 @@ namespace JatanWebApp.Controllers
                     if (result.Succeeded)
                         return RedirectToAction("Index");
 
-                    return View(new JoinGameViewModel() { ErrorMessage = result.Message });
+                    return View(new JoinGameViewModel() {ErrorMessage = result.Message});
                 }
+                return View(new JoinGameViewModel() { ErrorMessage = "This game does not exist." });
             }
 
             return View(new JoinGameViewModel());
