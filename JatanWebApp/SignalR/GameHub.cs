@@ -19,8 +19,15 @@ namespace JatanWebApp.SignalR
     public class GameHub : Hub
     {
         private static readonly ConcurrentDictionary<string, HubUser> _hubUsers;
-
         private static GameManager _gameManager;
+
+        /// <summary>
+        /// Gets the users currently connected to this hub.
+        /// </summary>
+        public static ConcurrentDictionary<string, HubUser> HubUsers
+        {
+            get { return _hubUsers; }
+        }
 
         static GameHub()
         {
@@ -54,8 +61,7 @@ namespace JatanWebApp.SignalR
             string userName = Context.User.Identity.Name;
             string connectionId = Context.ConnectionId;
 
-            HubUser user;
-            _hubUsers.TryGetValue(userName, out user);
+            var user = GetUser(userName);
 
             if (user != null)
             {
@@ -82,7 +88,7 @@ namespace JatanWebApp.SignalR
 
         #endregion
 
-        private HubUser GetUser(string userName)
+        private static HubUser GetUser(string userName)
         {
             HubUser user;
             _hubUsers.TryGetValue(userName, out user);
