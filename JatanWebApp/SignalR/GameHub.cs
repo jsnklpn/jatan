@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using Jatan.Core;
 using Jatan.GameLogic;
@@ -10,13 +12,81 @@ using Microsoft.AspNet.SignalR;
 
 namespace JatanWebApp.SignalR
 {
+    /// <summary>
+    /// Signal-R hub used for real-time updates between the clients and the server.
+    /// </summary>
+    [Authorize]
     public class GameHub : Hub
     {
+        private static readonly ConcurrentDictionary<string, HubUser> _hubUsers;
+
         private static GameManager _gameManager;
 
         static GameHub()
         {
+            _hubUsers = new ConcurrentDictionary<string, HubUser>();
             _gameManager = DoInitialPlacements();
+        }
+
+        #region Hub overrides
+
+        public override Task OnConnected()
+        {
+            string userName = Context.User.Identity.Name;
+            string connectionId = Context.ConnectionId;
+
+            var user = _hubUsers.GetOrAdd(userName, new HubUser
+            {
+                Username = userName,
+                ConnectionIds = new HashSet<string>()
+            });
+
+            lock (user.ConnectionIds)
+            {
+                user.ConnectionIds.Add(connectionId);
+            }
+
+            return base.OnConnected();
+        }
+
+        public override Task OnDisconnected(bool stopCalled)
+        {
+            string userName = Context.User.Identity.Name;
+            string connectionId = Context.ConnectionId;
+
+            HubUser user;
+            _hubUsers.TryGetValue(userName, out user);
+
+            if (user != null)
+            {
+                lock (user.ConnectionIds)
+                {
+                    user.ConnectionIds.RemoveWhere(i => i.Equals(connectionId));
+
+                    // If there are no connections left, remove the hub-user completely
+                    if (!user.ConnectionIds.Any())
+                    {
+                        HubUser removedUser;
+                        _hubUsers.TryRemove(userName, out removedUser);
+                    }
+                }
+            }
+
+            return base.OnDisconnected(stopCalled);
+        }
+
+        public override Task OnReconnected()
+        {
+            return base.OnReconnected();
+        }
+
+        #endregion
+
+        private HubUser GetUser(string userName)
+        {
+            HubUser user;
+            _hubUsers.TryGetValue(userName, out user);
+            return user;
         }
 
         public void SendChatMessage(string name, string message)
