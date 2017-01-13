@@ -3,8 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 using Jatan.GameLogic;
 using JatanWebApp.Models.ViewModels;
+using ActionResult = Jatan.Core.ActionResult;
 
 namespace JatanWebApp.SignalR
 {
@@ -48,6 +50,15 @@ namespace JatanWebApp.SignalR
         }
 
         /// <summary>
+        /// Returns the game lobby with the unique id.
+        /// </summary>
+        public static GameLobby GetGameLobbyFromUid(string uid)
+        {
+            var game = GameLobbies.Values.FirstOrDefault(g => g.Uid.Equals(uid));
+            return game;
+        }
+
+        /// <summary>
         /// Returns the game lobby that the specified player is connected to. Returns null if none.
         /// </summary>
         public static GameLobby GetGameLobbyForPlayer(string userName)
@@ -59,13 +70,14 @@ namespace JatanWebApp.SignalR
         /// <summary>
         /// Connects to a game lobby that is owned by the specified player.
         /// </summary>
-        public static void ConnectToGame(string userName, string ownerUserName, string password)
+        public static Jatan.Core.ActionResult ConnectToGame(string userName, string ownerUserName, string password)
         {
             if (GameLobbies.ContainsKey(ownerUserName))
             {
                 var lobby = GameLobbies[ownerUserName];
-                lobby.JoinGame(userName, password);
+                return lobby.JoinGame(userName, password);
             }
+            return Jatan.Core.ActionResult.CreateFailed("This game no longer exists.");
         }
     }
 }

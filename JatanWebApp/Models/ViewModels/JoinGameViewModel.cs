@@ -9,6 +9,7 @@ namespace JatanWebApp.Models.ViewModels
     public class JoinGameViewModel
     {
         public List<GameLobby> AvailableGames { get; set; }
+        public string ErrorMessage { get; set; }
 
         public JoinGameViewModel()
         {

@@ -20,9 +20,13 @@
     {
         <td><a href="#" class="btn btn-block btn-danger disabled"><span class="glyphicon glyphicon-hourglass"></span> In Progress</a></td>
     }
+    else if (Model.RequiresPassword)
+    {
+        <td><a href="@Url.Action("Join", new { gameId = Model.Uid, password = "password" })" class="btn btn-block btn-success"><span class="glyphicon glyphicon-play-circle"></span> Join</a></td>
+    }
     else
     {
-        <td><a href="@Url.Action("Index", "Game")" class="btn btn-block btn-success"><span class="glyphicon glyphicon-play-circle"></span> Join</a></td>
+        <td><a href="@Url.Action("Join", new { gameId = Model.Uid })" class="btn btn-block btn-success"><span class="glyphicon glyphicon-play-circle"></span> Join</a></td>
     }
     <td class="vert-align">@Model.Name</td>
     <td class="vert-align">@Model.Owner</td>

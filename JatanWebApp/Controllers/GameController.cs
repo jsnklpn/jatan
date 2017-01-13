@@ -43,8 +43,22 @@ namespace JatanWebApp.Controllers
         }
 
         // Get: Game/Join
-        public ActionResult Join()
+        public ActionResult Join(string gameId, string password)
         {
+            if (!string.IsNullOrEmpty(gameId))
+            {
+                var lobby = GameLobbyManager.GetGameLobbyFromUid(gameId);
+                if (lobby != null)
+                {
+                    var userName = User.Identity.Name;
+                    var result = GameLobbyManager.ConnectToGame(userName, lobby.Owner, password);
+                    if (result.Succeeded)
+                        return RedirectToAction("Index");
+
+                    return View(new JoinGameViewModel() { ErrorMessage = result.Message });
+                }
+            }
+
             return View(new JoinGameViewModel());
         }
 

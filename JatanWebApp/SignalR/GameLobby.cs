@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Jatan.Core;
 using Jatan.GameLogic;
 using JatanWebApp.Models.DAL;
 using JatanWebApp.Models.ViewModels;
@@ -10,6 +11,10 @@ namespace JatanWebApp.SignalR
 {
     public class GameLobby
     {
+        /// <summary>
+        /// The unique identifier for this game lobby.
+        /// </summary>
+        public string Uid { get; private set; }
         /// <summary>
         /// The name that players will see when searching for games to join.
         /// </summary>
@@ -48,6 +53,8 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public GameLobby(string ownerName, CreateGameViewModel model)
         {
+            this.Uid = Guid.NewGuid().ToString();
+
             this.Name = model.DisplayName;
             this.Password = model.Password;
             this.Owner = ownerName;
@@ -86,18 +93,20 @@ namespace JatanWebApp.SignalR
         /// <summary>
         /// 
         /// </summary>
-        public void JoinGame(string userName, string password)
+        public Jatan.Core.ActionResult JoinGame(string userName, string password)
         {
             if (this.InProgress)
-                return;
+                return ActionResult.CreateFailed("This game is in progress.");
 
             if (this.Players.Count >= this.MaxNumberOfPlayers)
-                return;
+                return ActionResult.CreateFailed("This game is full.");
 
             if (this.RequiresPassword && password != this.Password)
-                return;
+                return ActionResult.CreateFailed("The password is incorrect.");
 
             Players.Add(userName);
+
+            return ActionResult.CreateSuccess();
         }
 
         /// <summary>
