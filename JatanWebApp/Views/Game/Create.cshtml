@@ -27,19 +27,19 @@
     <div class="form-group">
         @Html.LabelFor(m => m.MaxNumberOfPlayers, new {@class = "col-md-2 control-label"})
         <div class="col-md-10">
-            @Html.TextBoxFor(m => m.MaxNumberOfPlayers, new {@class = "form-control"})
+            @Html.DropDownListFor(m => m.MaxNumberOfPlayers, Model.MaxNumberOfPlayersList, null, new {@class = "form-control"})
         </div>
     </div>
     <div class="form-group">
         @Html.LabelFor(m => m.TurnTimeLimit, new {@class = "col-md-2 control-label"})
         <div class="col-md-10">
-            @Html.TextBoxFor(m => m.TurnTimeLimit, new {@class = "form-control"})
+            @Html.DropDownListFor(m => m.TurnTimeLimit, Model.TurnTimeLimitList, null, new { @class = "form-control" })
         </div>
     </div>
     <div class="form-group">
         @Html.LabelFor(m => m.WinScore, new {@class = "col-md-2 control-label"})
         <div class="col-md-10">
-            @Html.TextBoxFor(m => m.WinScore, new {@class = "form-control"})
+            @Html.DropDownListFor(m => m.WinScore, Model.WinScoreList, null, new { @class = "form-control" })
         </div>
     </div>
     <div class="form-group">
@@ -51,7 +51,7 @@
     <div class="form-group">
         @Html.LabelFor(m => m.CardLossThreshold, new { @class = "col-md-2 control-label" })
         <div class="col-md-10">
-            @Html.TextBoxFor(m => m.CardLossThreshold, new { @class = "form-control" })
+            @Html.DropDownListFor(m => m.CardLossThreshold, Model.CardLossThresholdList, null, new { @class = "form-control" })
         </div>
     </div>
     <div class="form-group">
