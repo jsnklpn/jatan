@@ -3,16 +3,36 @@
 @{
     ViewBag.Title = "Join Game";
 }
-
-@if (Model.AvailableGames.Any())
+@section scripts
 {
-    foreach (var game in Model.AvailableGames)
-    {
-        <div>@game.Owner - @game.Name</div>
-    }
+    <script src="~/Scripts/Game/join.js"></script>
 }
-else
-{
-    <em>No games found.</em>
-}
-
+<div class="container body-content">
+    <div class=""> <!-- panel panel-default mt-15 -->
+        <table class="table table-hover table-bordered game-lobby-list">
+            <caption>Available games:</caption>
+            <thead>
+            <tr>
+                <th></th> <!-- Join button -->
+                <th>Name</th>
+                <th>Creator</th>
+                <th>Players</th>
+                <th>Rules</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.AvailableGames.Any())
+            {
+                foreach (var game in Model.AvailableGames)
+                {
+                    @Html.Partial("_GameLobby", game)
+                }
+            }
+            </tbody>
+        </table>
+        @if (!Model.AvailableGames.Any())
+        {
+            <div class="text-center"><em>No games found.</em></div>
+        }
+    </div>
+</div>

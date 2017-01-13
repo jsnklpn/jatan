@@ -271,6 +271,7 @@
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\createjs-2015.11.26.min.js" />
     <Content Include="Scripts\Game\game.js" />
+    <Content Include="Scripts\Game\join.js" />
     <Content Include="Scripts\Game\math.js" />
     <Content Include="Scripts\jquery-3.1.1.js" />
     <Content Include="Scripts\jquery-3.1.1.min.js" />
@@ -311,6 +312,7 @@
     <Content Include="Views\Game\Create.cshtml" />
     <Content Include="Views\Game\Join.cshtml" />
     <Content Include="Views\Home\TopPlayers.cshtml" />
+    <Content Include="Views\Game\_GameLobby.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -24,6 +24,30 @@
     margin-right: 10px;
 }
 
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mt-15 {
+    margin-top: 15px;
+}
+
+/* ====================== */
+/*       LOBBY LIST       */
+/* ====================== */
+
+.table tbody > tr > td.vert-align {
+    vertical-align: middle;
+}
+
+.game-lobby-list {
+
+}
+
+.game-lobby-item {
+    
+}
+
 /* ====================== */
 /*      SIGN-IN FORM      */
 /* ====================== */
