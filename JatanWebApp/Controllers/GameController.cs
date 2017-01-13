@@ -4,6 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using JatanWebApp.Models.ViewModels;
+using JatanWebApp.SignalR;
+using Microsoft.AspNet.Identity;
 
 namespace JatanWebApp.Controllers
 {
@@ -31,6 +33,11 @@ namespace JatanWebApp.Controllers
             {
                 return View(viewModel);
             }
+
+            var userName = User.Identity.Name;
+            GameLobbyManager.CreateNewGame(userName, viewModel);
+
+            // TODO: Join the game
 
             return RedirectToAction("Index");
         }

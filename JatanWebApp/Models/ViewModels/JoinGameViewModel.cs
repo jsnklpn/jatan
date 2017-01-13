@@ -12,7 +12,7 @@ namespace JatanWebApp.Models.ViewModels
 
         public JoinGameViewModel()
         {
-            AvailableGames = new List<GameLobby>(GameLobbyManager.GameLobbies);
+            AvailableGames = new List<GameLobby>(GameLobbyManager.GameLobbies.Values.Where(g => g != null));
         }
     }
 }

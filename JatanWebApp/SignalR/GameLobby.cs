@@ -33,7 +33,7 @@ namespace JatanWebApp.SignalR
         /// <summary>
         /// Gets the players (usernames) currently in the game.
         /// </summary>
-        public List<string> Players { get; private set; }
+        public HashSet<string> Players { get; private set; }
         /// <summary>
         /// The player (username) who created the game.
         /// </summary>
@@ -46,14 +46,14 @@ namespace JatanWebApp.SignalR
         /// <summary>
         /// GameLobby constructor
         /// </summary>
-        public GameLobby(string gameName, string ownerName, CreateGameViewModel model)
+        public GameLobby(string ownerName, CreateGameViewModel model)
         {
-            this.Name = gameName;
+            this.Name = model.DisplayName;
             this.Password = model.Password;
             this.Owner = ownerName;
 
             this.MaxNumberOfPlayers = model.MaxNumberOfPlayers;
-            this.Players = new List<string>();
+            this.Players = new HashSet<string> {ownerName};
 
             this.InProgress = false;
 
@@ -62,6 +62,53 @@ namespace JatanWebApp.SignalR
             this.GameManager.Settings.RobberMode = model.RobberMode;
             this.GameManager.Settings.TurnTimeLimit = model.TurnTimeLimit;
             this.GameManager.Settings.CardCountLossThreshold = model.CardLossThreshold;
+        }
+
+        /// <summary>
+        /// Starts the game.
+        /// </summary>
+        public void StartGame()
+        {
+            if (this.InProgress) return;
+
+            this.InProgress = true;
+            this.GameManager.StartNewGame();
+        }
+
+        /// <summary>
+        /// Completely cancels a game.
+        /// </summary>
+        public void CancelGame()
+        {
+            // TODO
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void JoinGame(string userName, string password)
+        {
+            if (this.InProgress)
+                return;
+
+            if (this.Players.Count >= this.MaxNumberOfPlayers)
+                return;
+
+            if (this.RequiresPassword && password != this.Password)
+                return;
+
+            Players.Add(userName);
+        }
+
+        /// <summary>
+        /// Makes a play abandon a game.
+        /// </summary>
+        public void AbandonGame(string userName)
+        {
+            this.Players.Remove(userName);
+
+            // TODO
+            // this.GameManager.PlayerAbandonGame()
         }
     }
 }
