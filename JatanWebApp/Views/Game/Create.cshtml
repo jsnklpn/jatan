@@ -4,63 +4,69 @@
     ViewBag.Title = "Create Game";
 }
 
-<h2>@ViewBag.Title</h2>
-
-@using (Html.BeginForm("Create", "Game", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
-{
-    @Html.AntiForgeryToken()
-    <h4>Create a new game.</h4>
-    <hr />
-    @Html.ValidationSummary("", new { @class = "text-danger" })
-    <div class="form-group">
-        @Html.LabelFor(m => m.DisplayName, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">
-            @Html.TextBoxFor(m => m.DisplayName, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">
-            @Html.TextBoxFor(m => m.Password, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        @Html.LabelFor(m => m.MaxNumberOfPlayers, new {@class = "col-md-2 control-label"})
-        <div class="col-md-10">
-            @Html.DropDownListFor(m => m.MaxNumberOfPlayers, Model.MaxNumberOfPlayersList, null, new {@class = "form-control"})
-        </div>
-    </div>
-    <div class="form-group">
-        @Html.LabelFor(m => m.TurnTimeLimit, new {@class = "col-md-2 control-label"})
-        <div class="col-md-10">
-            @Html.DropDownListFor(m => m.TurnTimeLimit, Model.TurnTimeLimitList, null, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        @Html.LabelFor(m => m.WinScore, new {@class = "col-md-2 control-label"})
-        <div class="col-md-10">
-            @Html.DropDownListFor(m => m.WinScore, Model.WinScoreList, null, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        @Html.LabelFor(m => m.RobberMode, new {@class = "col-md-2 control-label"})
-        <div class="col-md-10">
-            @Html.EnumDropDownListFor(m => m.RobberMode, new {@class = "form-control"})
-        </div>
-    </div>
-    <div class="form-group">
-        @Html.LabelFor(m => m.CardLossThreshold, new { @class = "col-md-2 control-label" })
-        <div class="col-md-10">
-            @Html.DropDownListFor(m => m.CardLossThreshold, Model.CardLossThresholdList, null, new { @class = "form-control" })
-        </div>
-    </div>
-    <div class="form-group">
-        <div class="col-md-offset-2 col-md-10">
-            <input type="submit" class="btn btn-default" value="Create" />
-        </div>
-    </div>
-}
-
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
 }
+
+@section css
+{
+    <style type="text/css">
+        body {
+            background-color: gray;
+        }
+    </style>
+}
+
+<div class="body-content">
+    <div class="form-create">
+        <img class="form-create-logo" src="~/Content/Images/site/dice_photo2.png" />
+        <section id="createForm">
+            @using (Html.BeginForm("Create", "Game", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
+            {
+                @Html.AntiForgeryToken()
+                <h4>Create game</h4>
+                <hr/>
+                @Html.ValidationSummary(true, "", new {@class = "text-danger"})
+                <div class="form-group">
+                    @Html.LabelFor(m => m.DisplayName, new {@class = "control-label"})
+                    @Html.TextBoxFor(m => m.DisplayName, new {@class = "form-control", placeholder = "Name of the game lobby"})
+                    @Html.ValidationMessageFor(m => m.DisplayName, "", new {@class = "text-danger"})
+                </div>
+                <hr/>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.Password, new {@class = "control-label"})
+                    @Html.TextBoxFor(m => m.Password, new {@class = "form-control", placeholder = "Password (optional)"})
+                    @Html.ValidationMessageFor(m => m.Password, "", new {@class = "text-danger"})
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.MaxNumberOfPlayers, new {@class = "control-label"})
+                    @Html.DropDownListFor(m => m.MaxNumberOfPlayers, Model.MaxNumberOfPlayersList, null, new {@class = "form-control"})
+                    @Html.ValidationMessageFor(m => m.MaxNumberOfPlayers, "", new {@class = "text-danger"})
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.TurnTimeLimit, new {@class = "control-label"})
+                    @Html.DropDownListFor(m => m.TurnTimeLimit, Model.TurnTimeLimitList, null, new {@class = "form-control"})
+                    @Html.ValidationMessageFor(m => m.TurnTimeLimit, "", new {@class = "text-danger"})
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.WinScore, new {@class = "control-label"})
+                    @Html.DropDownListFor(m => m.WinScore, Model.WinScoreList, null, new {@class = "form-control"})
+                    @Html.ValidationMessageFor(m => m.WinScore, "", new {@class = "text-danger"})
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.RobberMode, new {@class = "control-label"})
+                    @Html.EnumDropDownListFor(m => m.RobberMode, new {@class = "form-control"})
+                    @Html.ValidationMessageFor(m => m.RobberMode, "", new {@class = "text-danger"})
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(m => m.CardLossThreshold, new {@class = "control-label"})
+                    @Html.DropDownListFor(m => m.CardLossThreshold, Model.CardLossThresholdList, null, new {@class = "form-control"})
+                    @Html.ValidationMessageFor(m => m.CardLossThreshold, "", new {@class = "text-danger"})
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="form-control btn btn-primary"/>
+                </div>
+            }
+        </section>
+    </div>
+</div>

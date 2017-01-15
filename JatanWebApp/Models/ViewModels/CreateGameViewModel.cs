@@ -11,7 +11,7 @@ namespace JatanWebApp.Models.ViewModels
     public class CreateGameViewModel
     {
         [Required]
-        [Display(Name = "Lobby name")]
+        [Display(Name = "Game name")]
         public string DisplayName { get; set; }
 
         [Display(Name = "Password")]

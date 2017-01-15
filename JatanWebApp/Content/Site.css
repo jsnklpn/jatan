@@ -35,7 +35,6 @@
 /* ====================== */
 /*       LOBBY LIST       */
 /* ====================== */
-
 .table tbody > tr > td.vert-align {
     vertical-align: middle;
 }
@@ -68,6 +67,29 @@
     margin-left: auto;
     margin-right: auto;
     margin-bottom: -14px;
+}
+
+/* ====================== */
+/*       CREATE GAME      */
+/* ====================== */
+.form-create {
+    position: relative;
+    width: 500px;
+    margin: 0 auto;
+    margin-top: 20px;
+    padding: 40px;
+    padding-left: 100px;
+    border: 1px solid #999999;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.form-create-logo {
+    display: inline;
+    position: absolute;
+    left: 200px;
+    top: -70px;
+    padding: 0px;
 }
 
 /* ====================== */

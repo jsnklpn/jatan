@@ -248,6 +248,7 @@
     <Content Include="Content\Images\board\tile_wheat.png" />
     <Content Include="Content\Images\board\tile_wood.png" />
     <Content Include="Content\Images\board\water.jpg" />
+    <Content Include="Content\Images\site\dice_photo2.png" />
     <Content Include="Content\Images\site\jatanlogo-full-transparent.png" />
     <Content Include="Content\Images\site\jatanlogo-sun-transparent.png" />
     <Content Include="Content\Images\site\jatantext-black.png" />
