@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using JatanWebApp.Models.ViewModels;
@@ -15,7 +16,7 @@ namespace JatanWebApp.Controllers
         // GET: Game
         public ActionResult Index()
         {
-            return View();
+            return RedirectToAction("Join");
         }
 
         // Get: Game/Create
@@ -38,11 +39,9 @@ namespace JatanWebApp.Controllers
             }
 
             var userName = User.Identity.Name;
-            GameLobbyManager.CreateNewGame(userName, viewModel);
+            var lobby = GameLobbyManager.CreateNewGame(userName, viewModel);
 
-            // TODO: Join the game
-
-            return RedirectToAction("Index");
+            return RedirectToAction("Instance", new { gameId = lobby.Uid });
         }
 
         // Get: Game/Join
@@ -56,7 +55,7 @@ namespace JatanWebApp.Controllers
                     var userName = User.Identity.Name;
                     var result = GameLobbyManager.ConnectToGame(userName, lobby.Owner, password);
                     if (result.Succeeded)
-                        return RedirectToAction("Index");
+                        return RedirectToAction("Instance", new {gameId = gameId});
 
                     return View(new JoinGameViewModel() {ErrorMessage = result.Message});
                 }
@@ -64,6 +63,24 @@ namespace JatanWebApp.Controllers
             }
 
             return View(new JoinGameViewModel());
+        }
+
+        // Get: Game/Instance/id
+        public ActionResult Instance(string gameId)
+        {
+            if (!string.IsNullOrEmpty(gameId))
+            {
+                var lobby = GameLobbyManager.GetGameLobbyFromUid(gameId);
+                if (lobby != null)
+                {
+                    var userName = User.Identity.Name;
+                    if (lobby.Players.Contains(userName))
+                        return View();
+
+                    return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+                }
+            }
+            return new HttpStatusCodeResult(HttpStatusCode.NotFound);
         }
 
     }

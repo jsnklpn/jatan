@@ -26,15 +26,17 @@ namespace JatanWebApp.SignalR
         }
 
         /// <summary>
-        /// Creates a new game with the specified owner and settings.
+        /// Creates a new game with the specified owner and settings. The owner is
+        /// auto-added to the list of players. Returns the new game lobby instance.
         /// </summary>
-        public static void CreateNewGame(string ownerUserName, CreateGameViewModel model)
+        public static GameLobby CreateNewGame(string ownerUserName, CreateGameViewModel model)
         {
             // Remove any game that may be in progress from the current user.
             CancelGame(ownerUserName);
 
             var lobby = new GameLobby(ownerUserName, model);
             GameLobbies[ownerUserName] = lobby;
+            return lobby;
         }
 
         /// <summary>
@@ -75,6 +77,11 @@ namespace JatanWebApp.SignalR
             if (GameLobbies.ContainsKey(ownerUserName))
             {
                 var lobby = GameLobbies[ownerUserName];
+
+                // We're already in the game.
+                if (lobby.Players.Contains(userName))
+                    return Jatan.Core.ActionResult.CreateSuccess();
+
                 return lobby.JoinGame(userName, password);
             }
             return Jatan.Core.ActionResult.CreateFailed("This game no longer exists.");
