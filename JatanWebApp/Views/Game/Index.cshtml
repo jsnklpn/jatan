@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "";
     ViewBag.ShowNavbar = false;
 }
 
@@ -9,6 +9,7 @@
     <script src="~/signalr/hubs"></script>
     <script src="~/Scripts/createjs-2015.11.26.min.js"></script>
     <script src="~/Scripts/Game/math.js"></script>
+    <script src="~/Scripts/Game/game_globals.js"></script>
     <script src="~/Scripts/Game/game.js"></script>
 }
 
@@ -31,7 +32,28 @@
 <div id="testPanel" class="navbar navbar-default navbar-fixed-bottom">
     <ul class="nav navbar-nav">
         <li><a id="btnUpdateGameManager" href="#">Update Manager</a></li>
+        <li><a id="btnStartGame" href="#">Start Game</a></li>
+        <li><a id="btnBuy" href="#">Buy</a></li>
+        <li><a id="btnTrade" href="#">Trade</a></li>
+        <li><a id="btnEndTurn" href="#">End Turn</a></li>
     </ul>
+</div>
+
+<div id="playerBox1" class="player-float-box">
+    <img class="player-avatar" />
+    <div class="small"><strong>player1</strong></div>
+</div>
+<div id="playerBox2" class="player-float-box">
+    <img class="player-avatar" />
+    <div class="small"><strong>player2</strong></div>
+</div>
+<div id="playerBox3" class="player-float-box">
+    <img class="player-avatar" />
+    <div class="small"><strong>player3</strong></div>
+</div>
+<div id="playerBox4" class="player-float-box">
+    <img class="player-avatar" />
+    <div class="small"><strong>player4</strong></div>
 </div>
 
 <canvas id="gameCanvas"></canvas>

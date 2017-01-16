@@ -11,6 +11,8 @@
     width: 100vw;
     height: 100vh;
     display:block;
+
+    /*opacity: .05;*/
 }
 
 #loadingResourcesDiv {
@@ -23,6 +25,49 @@
     right: 0;
     margin:auto;
     text-align: center;
+}
+
+.player-float-box {
+    width: 250px;
+    height: 140px;
+    background:white;
+    position: fixed;
+    display: inline;
+    padding: 10px;
+
+    border-style: solid;
+    border-width: 1px;
+    border-color: #000;
+}
+
+.player-avatar {
+    width: 48px;
+    height: 48px;
+}
+
+#playerBox1 {
+    top: -1px;
+    left: -1px;
+    border-bottom-right-radius: 4px;
+    
+}
+
+#playerBox2 {
+    top: -1px;
+    right: -1px;
+    border-bottom-left-radius: 4px;
+}
+
+#playerBox3 {
+    bottom: 49px;
+    left: -1px;
+    border-top-right-radius: 4px;
+}
+
+#playerBox4 {
+    bottom: 49px;
+    right: -1px;
+    border-top-left-radius: 4px;
 }
 
 /*#gameLowerPanel {
