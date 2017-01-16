@@ -21,7 +21,10 @@ namespace JatanWebApp.Controllers
         // Get: Game/Create
         public ActionResult Create()
         {
-            return View(new CreateGameViewModel());
+            var userName = User.Identity.Name;
+            var defaultGameName = string.Format("{0}'s game", userName);
+
+            return View(new CreateGameViewModel() { DisplayName = defaultGameName });
         }
 
         // Post: Game/Create

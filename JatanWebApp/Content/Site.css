@@ -78,7 +78,7 @@
     margin: 0 auto;
     margin-top: 20px;
     padding: 40px;
-    padding-left: 100px;
+    padding-left: 80px;
     border: 1px solid #999999;
     border-radius: 4px;
     background-color: #f9f9f9;
@@ -90,6 +90,17 @@
     left: 200px;
     top: -70px;
     padding: 0px;
+}
+
+.form-group {
+    position: relative;
+}
+
+.group-label-icon {
+    display: inline;
+    position: absolute;
+    top: 35px;
+    right: 425px;
 }
 
 /* ====================== */
