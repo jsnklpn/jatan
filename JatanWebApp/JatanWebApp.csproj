@@ -171,6 +171,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\ExtensionMethods.cs" />
     <Compile Include="Models\DAL\ApplicationUser.cs" />
     <Compile Include="Models\DAL\JatanDbContext.cs" />
     <Compile Include="Models\ViewModels\CreateGameViewModel.cs" />
