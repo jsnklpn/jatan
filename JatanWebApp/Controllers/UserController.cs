@@ -157,7 +157,7 @@ namespace JatanWebApp.Controllers
                     System.Drawing.Bitmap resizedImage = null;
                     try
                     {
-                        resizedImage = ImageHelper.ResizeImage(avatarFile.InputStream, 64, 64, true);
+                        resizedImage = ImageHelper.ResizeImage(avatarFile.InputStream, 64, 64);
                     }
                     catch
                     {
