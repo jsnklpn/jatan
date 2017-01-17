@@ -16,6 +16,16 @@ namespace JatanWebApp.Models.DAL
     /// </summary>
     public class ApplicationUser : IdentityUser
     {
+        /// <summary>
+        /// DB foreign key for the avatar image
+        /// </summary>
+        public long? UserImageId { get; set; }
+
+        /// <summary>
+        /// The image for this user
+        /// </summary>
+        public virtual UserImage UserImage { get; set; }
+
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
             // Note the authenticationType must match the one defined in CookieAuthenticationOptions.AuthenticationType

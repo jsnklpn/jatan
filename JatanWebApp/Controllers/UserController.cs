@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using JatanWebApp.Helpers;
 using JatanWebApp.Models.DAL;
 using JatanWebApp.Models.ViewModels;
 using Microsoft.AspNet.Identity;
@@ -102,6 +106,92 @@ namespace JatanWebApp.Controllers
 
             // If we got this far, something failed, redisplay form
             return View(model);
+        }
+
+        // GET: User/Settings
+        [Authorize]
+        public ActionResult Settings()
+        {
+            var vm = new UserSettingsViewModel();
+
+            using (var db = new JatanDbContext())
+            {
+                var user = db.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
+                if (user != null)
+                {
+                    var userImage = user.UserImage;
+                    if (userImage != null)
+                    {
+                        vm.UserImageName = userImage.UserFileName;
+                        vm.UserImageUrl = userImage.ImagePath;
+                    }
+                }
+                
+            }
+
+            return View(vm);
+        }
+
+        // POST: User/Settings
+        [Authorize]
+        [HttpPost]
+        public ActionResult Settings(UserSettingsViewModel viewModel, HttpPostedFileBase avatarFile)
+        {
+            try
+            {
+                if (avatarFile != null)
+                {
+                    if (avatarFile.ContentLength == 0)
+                        throw new Exception("The file is empty.");
+                    if (avatarFile.ContentLength > 2000000)
+                        throw new Exception("The filesize exceeds 2MB.");
+
+                    var avatarPhysicalPath = HttpContext.Server.MapPath("~/Content/Images/avatars/");
+                    if (!Directory.Exists(avatarPhysicalPath))
+                        Directory.CreateDirectory(avatarPhysicalPath);
+
+                    string physicalFileName = string.Format("{0}{1}.{2}", User.Identity.Name, DateTime.UtcNow.Ticks, "jpg");
+                    string physicalFilePath = Path.Combine(avatarPhysicalPath, physicalFileName);
+                    string userFileName = avatarFile.FileName;
+
+                    System.Drawing.Bitmap resizedImage = null;
+                    try
+                    {
+                        resizedImage = ImageHelper.ResizeImage(avatarFile.InputStream, 64, 64, true);
+                    }
+                    catch
+                    {
+                        throw new Exception("The filetype is not supported.");
+                    }
+
+                    resizedImage.Save(Path.GetFullPath(physicalFilePath), ImageFormat.Jpeg);
+
+                    using (var db = new JatanDbContext())
+                    {
+                        var user = db.Users.FirstOrDefault(u => u.UserName == User.Identity.Name);
+                        if (user != null)
+                        {
+                            var newUserImage = new UserImage()
+                            {
+                                ImagePath = "~/Content/Images/avatars/" + physicalFileName,
+                                UserFileName = userFileName
+                            };
+                            db.UserImages.Add(newUserImage);
+                            db.SaveChanges();
+                            user.UserImageId = newUserImage.Id;
+                            db.SaveChanges();    
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = "Failed to upload image. " + ex.Message;
+                return View(viewModel);
+            }
+
+            TempData["success"] = "Settings saved successfully.";
+            return View(viewModel);
         }
 
         private void AddErrors(IdentityResult result)

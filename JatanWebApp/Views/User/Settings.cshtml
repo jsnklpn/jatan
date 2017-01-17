@@ -1,0 +1,91 @@
+﻿@using JatanWebApp.Models.ViewModels
+@model UserSettingsViewModel
+@{
+    ViewBag.Title = "Settings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts
+{
+    <script src="~/Scripts/User/settings.js"></script>
+}
+
+@section css
+{
+    <style type="text/css">
+        .player-avatar {
+            width: 64px;
+            height: 64px;
+        }
+    </style>
+}
+
+<div class="container body-content">
+
+    @using (Html.BeginForm("Settings", "User", FormMethod.Post, new {@class = "form-horizontal", role = "form", enctype = "multipart/form-data"}))
+    {
+        @Html.AntiForgeryToken()
+        <h4>Settings for @User.Identity.Name</h4>
+        <hr/>
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Avatar:</label>
+            <div class="col-sm-4">
+                @if (!string.IsNullOrEmpty(Model.UserImageUrl))
+                {
+                    <img class="player-avatar" src="@Model.UserImageUrl" alt="@User.Identity.Name's avatar"/>
+                }
+                else
+                {
+                    <img class="player-avatar" src="~/Content/Images/avatars/default.jpg" alt="default avatar"/>
+                }
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="avatarFile" class="col-sm-2 control-label">Upload new avatar:</label>
+            <div class="col-sm-4">
+                <div class="input-group">
+                    <label class="input-group-btn">
+                        <span class="btn btn-primary">
+                            Browse&hellip; <input name="avatarFile" id="avatarFile" type="file" style="display: none;">
+                        </span>
+                    </label>
+                    <input type="text" class="form-control" readonly>
+                </div>
+                <span class="help-block">
+                    Filesize cannot be larger than 2MB.
+                </span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-sm-4 col-sm-offset-2">
+                <input type="submit" value="Save Changes" class="btn btn-primary" />
+            </div>
+        </div>
+    }
+
+    <div class="mt-10">
+        @if (!String.IsNullOrEmpty((string)TempData["error"]))
+        {
+            <div role="alert" class="alert alert-danger">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                @TempData["error"]
+            </div>
+        }
+        else if (!String.IsNullOrEmpty((string)TempData["success"]))
+        {
+            <div role="alert" class="alert alert-success">
+                <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
+                <span class="sr-only">Success:</span>
+                @TempData["success"]
+            </div>
+        }
+    </div>
+
+</div>
+
+

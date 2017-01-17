@@ -24,7 +24,7 @@
                     @Html.AntiForgeryToken()
                     <ul class="nav navbar-nav navbar-right">
                         <li><p class="navbar-text">Hello, @User.Identity.GetUserName()</p></li>
-                        <li><a href="@Url.Action("Index", "Home")"><span class="glyphicon mr-1 glyphicon-wrench"></span>Settings</a></li>
+                        <li><a href="@Url.Action("Settings", "User")"><span class="glyphicon mr-1 glyphicon-wrench"></span>Settings</a></li>
                         <li><a href="javascript:document.getElementById('logoutForm').submit()" class="mr-10"><span class="glyphicon mr-1 glyphicon-log-out"></span>Log Out</a></li>
                     </ul>
                 }
