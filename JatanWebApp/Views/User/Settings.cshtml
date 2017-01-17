@@ -32,9 +32,9 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">Avatar:</label>
             <div class="col-sm-4">
-                @if (!string.IsNullOrEmpty(Model.UserImageUrl))
+                @if (!string.IsNullOrEmpty(Model.UserImagePath))
                 {
-                    <img class="player-avatar" src="@Model.UserImageUrl" alt="@User.Identity.Name's avatar"/>
+                    <img class="player-avatar" src="@Model.UserImagePath" alt="@User.Identity.Name's avatar"/>
                 }
                 else
                 {

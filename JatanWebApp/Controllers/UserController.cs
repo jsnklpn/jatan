@@ -123,7 +123,7 @@ namespace JatanWebApp.Controllers
                     if (userImage != null)
                     {
                         vm.UserImageName = userImage.UserFileName;
-                        vm.UserImageUrl = userImage.ImagePath;
+                        vm.UserImagePath = userImage.ImagePath;
                     }
                 }
                 
@@ -146,7 +146,7 @@ namespace JatanWebApp.Controllers
                     if (avatarFile.ContentLength > 2000000)
                         throw new Exception("The filesize exceeds 2MB.");
 
-                    var avatarPhysicalPath = HttpContext.Server.MapPath("~/Content/Images/avatars/");
+                    var avatarPhysicalPath = HttpContext.Server.MapPath(@"~/Content/Images/avatars/");
                     if (!Directory.Exists(avatarPhysicalPath))
                         Directory.CreateDirectory(avatarPhysicalPath);
 
@@ -157,11 +157,11 @@ namespace JatanWebApp.Controllers
                     System.Drawing.Bitmap resizedImage = null;
                     try
                     {
-                        resizedImage = ImageHelper.ResizeImage(avatarFile.InputStream, 64, 64);
+                        resizedImage = ImageHelper.ResizeImage(avatarFile.InputStream, 128, 128);
                     }
                     catch
                     {
-                        throw new Exception("The filetype is not supported.");
+                        throw new Exception("The image type is not supported.");
                     }
 
                     resizedImage.Save(Path.GetFullPath(physicalFilePath), ImageFormat.Jpeg);
@@ -173,13 +173,16 @@ namespace JatanWebApp.Controllers
                         {
                             var newUserImage = new UserImage()
                             {
-                                ImagePath = "~/Content/Images/avatars/" + physicalFileName,
+                                ImagePath = @"/Content/Images/avatars/" + physicalFileName,
                                 UserFileName = userFileName
                             };
                             db.UserImages.Add(newUserImage);
                             db.SaveChanges();
                             user.UserImageId = newUserImage.Id;
-                            db.SaveChanges();    
+                            db.SaveChanges();
+
+                            viewModel.UserImageName = newUserImage.UserFileName;
+                            viewModel.UserImagePath = newUserImage.ImagePath;
                         }
                     }
                 }

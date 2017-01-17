@@ -11,7 +11,7 @@ namespace JatanWebApp.Models.ViewModels
         [Display(Name = "User Image")]
         public string UserImageName { get; set; }
 
-        [Display(Name = "User Image URL")]
-        public string UserImageUrl { get; set; }
+        [Display(Name = "User Image Path")]
+        public string UserImagePath { get; set; }
     }
 }
