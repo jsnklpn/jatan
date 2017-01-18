@@ -1,4 +1,6 @@
-﻿@{
+﻿@using JatanWebApp.SignalR
+@model GameLobby
+@{
     ViewBag.Title = "";
     ViewBag.ShowNavbar = false;
 }
@@ -9,7 +11,7 @@
     <script src="~/signalr/hubs"></script>
     <script src="~/Scripts/createjs-2015.11.26.min.js"></script>
     <script src="~/Scripts/Game/math.js"></script>
-    <script src="~/Scripts/Game/game_globals.js"></script>
+    <script src="~/Scripts/Game/game_constants.js"></script>
     <script src="~/Scripts/Game/game.js"></script>
 }
 
@@ -40,8 +42,8 @@
 </div>
 
 <div id="chatBox">
-    <ul id="chatBoxList">
-        <li>Welcome to Jatan!</li>
+    <ul id="chatBoxList" oncontextmenu="return false;">
+        <li>Welcome to @Model.Name!</li>
     </ul>
     <div>
         <input id="chatBoxInputText" type="text" placeholder=" Send message" />
@@ -66,17 +68,3 @@
 </div>
 
 <canvas id="gameCanvas"></canvas>
-
-@*<div id="gameLowerPanel">
-        <div id="chatBox">
-            <ul id="chatBoxList">
-                <li>Welcome to Jatan!</li>
-            </ul>
-            <div>
-                <input id="chatBoxInputText" type="text" placeholder=" Send message"/>
-            </div>
-        </div>
-        <div id="lowerControls">
-            <p>There are more controls here</p>
-        </div>
-    </div>*@

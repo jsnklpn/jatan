@@ -2,6 +2,37 @@
 // game.js --- This is where all of the client-side game code is located.
 //========================================================================
 
+// Global variables
+
+var _serverGameHub = null; // signal-R hub
+var _currentGameManager = null;
+// Resource tiles and ports are not sent with every manager update, so we save a separate reference to them
+var _currentResourceTiles = null;
+var _currentPorts = null;
+
+var _loadQueue = null;
+var _canvas = null;
+var _stage = null;
+var _water = null;
+var _boardContainer = null;
+var _boardTileContainer = null; // child to the board container
+var _boardRoadContainer = null; // child to the board container
+var _boardBuildingContainer = null; // child to the board container
+var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
+
+// change this to allow the user to select various things on the UI
+var _selectionMode = SelectionMode.None;
+
+var _activeMouseButton = null;
+var _boardDragMouseOffsetX = null;
+var _boardDragMouseOffsetY = null;
+
+var _hexToBeachMap = {}; // Populated when beach tiles are drawn
+var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
+var _portsPopulated = false;
+
+
+
 $(function () {
 
     // disable right click on canvas
@@ -9,6 +40,7 @@ $(function () {
 
     _canvas = $("#gameCanvas")[0];
     initSignalR();
+    initHtmlUI();
     loadGameResources();
 });
 
@@ -18,11 +50,11 @@ function initSignalR() {
 
     // Create a function that the hub can call to broadcast messages.
     gameHub.client.broadcastMessage = function (name, message) {
-        var encodedName = $("<div />").text(name).html();
-        var encodedMsg = $("<div />").text(message).html();
+        var encodedName = $("<span />").text(name).html();
+        var encodedMsg = $("<span />").text(message).html();
 
         $("#chatBoxList").append("<li><strong>" + encodedName + "</strong>:&nbsp;&nbsp;" + encodedMsg + "</li>");
-        $("#chatBoxList").animate({ scrollTop: $("#chatBoxList")[0].scrollHeight }, 10);
+        $("#chatBoxList").animate({ scrollTop: $("#chatBoxList")[0].scrollHeight }, 100);
     };
 
     gameHub.client.updateGameManager = function (gameManager) {
@@ -31,36 +63,36 @@ function initSignalR() {
 
     // Start the connection.
     $.connection.hub.start().done(function () {
-
         // save a reference to the server hub object.
         _serverGameHub = gameHub.server;
 
-        initButtons();
-
-        //$("#chatBoxInputText").keypress(function (event) {
-        //    var keycode = (event.keyCode ? event.keyCode : event.which);
-        //    // Enter key pressed
-        //    if (keycode == "13") {
-        //        var msgToSend = $("#chatBoxInputText").val();
-        //        if (msgToSend.length > 0) {
-
-        //            // temp
-        //            if (msgToSend.toLowerCase() === "update")
-        //                gameHub.server.getGameManagerUpdate();
-        //            else {
-        //                gameHub.server.sendChatMessage("Jason", msgToSend);
-        //                $("#chatBoxInputText").val("").focus();
-        //            }
-        //        }
-        //    }
-        //});
+        initHubButtons();
     });
 }
 
-function initButtons() {
+function initHubButtons() {
     $("#btnUpdateGameManager").click(function () {
         var fullUpdate = (!_portsPopulated || getDictLength(_hexToResourceTileMap) === 0);
         _serverGameHub.getGameManagerUpdate(fullUpdate);
+    });
+}
+
+function initHtmlUI() {
+    $("#chatBoxInputText").keyup(function (event) {
+        var keycode = (event.keyCode ? event.keyCode : event.which);
+        // Enter key pressed
+        if (keycode === 13) {
+            if (_serverGameHub) {
+                var msgToSend = $("#chatBoxInputText").val().trim();
+                if (msgToSend.length > 0) {
+                    _serverGameHub.sendChatMessage(msgToSend);
+                    $(this).val("").focus();
+                }
+            }
+        }
+        else if (keycode === 27) {
+            $(this).val("").focus();
+        }
     });
 }
 

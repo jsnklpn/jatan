@@ -120,10 +120,10 @@ namespace JatanWebApp.SignalR
 
         #endregion
 
-        public void SendChatMessage(string name, string message)
+        public void SendChatMessage(string message)
         {
             // Call the broadcastMessage method to update clients.
-            Clients.All.broadcastMessage(name, message);
+            Clients.All.broadcastMessage(GetUser().Username, message);
         }
 
         /// <summary>

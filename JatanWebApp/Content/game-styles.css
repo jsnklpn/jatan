@@ -11,6 +11,7 @@
     width: 100vw;
     height: 100vh;
     display:block;
+    /*opacity: 0.05;*/
 }
 
 #loadingResourcesDiv {
@@ -86,8 +87,8 @@
 #chatBoxInputText {
     position: absolute;
     bottom: 0;
-    color: #e0e0e0;
-    background-color: rgba(0,0,0,0.55);
+    color: white;
+    background-color: rgba(0,0,0,0.5);
 }
 
 #chatBoxList {
@@ -97,12 +98,28 @@
     top: 0;
     bottom: 0px;
     padding: 4px;
-    margin-bottom: 32px;
-    overflow: auto;
+    margin-bottom: 35px;
+    overflow: hidden;
     list-style: none;
-    font-size: 13px;
-    color: #e0e0e0;
-    background-color: rgba(0,0,0,0.4);
+    cursor: text;
+    background-color: transparent;
+}
+
+#chatBoxList:hover { 
+    overflow:auto;
+}
+
+#chatBoxList > li {
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: -3px;
+    margin-bottom: -3px;
+    color: white;
+    text-shadow:
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
 }
 
 input[type="text"] {
@@ -123,14 +140,14 @@ input[type="text"]:focus {
     outline: none;
 }
 ::-webkit-input-placeholder {
-  color: #e0e0e0;
+    color: #e0e0e0;
 }
 ::-moz-placeholder {
-  color: #e0e0e0;
+    color: #e0e0e0;
 }
 :-ms-input-placeholder {
-  color: #e0e0e0;
+    color: #e0e0e0;
 }
 :-moz-placeholder {
-  color: #e0e0e0;
+    color: #e0e0e0;
 }

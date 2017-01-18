@@ -296,7 +296,7 @@
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\createjs-2015.11.26.min.js" />
     <Content Include="Scripts\Game\game.js" />
-    <Content Include="Scripts\Game\game_globals.js" />
+    <Content Include="Scripts\Game\game_constants.js" />
     <Content Include="Scripts\Game\join.js" />
     <Content Include="Scripts\Game\math.js" />
     <Content Include="Scripts\jquery-3.1.1.js" />

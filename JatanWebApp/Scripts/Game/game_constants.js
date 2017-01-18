@@ -1,33 +1,4 @@
-﻿// Global variables
-
-var _serverGameHub = null; // signal-R hub
-var _currentGameManager = null;
-// Resource tiles and ports are not sent with every manager update, so we save a separate reference to them
-var _currentResourceTiles = null;
-var _currentPorts = null;
-
-var _loadQueue = null;
-var _canvas = null;
-var _stage = null;
-var _water = null;
-var _boardContainer = null;
-var _boardTileContainer = null; // child to the board container
-var _boardRoadContainer = null; // child to the board container
-var _boardBuildingContainer = null; // child to the board container
-var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
-
-// change this to allow the user to select various things on the UI
-var _selectionMode = 0;
-
-var _activeMouseButton = null;
-var _boardDragMouseOffsetX = null;
-var _boardDragMouseOffsetY = null;
-
-var _hexToBeachMap = {}; // Populated when beach tiles are drawn
-var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
-var _portsPopulated = false;
-
-// These hitboxes are the "game" size of image assets.
+﻿// These hitboxes are the "game" size of image assets.
 // These values are used for setting the proper center-point of the image and for alignment.
 // We need to use these values because the actual image sizes vary slightly between items
 // of the same time. For example, the Ore tile is taller than the others because of its mountain.

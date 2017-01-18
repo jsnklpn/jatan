@@ -75,7 +75,7 @@ namespace JatanWebApp.Controllers
                 {
                     var userName = User.Identity.Name;
                     if (lobby.Players.Contains(userName))
-                        return View();
+                        return View(lobby);
 
                     return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
                 }
