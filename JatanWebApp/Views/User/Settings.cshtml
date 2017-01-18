@@ -1,8 +1,10 @@
-﻿@using JatanWebApp.Models.ViewModels
+﻿@using JatanWebApp.Helpers
+@using JatanWebApp.Models.ViewModels
 @model UserSettingsViewModel
 @{
     ViewBag.Title = "Settings";
     Layout = "~/Views/Shared/_Layout.cshtml";
+    string avatarPath = User.Identity.GetAvatarPath();
 }
 
 @section scripts
@@ -14,8 +16,8 @@
 {
     <style type="text/css">
         .player-avatar {
-            width: 64px;
-            height: 64px;
+            width: 128px;
+            height: 128px;
         }
     </style>
 }
@@ -32,14 +34,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">Avatar:</label>
             <div class="col-sm-4">
-                @if (!string.IsNullOrEmpty(Model.UserImagePath))
-                {
-                    <img class="player-avatar" src="@Model.UserImagePath" alt="@User.Identity.Name's avatar"/>
-                }
-                else
-                {
-                    <img class="player-avatar" src="~/Content/Images/avatars/default.jpg" alt="default avatar"/>
-                }
+                <img class="player-avatar" src="@avatarPath" alt="@User.Identity.Name's avatar"/>
             </div>
         </div>
 
