@@ -39,6 +39,12 @@
         <li><a id="btnTrade" href="#">Trade</a></li>
         <li><a id="btnEndTurn" href="#">End Turn</a></li>
     </ul>
+    <ul class="nav navbar-nav navbar-right">
+        <li>
+            <p class="navbar-text">GameState: <span id="gameState">@Model.GameManager.GameState</span></p>
+            <p class="navbar-text">TurnState: <span id="turnState">@Model.GameManager.PlayerTurnState</span></p>
+        </li>
+    </ul>
 </div>
 
 <div id="chatBox">

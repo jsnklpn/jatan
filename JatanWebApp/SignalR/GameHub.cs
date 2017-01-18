@@ -102,24 +102,40 @@ namespace JatanWebApp.SignalR
             return GetUser(userName);
         }
 
+        private static GameLobby GetGameLobby(string userName)
+        {
+            return GameLobbyManager.GetGameLobbyForPlayer(userName);
+        }
+
         private GameLobby GetGameLobby()
         {
             var user = GetUser();
             if (user == null) return null;
-            return GameLobbyManager.GetGameLobbyForPlayer(user.Username);
+            return GetGameLobby(user.Username);
         }
 
-        private int GetJatanPlayerId()
+        private static int GetJatanPlayerId(string userName)
         {
-            string userName = Context.User.Identity.Name;
-            var jp = GetGameLobby().GameManager.GetPlayerFromName(userName);
+            var lobby = GameLobbyManager.GetGameLobbyForPlayer(userName);
+            if (lobby == null)
+                return -1;
+            var jp = lobby.GameManager.GetPlayerFromName(userName);
             if (jp == null)
                 return -1;
             return jp.Id;
         }
 
+        private int GetJatanPlayerId()
+        {
+            string userName = Context.User.Identity.Name;
+            return GetJatanPlayerId(userName);
+        }
+
         #endregion
 
+        /// <summary>
+        /// Broadcasts a chat message to all connected clients.
+        /// </summary>
         public void SendChatMessage(string message)
         {
             // Call the broadcastMessage method to update clients.
@@ -136,6 +152,50 @@ namespace JatanWebApp.SignalR
             var manager = GetGameLobby().GameManager;
             var managerDto = new GameManagerDTO(manager, callerPlayerId, fullUpdate);
             Clients.Caller.updateGameManager(managerDto);
+        }
+
+        /// <summary>
+        /// Starts the game. Will only work if called by the game owner.
+        /// </summary>
+        public void StartGame()
+        {
+            var user = GetUser();
+            var lobby = GetGameLobby();
+
+            // Only the owned can start the game.
+            if (lobby.InProgress || user.Username != lobby.Owner)
+                return;
+
+            lobby.GameManager.StartNewGame();
+            UpdateAllClientGameManagers(true);
+        }
+
+        /// <summary>
+        /// Ends the turn of the current player.
+        /// </summary>
+        public void EndTurn()
+        {
+            var playerId = GetJatanPlayerId();
+            var lobby = GetGameLobby();
+            var result = lobby.GameManager.PlayerEndTurn(playerId);
+            if (result.Succeeded)
+            {
+                UpdateAllClientGameManagers();
+            }
+        }
+
+        private void UpdateAllClientGameManagers(bool fullUpdate = false)
+        {
+            foreach (var userName in HubUsers.Keys)
+            {
+                var lobby = GetGameLobby();
+                var userId = GetJatanPlayerId(userName);
+                var managerDto = new GameManagerDTO(lobby.GameManager, userId, fullUpdate);
+                foreach (var connectionId in HubUsers[userName].ConnectionIds)
+                {
+                    Clients.Client(connectionId).updateGameManager(managerDto);
+                }
+            }
         }
     }
 }

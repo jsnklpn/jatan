@@ -75,6 +75,12 @@ function initHubButtons() {
         var fullUpdate = (!_portsPopulated || getDictLength(_hexToResourceTileMap) === 0);
         _serverGameHub.getGameManagerUpdate(fullUpdate);
     });
+    $("#btnStartGame").click(function () {
+        _serverGameHub.startGame();
+    });
+    $("#btnEndTurn").click(function () {
+        _serverGameHub.endTurn();
+    });
 }
 
 function initHtmlUI() {
@@ -723,13 +729,13 @@ function updateGameModel(gameManager) {
     var currentDiceRoll = gameManager["CurrentDiceRoll"];
     var players = gameManager["Players"];
 
-    if (resourceTiles) {
+    if (resourceTiles && getDictLength(resourceTiles) > 0) {
         _currentResourceTiles = resourceTiles;
         // if we haven't populated the resource tiles on the board yet, do it.
         if (getDictLength(_hexToResourceTileMap) === 0)
             populateResourceTiles();
     }
-    if (ports) {
+    if (ports && getDictLength(ports) > 0) {
         _currentPorts = ports;
         if (!_portsPopulated)
             populatePorts();
@@ -780,6 +786,10 @@ function updateGameModel(gameManager) {
                 break;
         }
     }
+
+    // TODO: Temp code
+    $("#gameState").text(gameState);
+    $("#turnState").text(playerTurnState);
 
     // Draw when everything has been populated
     _invalidateCanvas = true;
