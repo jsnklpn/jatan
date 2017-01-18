@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Web;
+using JatanWebApp.Models.DAL;
 
 namespace JatanWebApp.Helpers
 {
@@ -16,6 +18,24 @@ namespace JatanWebApp.Helpers
         public static Jatan.Models.Player GetPlayerFromName(this Jatan.GameLogic.GameManager manager, string userName)
         {
             return manager.Players.FirstOrDefault(p => p.Name == userName);
+        }
+
+        public static string GetAvatarPath(this IIdentity identity)
+        {
+            var userName = identity.Name;
+            using (var db = new JatanDbContext())
+            {
+                var user = db.Users.FirstOrDefault(u => u.UserName == userName);
+                if (user != null)
+                {
+                    var userImage = user.UserImage;
+                    if (userImage != null)
+                    {
+                        return userImage.ImagePath;
+                    }
+                }
+            }
+            return "";
         }
     }
 }

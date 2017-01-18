@@ -1,4 +1,5 @@
-﻿@using Microsoft.AspNet.Identity
+﻿@using JatanWebApp.Helpers
+@using Microsoft.AspNet.Identity
 <div class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -13,9 +14,9 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li><a href="@Url.Action("Create", "Game")"><span class="glyphicon mr-1 glyphicon-tree-conifer"></span>Create Game</a></li>
-                <li><a href="@Url.Action("Join", "Game")"><span class="glyphicon mr-1 glyphicon-globe"></span>Join Game</a></li>
-                <li><a href="@Url.Action("TopPlayers", "Home")"><span class="glyphicon mr-1 glyphicon-stats"></span>Top Players</a></li>
+                <li><a href="@Url.Action("Create", "Game")"><span class="glyphicon glyphicon-tree-conifer"></span> Create Game</a></li>
+                <li><a href="@Url.Action("Join", "Game")"><span class="glyphicon glyphicon-globe"></span> Join Game</a></li>
+                <li><a href="@Url.Action("TopPlayers", "Home")"><span class="glyphicon glyphicon-stats"></span> Top Players</a></li>
             </ul>
             @if (Request.IsAuthenticated)
             {
@@ -23,17 +24,27 @@
                 {
                     @Html.AntiForgeryToken()
                     <ul class="nav navbar-nav navbar-right">
+
                         <li><p class="navbar-text">Hello, @User.Identity.GetUserName()</p></li>
-                        <li><a href="@Url.Action("Settings", "User")"><span class="glyphicon mr-1 glyphicon-wrench"></span>Settings</a></li>
-                        <li><a href="javascript:document.getElementById('logoutForm').submit()" class="mr-10"><span class="glyphicon mr-1 glyphicon-log-out"></span>Log Out</a></li>
+
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle mr-10" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                <img src="@User.Identity.GetAvatarPath()" class="navbar-avatar" /> <span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="@Url.Action("Settings", "User")"><span class="glyphicon glyphicon-wrench"></span> Settings</a></li>
+                                <li><a href="javascript:document.getElementById('logoutForm').submit()" class="mr-10"><span class="glyphicon glyphicon-log-out"></span> Log Out</a></li>
+                            </ul>
+                        </li>
+                        
                     </ul>
                 }
             }
             else
             {
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="@Url.Action("Register", "User")"><span class="glyphicon mr-1 glyphicon-pencil"></span>Register</a></li>
-                    <li><a href="@Url.Action("Login", "User")" class="mr-10"><span class="glyphicon mr-1 glyphicon-log-in"></span>Log In</a></li>
+                    <li><a href="@Url.Action("Register", "User")"><span class="glyphicon glyphicon-pencil"></span> Register</a></li>
+                    <li><a href="@Url.Action("Login", "User")" class="mr-10"><span class="glyphicon glyphicon-log-in"></span> Log In</a></li>
                 </ul>
             }
         </div>
