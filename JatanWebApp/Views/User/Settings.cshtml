@@ -34,14 +34,7 @@
         <div class="form-group">
             <label class="col-sm-2 control-label">Avatar:</label>
             <div class="col-sm-4">
-                @if (!string.IsNullOrEmpty(avatarPath))
-                {
-                    <img class="player-avatar" src="@avatarPath" alt="@User.Identity.Name's avatar"/>
-                }
-                else
-                {
-                    <img class="player-avatar" src="~/Content/Images/avatars/default.jpg" alt="default avatar"/>
-                }
+                <img class="player-avatar" src="@avatarPath" alt="@User.Identity.Name's avatar"/>
             </div>
         </div>
 

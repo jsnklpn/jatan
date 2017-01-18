@@ -35,7 +35,7 @@ namespace JatanWebApp.Helpers
                     }
                 }
             }
-            return "";
+            return @"/Content/Images/avatars/default.jpg";
         }
     }
 }
