@@ -16,6 +16,9 @@ var _boardRoadContainer = null; // child to the board container
 var _boardBuildingContainer = null; // child to the board container
 var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
 
+// change this to allow the user to select various things on the UI
+var _selectionMode = 0;
+
 var _activeMouseButton = null;
 var _boardDragMouseOffsetX = null;
 var _boardDragMouseOffsetY = null;
@@ -208,3 +211,11 @@ var _hexKeys = [
     "(-1,-2)",
     "(0,-2)"
 ];
+
+var SelectionMode = {
+    None: 0,
+    Hex: 1,
+    Edge: 2,
+    Point: 3,
+    Card: 4
+};
