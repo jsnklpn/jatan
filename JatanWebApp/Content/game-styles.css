@@ -46,6 +46,11 @@
     height: 48px;
 }
 
+.player-name {
+    font-size: 12px;
+    font-weight: bold;    
+}
+
 #playerBox1 {
     top: -1px;
     left: -1px;

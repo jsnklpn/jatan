@@ -40,7 +40,8 @@ namespace JatanWebApp.Controllers
             }
 
             var userName = User.Identity.Name;
-            var lobby = GameLobbyManager.CreateNewGame(userName, viewModel);
+            var avatarPath = User.Identity.GetAvatarPath();
+            var lobby = GameLobbyManager.CreateNewGame(userName, avatarPath, viewModel);
 
             return RedirectToAction("Instance", new { gameId = lobby.Uid });
         }

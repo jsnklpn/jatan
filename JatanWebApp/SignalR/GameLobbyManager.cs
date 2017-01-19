@@ -30,12 +30,12 @@ namespace JatanWebApp.SignalR
         /// Creates a new game with the specified owner and settings. The owner is
         /// auto-added to the list of players. Returns the new game lobby instance.
         /// </summary>
-        public static GameLobby CreateNewGame(string ownerUserName, CreateGameViewModel model)
+        public static GameLobby CreateNewGame(string ownerUserName, string ownerAvatarPath, CreateGameViewModel model)
         {
             // Remove any game that may be in progress from the current user.
             CancelGame(ownerUserName);
 
-            var lobby = new GameLobby(ownerUserName, model);
+            var lobby = new GameLobby(ownerUserName, ownerAvatarPath, model);
             GameLobbies[ownerUserName] = lobby;
             return lobby;
         }
@@ -75,6 +75,14 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public static Jatan.Core.ActionResult ConnectToGame(string userName, string ownerUserName, string password, string avatarPath)
         {
+            // First, disconnect from any active games.
+            var currentLobby = GetGameLobbyForPlayer(userName);
+            if (currentLobby != null)
+            {
+                currentLobby.AbandonGame(userName);
+                // TODO: inform players that someone left.
+            }
+
             if (GameLobbies.ContainsKey(ownerUserName))
             {
                 var lobby = GameLobbies[ownerUserName];
@@ -83,11 +91,12 @@ namespace JatanWebApp.SignalR
                 if (lobby.Players.Contains(userName))
                     return Jatan.Core.ActionResult.CreateSuccess();
 
-                var result =  lobby.JoinGame(userName, password);
+                var result = lobby.JoinGame(userName, password, avatarPath);
                 if (result.Succeeded)
                 {
-                    // Tell the hub that a new player joined.
-                    GameHubReference.Context.Clients.All.newPlayerJoined(new UserAccountInfoDTO(userName, avatarPath));
+                    // Tell all hub clients in the lobby that a new player has joined.
+                    var connections = GameHub.GetHubConnectionsForGameLobby(lobby.Uid);
+                    GameHubReference.Context.Clients.Clients(connections).newPlayerJoined(userName);
                 }
                 return result;
             }

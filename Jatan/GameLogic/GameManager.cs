@@ -32,6 +32,9 @@ namespace Jatan.GameLogic
         // <playerId, armySize>
         private Tuple<int, int> _largestArmy;
 
+        private int _idCounter;
+        private PlayerColor _colorCounter;
+
         #region public properties
 
         /// <summary>
@@ -166,6 +169,8 @@ namespace Jatan.GameLogic
             _tradeHelper = new TradeHelper();
             _playersCardsToLose = new Dictionary<Player, int>();
             _playersToStealFrom = new List<Player>();
+            _idCounter = 1;
+            _colorCounter = PlayerColor.Blue;
         }
 
         /// <summary>
@@ -199,8 +204,6 @@ namespace Jatan.GameLogic
             _playerTurnState = PlayerTurnState.PlacingBuilding; // TODO: Possibly wait for something to trigger the game start.
         }
 
-        private int _idCounter;
-        private PlayerColor _colorCounter = PlayerColor.Blue;
         public void AddPlayer(string name)
         {
             _players.Add(new Player(_idCounter++, name, _colorCounter++));
@@ -222,22 +225,27 @@ namespace Jatan.GameLogic
             if (!_players.Select(p => p.Id).Contains(playerId))
                 return ActionResult.CreateFailed("Player is not currently in this game.");
 
-            if (_gameState != GameState.GameInProgress)
-                return ActionResult.CreateFailed("Only a game in progress can be abandoned.");
-
-            if (ActivePlayer != null && ActivePlayer.Id == playerId)
+            if (_gameState == GameState.GameInProgress)
             {
-                // The player leaving is the active player.
+                if (ActivePlayer != null && ActivePlayer.Id == playerId)
+                {
+                    // The player leaving is the active player.
 
-                _tradeHelper.ClearAllOffers();
-                _roadBuildingRoadsRemaining = 0;
-                _currentDiceRoll = 0;
+                    _tradeHelper.ClearAllOffers();
+                    _roadBuildingRoadsRemaining = 0;
+                    _currentDiceRoll = 0;
 
-                AdvanceToNextPlayerTurn();
+                    AdvanceToNextPlayerTurn();
+                }
+                else // The player leaving is a non-active player
+                {
+                    _tradeHelper.CancelCounterOffer(playerId);
+                }    
             }
-            else // The player leaving is a non-active player
+            else if (_gameState == GameState.InitialPlacement)
             {
-                _tradeHelper.CancelCounterOffer(playerId);
+                // If a player leaves during initial placement, just restart the game.
+                StartNewGame();
             }
 
             _players.RemoveAll(p => p.Id == playerId);

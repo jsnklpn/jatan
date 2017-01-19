@@ -32,7 +32,6 @@ var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
 var _portsPopulated = false;
 
 
-
 $(function () {
 
     // disable right click on canvas
@@ -59,6 +58,11 @@ function initSignalR() {
 
     gameHub.client.updateGameManager = function (gameManager) {
         updateGameModel(gameManager);
+    }
+
+    gameHub.client.newPlayerJoined = function (newPlayerName) {
+        writeTextToChat(newPlayerName + " has joined the game.");
+        _serverGameHub.getGameManagerUpdate(true); // A new player joined, so lets get a full game update.
     }
 
     // Start the connection.
@@ -741,6 +745,7 @@ function updateGameModel(gameManager) {
             populatePorts();
     }
 
+    populatePlayers(players);
     populateBuildings();
     populateRoads();
 
@@ -795,6 +800,30 @@ function updateGameModel(gameManager) {
     _invalidateCanvas = true;
 }
 
+function populatePlayers(players) {
+    var playerBoxesPopulated = [];
+    for (var i = 0; i < players.length; i++) {
+        var player = players[i];
+        var id = player["Id"];
+        var name = player["Name"];
+        var avatarPath = player["AvatarPath"];
+        var boxId = "#playerBox" + id.toString();
+
+        $(boxId).removeClass("hidden");
+        $(boxId + " > .player-name").text(name);
+        if (avatarPath) {
+            $(boxId + " > .player-avatar").attr("src", avatarPath);
+        }
+        playerBoxesPopulated.push(id);
+    }
+    // Hide the player boxes that don't have a player.
+    for (var i = 1; i <= 4; i++) {
+        if (playerBoxesPopulated.indexOf(i) === -1) {
+            var boxId = "#playerBox" + i.toString();
+            $(boxId).addClass("hidden");
+        }
+    }
+}
 
 //===========================
 // Drawing helper functions

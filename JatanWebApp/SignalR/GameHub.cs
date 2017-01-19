@@ -29,6 +29,37 @@ namespace JatanWebApp.SignalR
             get { return _hubUsers; }
         }
 
+        /// <summary>
+        /// Returns a list of hub users for a specific game.
+        /// </summary>
+        public static List<HubUser> GetHubUsersForGameLobby(string lobbyId)
+        {
+            var result = new List<HubUser>();
+            foreach (var user in _hubUsers)
+            {
+                var lobby = GetGameLobby(user.Key);
+                if (lobby != null && lobby.Uid == lobbyId)
+                {
+                    result.Add(user.Value);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of hub connection ids for a specific game.
+        /// </summary>
+        public static List<string> GetHubConnectionsForGameLobby(string lobbyId)
+        {
+            var result = new List<string>();
+            var users = GetHubUsersForGameLobby(lobbyId);
+            foreach (var user in users)
+            {
+                result.AddRange(user.ConnectionIds);
+            }
+            return result;
+        }
+
         static GameHub()
         {
             _hubUsers = new ConcurrentDictionary<string, HubUser>();
@@ -89,6 +120,11 @@ namespace JatanWebApp.SignalR
 
         #endregion
 
+        private string GetUserName()
+        {
+            return Context.User.Identity.Name;
+        }
+
         private static HubUser GetUser(string userName)
         {
             HubUser user;
@@ -98,7 +134,7 @@ namespace JatanWebApp.SignalR
 
         private HubUser GetUser()
         {
-            string userName = Context.User.Identity.Name;
+            string userName = GetUserName();
             return GetUser(userName);
         }
 
@@ -139,7 +175,7 @@ namespace JatanWebApp.SignalR
         public void SendChatMessage(string message)
         {
             // Call the broadcastMessage method to update clients.
-            Clients.All.broadcastMessage(GetUser().Username, message);
+            Clients.All.broadcastMessage(GetUserName(), message);
         }
 
         /// <summary>
@@ -149,8 +185,8 @@ namespace JatanWebApp.SignalR
         public void GetGameManagerUpdate(bool fullUpdate)
         {
             var callerPlayerId = GetJatanPlayerId();
-            var manager = GetGameLobby().GameManager;
-            var managerDto = new GameManagerDTO(manager, callerPlayerId, fullUpdate);
+            var lobby = GetGameLobby();
+            var managerDto = lobby.ToGameManagerDTO(GetUserName(), fullUpdate, fullUpdate);
             Clients.Caller.updateGameManager(managerDto);
         }
 
@@ -159,11 +195,11 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public void StartGame()
         {
-            var user = GetUser();
+            var userName = GetUserName();
             var lobby = GetGameLobby();
 
             // Only the owned can start the game.
-            if (lobby.InProgress || user.Username != lobby.Owner)
+            if (lobby.InProgress || GetUserName() != lobby.Owner)
                 return;
 
             lobby.GameManager.StartNewGame();
@@ -189,8 +225,7 @@ namespace JatanWebApp.SignalR
             foreach (var userName in HubUsers.Keys)
             {
                 var lobby = GetGameLobby();
-                var userId = GetJatanPlayerId(userName);
-                var managerDto = new GameManagerDTO(lobby.GameManager, userId, fullUpdate);
+                var managerDto = lobby.ToGameManagerDTO(userName, fullUpdate, fullUpdate);
                 foreach (var connectionId in HubUsers[userName].ConnectionIds)
                 {
                     Clients.Client(connectionId).updateGameManager(managerDto);

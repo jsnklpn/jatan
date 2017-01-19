@@ -20,8 +20,10 @@ namespace JatanWebApp.SignalR.DTO
         public int CurrentDiceRoll { get; set; }
         public List<PlayerDTO> Players { get; set; }
 
-        public GameManagerDTO(GameManager manager, int requestingPlayerId, bool includeBoardConstants)
+        public GameManagerDTO(GameLobby lobby, int requestingPlayerId, bool includeBoardConstants, bool includeAvatarPaths)
         {
+            var manager = lobby.GameManager;
+
             this.MyPlayerId = requestingPlayerId;
             this.GameBoard = new GameBoardDTO(manager.GameBoard, includeBoardConstants);
             this.GameState = manager.GameState;
@@ -29,9 +31,14 @@ namespace JatanWebApp.SignalR.DTO
             this.ActivePlayerId = (manager.ActivePlayer != null) ? manager.ActivePlayer.Id : -1;
             this.CurrentDiceRoll = manager.CurrentDiceRoll;
             this.Players = new List<PlayerDTO>();
-            foreach (var p in manager.Players)
+            foreach (var p in manager.Players.OrderBy(p => p.Id))
             {
-                this.Players.Add(new PlayerDTO(p, (p.Id == requestingPlayerId)));
+                var playerDto = new PlayerDTO(p, (p.Id == requestingPlayerId));
+                if (includeAvatarPaths)
+                {
+                    playerDto.AvatarPath = lobby.AvatarPaths.ContainsKey(p.Name) ? lobby.AvatarPaths[p.Name] : null;
+                }
+                this.Players.Add(playerDto);
             }
         }
     }

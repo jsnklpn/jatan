@@ -8,6 +8,7 @@ using Jatan.Models;
 using JatanWebApp.Helpers;
 using JatanWebApp.Models.DAL;
 using JatanWebApp.Models.ViewModels;
+using JatanWebApp.SignalR.DTO;
 
 namespace JatanWebApp.SignalR
 {
@@ -42,24 +43,36 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public string Owner { get; private set; }
         /// <summary>
-        /// Gets the players (usernames) currently in the game.
+        /// Gets the players (usernames) currently in the game, ordered by playerId.
         /// </summary>
-        public List<string> Players { get { return this.GameManager.Players.Select(p => p.Name).ToList(); } }
+        public List<string> Players { get { return this.GameManager.Players.OrderBy(p => p.Id).Select(p => p.Name).ToList(); } }
+        /// <summary>
+        /// Gets the dictionary of avatar paths. The key is the username.
+        /// </summary>
+        public Dictionary<string, string> AvatarPaths { get; private set; }
         /// <summary>
         /// Indicates if the game has started. If true, players will no longer be allowed to join.
         /// </summary>
         public bool InProgress { get { return this.GameManager.GameState != GameState.NotStarted; } }
+        /// <summary>
+        /// Indicates if the game has been cancelled.
+        /// </summary>
+        public bool Cancelled { get; private set; }
 
         /// <summary>
         /// GameLobby constructor
         /// </summary>
-        public GameLobby(string ownerName, CreateGameViewModel model)
+        public GameLobby(string ownerName, string ownerAvatarPath, CreateGameViewModel model)
         {
             this.Uid = Guid.NewGuid().ToString();
+
+            this.AvatarPaths = new Dictionary<string, string>();
+            this.AvatarPaths[ownerName] = ownerAvatarPath;
 
             this.Name = model.DisplayName;
             this.Password = model.Password;
             this.Owner = ownerName;
+            this.Cancelled = false;
 
             this.MaxNumberOfPlayers = model.MaxNumberOfPlayers;
 
@@ -86,13 +99,19 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public void CancelGame()
         {
-            // TODO
+            // Remove all players from the game.
+            foreach (var player in this.GameManager.Players)
+            {
+                this.GameManager.PlayerAbandonGame(player.Id);
+            }
+            this.Cancelled = true;
         }
 
         /// <summary>
-        /// 
+        /// Joins a game if available.
+        /// TODO: If I add more user properties, replace avatarPath with info object.
         /// </summary>
-        public Jatan.Core.ActionResult JoinGame(string userName, string password)
+        public Jatan.Core.ActionResult JoinGame(string userName, string password, string avatarPath)
         {
             if (this.InProgress)
                 return ActionResult.CreateFailed("This game is in progress.");
@@ -104,12 +123,13 @@ namespace JatanWebApp.SignalR
                 return ActionResult.CreateFailed("The password is incorrect.");
 
             this.GameManager.AddPlayer(userName);
+            this.AvatarPaths[userName] = avatarPath;
 
             return ActionResult.CreateSuccess();
         }
 
         /// <summary>
-        /// Makes a play abandon a game.
+        /// Makes a player abandon a game.
         /// </summary>
         public void AbandonGame(string userName)
         {
@@ -117,54 +137,22 @@ namespace JatanWebApp.SignalR
             if (player != null)
             {
                 var result = this.GameManager.PlayerAbandonGame(player.Id);
+                if (result.Succeeded)
+                {
+                    this.AvatarPaths.Remove(userName);
+                }
             }
         }
 
-        // Temp dode for testing
-        private static GameManager DoInitialPlacements(GameManager manager)
+        /// <summary>
+        /// Gets a GameManager data-transfer-object for this game.
+        /// </summary>
+        public GameManagerDTO ToGameManagerDTO(string requestingUser, bool includeBoardConstants, bool includeAvatarPaths)
         {
-            // This setup method will create a 3-player game with the center and far-right hexagons fully surrounded.
-
-            int PLAYER_0 = 0;
-            int PLAYER_1 = 1;
-            int PLAYER_2 = 2;
-
-            if (manager.Players.Count < 3)
-                manager.AddPlayer("Billy"); // PLAYER_0
-            if (manager.Players.Count < 3)
-                manager.AddPlayer("John"); // PLAYER_1
-            if (manager.Players.Count < 3)
-                manager.AddPlayer("Greg"); // PLAYER_2
-
-            manager.StartNewGame();
-
-            // player 0
-            manager.PlayerPlaceBuilding(PLAYER_0, Jatan.Models.BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.Top));
-            manager.PlayerPlaceRoad(PLAYER_0, Hexagon.Zero.GetEdge(EdgeDir.TopRight));
-
-            // player 1
-            manager.PlayerPlaceBuilding(PLAYER_1, Jatan.Models.BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.BottomRight));
-            manager.PlayerPlaceRoad(PLAYER_1, Hexagon.Zero.GetEdge(EdgeDir.Right));
-
-            // player 2
-            manager.PlayerPlaceBuilding(PLAYER_2, Jatan.Models.BuildingTypes.Settlement, Hexagon.Zero.GetPoint(PointDir.BottomLeft));
-            manager.PlayerPlaceRoad(PLAYER_2, Hexagon.Zero.GetEdge(EdgeDir.Left));
-
-            // Create around a different hexagon since the middle is filled up.
-            Hexagon otherHex = new Hexagon(2, 0);
-
-            manager.PlayerPlaceBuilding(PLAYER_2, Jatan.Models.BuildingTypes.Settlement, otherHex.GetPoint(PointDir.BottomLeft));
-            manager.PlayerPlaceRoad(PLAYER_2, otherHex.GetEdge(EdgeDir.Left));
-
-            // player 1
-            manager.PlayerPlaceBuilding(PLAYER_1, Jatan.Models.BuildingTypes.Settlement, otherHex.GetPoint(PointDir.BottomRight));
-            manager.PlayerPlaceRoad(PLAYER_1, otherHex.GetEdge(EdgeDir.Right));
-
-            // player 0
-            manager.PlayerPlaceBuilding(PLAYER_0, Jatan.Models.BuildingTypes.Settlement, otherHex.GetPoint(PointDir.Top));
-            manager.PlayerPlaceRoad(PLAYER_0, otherHex.GetEdge(EdgeDir.TopRight));
-
-            return manager;
+            var player = this.GameManager.GetPlayerFromName(requestingUser);
+            var id = (player != null) ? player.Id : -1;
+            var dto = new GameManagerDTO(this, id, includeBoardConstants, includeAvatarPaths);
+            return dto;
         }
     }
 }

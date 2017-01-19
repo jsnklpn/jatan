@@ -14,6 +14,6 @@ namespace JatanWebApp.SignalR
     {
         void broadcastMessage(string userName, string message);
         void updateGameManager(GameManagerDTO manager);
-        void newPlayerJoined(UserAccountInfoDTO userInfo);
+        void newPlayerJoined(string newPlayerName);
     }
 }

@@ -3,6 +3,23 @@
 @{
     ViewBag.Title = "";
     ViewBag.ShowNavbar = false;
+
+    string defaultAvatar = @"/Content/Images/avatars/default.jpg";
+    string[] avatars = {defaultAvatar, defaultAvatar, defaultAvatar, defaultAvatar};
+    string[] names = {"", "", "", ""};
+    for (int i = 0; i < Model.Players.Count; i++)
+    {
+        string name = Model.Players[i];
+        names[i] = name;
+        if (Model.AvatarPaths.ContainsKey(name))
+        {
+            var avatarPath = Model.AvatarPaths[name];
+            if (!string.IsNullOrEmpty(avatarPath))
+            {
+                avatars[i] = avatarPath;
+            }
+        }
+    }
 }
 
 @section scripts
@@ -56,21 +73,16 @@
     </div>
 </div>
 
-<div id="playerBox1" class="player-float-box">
-    <img class="player-avatar" />
-    <div class="small"><strong>player1</strong></div>
-</div>
-<div id="playerBox2" class="player-float-box">
-    <img class="player-avatar" />
-    <div class="small"><strong>player2</strong></div>
-</div>
-<div id="playerBox3" class="player-float-box">
-    <img class="player-avatar" />
-    <div class="small"><strong>player3</strong></div>
-</div>
-<div id="playerBox4" class="player-float-box">
-    <img class="player-avatar" />
-    <div class="small"><strong>player4</strong></div>
-</div>
+@for (int i = 0; i < 4; i++)
+{
+    {
+        string boxId = "playerBox" + (i + 1).ToString();
+        string visibility = (names[i] == "") ? "hidden" : "";
+        <div id="@boxId" class="player-float-box @visibility">
+            <img class="player-avatar" src="@avatars[i]" />
+            <div class="player-name">@names[i]</div>
+        </div>
+    }
+}
 
 <canvas id="gameCanvas"></canvas>
