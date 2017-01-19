@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using JatanWebApp.Helpers;
 using JatanWebApp.Models.ViewModels;
 using JatanWebApp.SignalR;
 using Microsoft.AspNet.Identity;
@@ -53,7 +54,8 @@ namespace JatanWebApp.Controllers
                 if (lobby != null)
                 {
                     var userName = User.Identity.Name;
-                    var result = GameLobbyManager.ConnectToGame(userName, lobby.Owner, password);
+                    var imagePath = User.Identity.GetAvatarPath();
+                    var result = GameLobbyManager.ConnectToGame(userName, lobby.Owner, password, imagePath);
                     if (result.Succeeded)
                         return RedirectToAction("Instance", new {gameId = gameId});
 

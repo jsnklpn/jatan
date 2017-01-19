@@ -193,12 +193,15 @@
     <Compile Include="Models\ViewModels\UserSettingsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalR\DTO\GameBoardDTO.cs" />
+    <Compile Include="SignalR\DTO\UserAccountInfoDTO.cs" />
     <Compile Include="SignalR\GameHub.cs" />
     <Compile Include="SignalR\DTO\GameManagerDTO.cs" />
     <Compile Include="SignalR\DTO\PlayerDTO.cs" />
+    <Compile Include="SignalR\GameHubReference.cs" />
     <Compile Include="SignalR\GameLobby.cs" />
     <Compile Include="SignalR\GameLobbyManager.cs" />
     <Compile Include="SignalR\HubUser.cs" />
+    <Compile Include="SignalR\IGameHubClient.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>

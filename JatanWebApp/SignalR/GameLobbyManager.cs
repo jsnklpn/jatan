@@ -6,6 +6,7 @@ using System.Web;
 using System.Web.Mvc;
 using Jatan.GameLogic;
 using JatanWebApp.Models.ViewModels;
+using JatanWebApp.SignalR.DTO;
 using ActionResult = Jatan.Core.ActionResult;
 
 namespace JatanWebApp.SignalR
@@ -72,7 +73,7 @@ namespace JatanWebApp.SignalR
         /// <summary>
         /// Connects to a game lobby that is owned by the specified player.
         /// </summary>
-        public static Jatan.Core.ActionResult ConnectToGame(string userName, string ownerUserName, string password)
+        public static Jatan.Core.ActionResult ConnectToGame(string userName, string ownerUserName, string password, string avatarPath)
         {
             if (GameLobbies.ContainsKey(ownerUserName))
             {
@@ -82,7 +83,13 @@ namespace JatanWebApp.SignalR
                 if (lobby.Players.Contains(userName))
                     return Jatan.Core.ActionResult.CreateSuccess();
 
-                return lobby.JoinGame(userName, password);
+                var result =  lobby.JoinGame(userName, password);
+                if (result.Succeeded)
+                {
+                    // Tell the hub that a new player joined.
+                    GameHubReference.Context.Clients.All.newPlayerJoined(new UserAccountInfoDTO(userName, avatarPath));
+                }
+                return result;
             }
             return Jatan.Core.ActionResult.CreateFailed("This game no longer exists.");
         }

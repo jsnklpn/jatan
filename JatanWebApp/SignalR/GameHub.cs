@@ -17,7 +17,7 @@ namespace JatanWebApp.SignalR
     /// Signal-R hub used for real-time updates between the clients and the server.
     /// </summary>
     [Authorize]
-    public class GameHub : Hub
+    public class GameHub : Hub<IGameHubClient>
     {
         private static readonly ConcurrentDictionary<string, HubUser> _hubUsers;
 
