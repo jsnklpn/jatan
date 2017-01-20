@@ -65,7 +65,7 @@
 }
 
 .signin-logo {
-    background: url("/Content/Images/site/jatanlogo-sun-transparent.png");
+    background-image: url("Images/site/jatanlogo-sun-transparent.png");
     background-repeat: no-repeat;
     background-size: cover;
     -webkit-background-size: cover;
@@ -73,7 +73,6 @@
     -o-background-size: cover;
     width: 200px;
     height: 107px;
-
     margin-top: -93px;
     margin-left: auto;
     margin-right: auto;
@@ -99,11 +98,18 @@
 }
 
 .form-create-logo {
-    display: inline;
-    position: absolute;
+    background-image: url("Images/site/dice_photo2.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    -webkit-background-size: cover;
+    -mox-background-size: cover;
+    -o-background-size: cover;
+    width: 291px;
+    height: 261px;
     left: 200px;
     top: -70px;
-    padding: 0px;
+    position: absolute;
+    z-index: 100;
 }
 
 .form-group {
