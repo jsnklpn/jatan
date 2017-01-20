@@ -50,9 +50,6 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public static GameLobby CreateNewGame(string ownerUserName, string ownerAvatarPath, CreateGameViewModel model)
         {
-            // Remove any game that may be in progress from the current user.
-            CancelGame(ownerUserName);
-
             // Leave any game we might be in.
             AbandonCurrentGame(ownerUserName);
 
@@ -117,7 +114,15 @@ namespace JatanWebApp.SignalR
         public static void AbandonCurrentGame(string userName)
         {
             var lobby = GetGameLobbyForPlayer(userName);
-            if (lobby != null)
+            if (lobby == null)
+                return;
+
+            if (lobby.Owner == userName)
+            {
+                // We're the owner. Cancel the game.
+                CancelGame(userName);    
+            }
+            else
             {
                 lobby.AbandonGame(userName);
 

@@ -50,6 +50,11 @@
 /* ====================== */
 /*      SIGN-IN FORM      */
 /* ====================== */
+
+.signin-body {
+    padding-top: 50px;
+}
+
 .form-signin {
     width: 400px;
     margin: 0 auto;
@@ -60,13 +65,22 @@
 }
 
 .signin-logo {
-    display: block;
+    background: url("/Content/Images/site/jatanlogo-sun-transparent.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    -webkit-background-size: cover;
+    -mox-background-size: cover;
+    -o-background-size: cover;
     width: 200px;
-    text-align: center;
-    margin-top: -40px;
+    height: 107px;
+
+    margin-top: -93px;
     margin-left: auto;
     margin-right: auto;
-    margin-bottom: -14px;
+    right: 0;
+    left: 0;
+    position: absolute;
+    z-index: 100;
 }
 
 /* ====================== */

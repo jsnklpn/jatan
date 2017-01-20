@@ -80,10 +80,10 @@ namespace JatanWebApp.Controllers
                     if (lobby.Players.Contains(userName))
                         return View(lobby);
 
-                    return new HttpStatusCodeResult(HttpStatusCode.Unauthorized);
+                    return View("Join", new JoinGameViewModel() { ErrorMessage = "Unauthorized." });
                 }
             }
-            return new HttpStatusCodeResult(HttpStatusCode.NotFound);
+            return View("Join", new JoinGameViewModel() { ErrorMessage = "Game not found." });
         }
 
     }
