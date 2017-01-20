@@ -190,3 +190,10 @@ var SelectionMode = {
     Point: 3,
     Card: 4
 };
+
+var ChatTextType = {
+    User: "chat-text-user",
+    Info: "chat-text-info",
+    Warning: "chat-text-warning",
+    Danger: "chat-text-danger"
+};

@@ -220,6 +220,15 @@ namespace JatanWebApp.SignalR
             }
         }
 
+        /// <summary>
+        /// Causes the calling player to leave their game.
+        /// </summary>
+        public void LeaveGame()
+        {
+            var username = GetUserName();
+            GameLobbyManager.AbandonCurrentGame(username);
+        }
+
         private void UpdateAllClientGameManagers(bool fullUpdate = false)
         {
             foreach (var userName in HubUsers.Keys)

@@ -55,6 +55,7 @@
         <li><a id="btnBuy" href="#">Buy</a></li>
         <li><a id="btnTrade" href="#">Trade</a></li>
         <li><a id="btnEndTurn" href="#">End Turn</a></li>
+        <li><a id="btnLeaveGame" href="@Url.Action("Index", "Home")" class="text-danger">Leave Game</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
         <li>
@@ -66,7 +67,7 @@
 
 <div id="chatBox">
     <ul id="chatBoxList" oncontextmenu="return false;">
-        <li>Welcome to @Model.Name!</li>
+        <li class="chat-text-info">Welcome to @Model.Name!</li>
     </ul>
     <div>
         <input id="chatBoxInputText" type="text" placeholder=" Send message" />

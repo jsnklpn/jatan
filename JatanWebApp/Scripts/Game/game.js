@@ -49,29 +49,25 @@ function initSignalR() {
 
     // Create a function that the hub can call to broadcast messages.
     gameHub.client.broadcastMessage = function (name, message) {
-        var encodedName = $("<span />").text(name).html();
-        var encodedMsg = $("<span />").text(message).html();
-
-        $("#chatBoxList").append("<li><strong>" + encodedName + "</strong>:&nbsp;&nbsp;" + encodedMsg + "</li>");
-        $("#chatBoxList").animate({ scrollTop: $("#chatBoxList")[0].scrollHeight }, 100);
+        writeTextToChat(name + ": " + message, ChatTextType.User);
     };
 
     gameHub.client.updateGameManager = function(gameManager) {
         updateGameModel(gameManager);
     };
 
-    gameHub.client.newPlayerJoined = function(newPlayerName) {
-        writeTextToChat(newPlayerName + " has joined the game.");
+    gameHub.client.newPlayerJoined = function (newPlayerName) {
+        writeTextToChat(newPlayerName + " has joined the game.", ChatTextType.Info);
         _serverGameHub.getGameManagerUpdate(true); // A new player joined, so lets get a full game update.
     };
 
     gameHub.client.playerLeft = function(playerName) {
-        writeTextToChat(playerName + " has left the game.");
+        writeTextToChat(playerName + " has left the game.", ChatTextType.Danger);
         _serverGameHub.getGameManagerUpdate(true); // A player left, so lets get a full game update.
     }
 
     gameHub.client.gameAborted = function() {
-        writeTextToChat("*** The game has been shut down by the host ***");
+        writeTextToChat("*** The game has been shut down by the host ***", ChatTextType.Danger);
     };
 
     // Start the connection.
@@ -93,6 +89,9 @@ function initHubButtons() {
     });
     $("#btnEndTurn").click(function () {
         _serverGameHub.endTurn();
+    });
+    $("#btnLeaveGame").click(function () {
+        _serverGameHub.leaveGame();
     });
 }
 
@@ -717,8 +716,12 @@ function handleClick(event) {
     _invalidateCanvas = true;
 }
 
-function writeTextToChat(text) {
-    $("#chatBoxList").append("<li>" + text + "</li>");
+function writeTextToChat(text, chatTextType) {
+    var textClass = "";
+    if (chatTextType) {
+        textClass = chatTextType;
+    }
+    $("#chatBoxList").append("<li class='" + textClass + "'>" + encodeForHtml(text) + "</li>");
     $("#chatBoxList").animate({ scrollTop: $("#chatBoxList")[0].scrollHeight }, 10);
 }
 
@@ -810,25 +813,21 @@ function updateGameModel(gameManager) {
 }
 
 function populatePlayers(players) {
-    var playerBoxesPopulated = [];
-    for (var i = 0; i < players.length; i++) {
-        var player = players[i];
-        var id = player["Id"];
-        var name = player["Name"];
-        var avatarPath = player["AvatarPath"];
-        var boxId = "#playerBox" + id.toString();
-
-        $(boxId).removeClass("hidden");
-        $(boxId + " > .player-name").text(name);
-        if (avatarPath) {
-            $(boxId + " > .player-avatar").attr("src", avatarPath);
+    for (var i = 0; i < 4; i++) {
+        var boxId = "#playerBox" + (i + 1).toString();
+        if (players.length > i) {
+            var player = players[i];
+            // var id = player["Id"];
+            var playerName = player["Name"];
+            var avatarPath = player["AvatarPath"];
+            
+            $(boxId).removeClass("hidden");
+            $(boxId + " > .player-name").text(playerName);
+            if (avatarPath) {
+                $(boxId + " > .player-avatar").attr("src", avatarPath);
+            }
         }
-        playerBoxesPopulated.push(id);
-    }
-    // Hide the player boxes that don't have a player.
-    for (var i = 1; i <= 4; i++) {
-        if (playerBoxesPopulated.indexOf(i) === -1) {
-            var boxId = "#playerBox" + i.toString();
+        else {
             $(boxId).addClass("hidden");
         }
     }
@@ -954,3 +953,7 @@ function resourceToColor(resource) {
     return "white";
 }
 
+// Makes a string safe for insertion into html.
+function encodeForHtml(str) {
+    return $("<span />").text(str).html();
+}
