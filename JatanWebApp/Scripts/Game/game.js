@@ -56,14 +56,23 @@ function initSignalR() {
         $("#chatBoxList").animate({ scrollTop: $("#chatBoxList")[0].scrollHeight }, 100);
     };
 
-    gameHub.client.updateGameManager = function (gameManager) {
+    gameHub.client.updateGameManager = function(gameManager) {
         updateGameModel(gameManager);
-    }
+    };
 
-    gameHub.client.newPlayerJoined = function (newPlayerName) {
+    gameHub.client.newPlayerJoined = function(newPlayerName) {
         writeTextToChat(newPlayerName + " has joined the game.");
         _serverGameHub.getGameManagerUpdate(true); // A new player joined, so lets get a full game update.
+    };
+
+    gameHub.client.playerLeft = function(playerName) {
+        writeTextToChat(playerName + " has left the game.");
+        _serverGameHub.getGameManagerUpdate(true); // A player left, so lets get a full game update.
     }
+
+    gameHub.client.gameAborted = function() {
+        writeTextToChat("*** The game has been shut down by the host ***");
+    };
 
     // Start the connection.
     $.connection.hub.start().done(function () {

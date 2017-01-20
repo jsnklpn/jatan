@@ -24,6 +24,25 @@
 
 <div class="container body-content">
 
+    <div class="mt-10">
+        @if (!String.IsNullOrEmpty((string)TempData["error"]))
+        {
+            <div role="alert" class="alert alert-danger">
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                <span class="sr-only">Error:</span>
+                @TempData["error"]
+            </div>
+        }
+        else if (!String.IsNullOrEmpty((string)TempData["success"]))
+        {
+            <div role="alert" class="alert alert-success">
+                <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
+                <span class="sr-only">Success:</span>
+                @TempData["success"]
+            </div>
+        }
+    </div>
+
     @using (Html.BeginForm("Settings", "User", FormMethod.Post, new {@class = "form-horizontal", role = "form", enctype = "multipart/form-data"}))
     {
         @Html.AntiForgeryToken()
@@ -61,25 +80,6 @@
             </div>
         </div>
     }
-
-    <div class="mt-10">
-        @if (!String.IsNullOrEmpty((string)TempData["error"]))
-        {
-            <div role="alert" class="alert alert-danger">
-                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                <span class="sr-only">Error:</span>
-                @TempData["error"]
-            </div>
-        }
-        else if (!String.IsNullOrEmpty((string)TempData["success"]))
-        {
-            <div role="alert" class="alert alert-success">
-                <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
-                <span class="sr-only">Success:</span>
-                @TempData["success"]
-            </div>
-        }
-    </div>
 
 </div>
 

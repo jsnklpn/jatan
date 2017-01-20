@@ -27,32 +27,6 @@ namespace JatanWebApp.SignalR
         }
 
         /// <summary>
-        /// Creates a new game with the specified owner and settings. The owner is
-        /// auto-added to the list of players. Returns the new game lobby instance.
-        /// </summary>
-        public static GameLobby CreateNewGame(string ownerUserName, string ownerAvatarPath, CreateGameViewModel model)
-        {
-            // Remove any game that may be in progress from the current user.
-            CancelGame(ownerUserName);
-
-            var lobby = new GameLobby(ownerUserName, ownerAvatarPath, model);
-            GameLobbies[ownerUserName] = lobby;
-            return lobby;
-        }
-
-        /// <summary>
-        /// Cancels the game currently owned by the specified player.
-        /// </summary>
-        public static void CancelGame(string ownerUserName)
-        {
-            GameLobby tmp;
-            if (GameLobbies.TryRemove(ownerUserName, out tmp))
-            {
-                tmp.CancelGame();
-            }
-        }
-
-        /// <summary>
         /// Returns the game lobby with the unique id.
         /// </summary>
         public static GameLobby GetGameLobbyFromUid(string uid)
@@ -69,19 +43,53 @@ namespace JatanWebApp.SignalR
             var game = GameLobbies.Values.FirstOrDefault(g => g.Players.Contains(userName));
             return game;
         }
-        
+
+        /// <summary>
+        /// Creates a new game with the specified owner and settings. The owner is
+        /// auto-added to the list of players. Returns the new game lobby instance.
+        /// </summary>
+        public static GameLobby CreateNewGame(string ownerUserName, string ownerAvatarPath, CreateGameViewModel model)
+        {
+            // Remove any game that may be in progress from the current user.
+            CancelGame(ownerUserName);
+
+            // Leave any game we might be in.
+            AbandonCurrentGame(ownerUserName);
+
+            var lobby = new GameLobby(ownerUserName, ownerAvatarPath, model);
+            GameLobbies[ownerUserName] = lobby;
+            return lobby;
+        }
+
+        /// <summary>
+        /// Cancels the game currently owned by the specified player.
+        /// </summary>
+        public static void CancelGame(string ownerUserName)
+        {
+            if (!GameLobbies.ContainsKey(ownerUserName))
+                return;
+
+            // Save connections to all players.
+            var lobby = GameLobbies[ownerUserName];
+            var connections = GameHub.GetHubConnectionsForGameLobby(lobby.Uid);
+
+            GameLobby tmp;
+            if (GameLobbies.TryRemove(ownerUserName, out tmp))
+            {
+                tmp.CancelGame();
+            }
+
+            // Notify all players that the game shut down.
+            GameHubReference.Context.Clients.Clients(connections).gameAborted();
+        }
+
         /// <summary>
         /// Connects to a game lobby that is owned by the specified player.
         /// </summary>
         public static Jatan.Core.ActionResult ConnectToGame(string userName, string ownerUserName, string password, string avatarPath)
         {
             // First, disconnect from any active games.
-            var currentLobby = GetGameLobbyForPlayer(userName);
-            if (currentLobby != null)
-            {
-                currentLobby.AbandonGame(userName);
-                // TODO: inform players that someone left.
-            }
+            AbandonCurrentGame(userName);
 
             if (GameLobbies.ContainsKey(ownerUserName))
             {
@@ -101,6 +109,22 @@ namespace JatanWebApp.SignalR
                 return result;
             }
             return Jatan.Core.ActionResult.CreateFailed("This game no longer exists.");
+        }
+
+        /// <summary>
+        /// Makes a player leave the game they're in.
+        /// </summary>
+        public static void AbandonCurrentGame(string userName)
+        {
+            var lobby = GetGameLobbyForPlayer(userName);
+            if (lobby != null)
+            {
+                lobby.AbandonGame(userName);
+
+                // Alert other users that the player left.
+                var connections = GameHub.GetHubConnectionsForGameLobby(lobby.Uid);
+                GameHubReference.Context.Clients.Clients(connections).playerLeft(userName);
+            }
         }
     }
 }
