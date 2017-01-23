@@ -143,7 +143,7 @@ namespace Jatan.UnitTest
             // Roll the dice
             var rollResult = manager.PlayerRollDice(PLAYER_0);
             Assert.IsTrue(rollResult.Succeeded, "The roll should not fail.");
-            int roll = rollResult.Data;
+            int roll = rollResult.Data.Total;
             var resources = manager.GameBoard.GetResourcesForDiceRoll(roll);
 
             // Add the resources generated from the roll to the copies.

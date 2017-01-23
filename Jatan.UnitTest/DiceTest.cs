@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Jatan.Core;
 using Jatan.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -17,7 +18,7 @@ namespace Jatan.UnitTest
             int high = int.MinValue;
             for (int i = 0; i < 10000; i++)
             {
-                int roll = dice.Roll();
+                int roll = dice.Roll().Total;
                 if (roll < low)
                     low = roll;
                 if (roll > high)
@@ -33,11 +34,11 @@ namespace Jatan.UnitTest
         {
             var dice = new Dice();
             int rollCount = 100;
-            var log = new int[rollCount];
+            var log = new RollResult[rollCount];
 
             for (int i = 0; i < rollCount; i++)
             {
-                int roll = dice.Roll();
+                var roll = dice.Roll();
                 log[i] = roll;
             }
 

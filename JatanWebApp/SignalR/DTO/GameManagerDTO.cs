@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Jatan.Core;
 using Jatan.GameLogic;
 using Jatan.Models;
 
@@ -17,7 +18,7 @@ namespace JatanWebApp.SignalR.DTO
         public GameState GameState { get; set; }
         public PlayerTurnState PlayerTurnState { get; set; }
         public int ActivePlayerId { get; set; }
-        public int CurrentDiceRoll { get; set; }
+        public RollResult CurrentDiceRoll { get; set; }
         public List<PlayerDTO> Players { get; set; }
 
         public GameManagerDTO(GameLobby lobby, int requestingPlayerId, bool includeBoardConstants, bool includeAvatarPaths)

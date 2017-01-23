@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Jatan.Core;
 
 namespace Jatan.Models
 {
@@ -15,14 +16,14 @@ namespace Jatan.Models
         private const int DiceSides = 6;
 
         private int _diceCount;
-        private List<int> _rollLog;
+        private List<RollResult> _rollLog;
 
         /// <summary>
         /// Returns a copy of the roll log.
         /// </summary>
-        public List<int> RollLog
+        public List<RollResult> RollLog
         {
-            get {  return new List<int>(_rollLog); }
+            get { return new List<RollResult>(_rollLog); }
         }
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace Jatan.Models
         public Dice(int diceCount)
         {
             this.ExcludeSet = new HashSet<int>();
-            _rollLog = new List<int>();
+            _rollLog = new List<RollResult>();
             _diceCount = (diceCount < 1) ? 1 : diceCount;
         }
 
@@ -52,21 +53,22 @@ namespace Jatan.Models
         /// Rolls the dice and returns the result. Also adds the result to the roll log.
         /// </summary>
         /// <returns></returns>
-        public int Roll()
+        public RollResult Roll()
         {
             bool done = false;
-            int total = 0;
+            List<int> roll = new List<int>();
             while (!done)
             {
-                total = 0;
+                roll = new List<int>();
                 for (int i = 0; i < _diceCount; i++)
                 {
-                    total += _random.Next(1, DiceSides + 1);
+                    roll.Add(_random.Next(1, DiceSides + 1));
                 }
-                done = !ExcludeSet.Contains(total);
+                done = !ExcludeSet.Contains(roll.Sum());
             }
-            _rollLog.Add(total);
-            return total;
+            var result = new RollResult(roll);
+            _rollLog.Add(result);
+            return result;
         }
 
         /// <summary>
@@ -85,7 +87,7 @@ namespace Jatan.Models
             var counts = new Dictionary<int, int>();
             for (int i = _diceCount; i <= _diceCount * DiceSides; i++)
             {
-                counts.Add(i, _rollLog.Count(n => n == i));
+                counts.Add(i, _rollLog.Count(r => r.Total == i));
             }
             return counts;
         }

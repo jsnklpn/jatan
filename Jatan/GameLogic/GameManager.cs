@@ -21,7 +21,7 @@ namespace Jatan.GameLogic
         private GameState _gameState;
         private PlayerTurnState _playerTurnState;
         private Dice _dice;
-        private int _currentDiceRoll;
+        private RollResult _currentDiceRoll;
         private TradeHelper _tradeHelper;
         private Dictionary<Player, int> _playersCardsToLose;
         private List<Player> _playersToStealFrom;
@@ -33,7 +33,6 @@ namespace Jatan.GameLogic
         private Tuple<int, int> _largestArmy;
 
         private int _idCounter;
-        private PlayerColor _colorCounter;
 
         #region public properties
 
@@ -145,9 +144,9 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
-        /// Gets the current dice roll value. If there is none, this will return 0.
+        /// Gets the current dice roll value. If there is none, this will return null.
         /// </summary>
-        public int CurrentDiceRoll
+        public RollResult CurrentDiceRoll
         {
             get { return _currentDiceRoll; }
         }
@@ -169,8 +168,7 @@ namespace Jatan.GameLogic
             _tradeHelper = new TradeHelper();
             _playersCardsToLose = new Dictionary<Player, int>();
             _playersToStealFrom = new List<Player>();
-            _idCounter = 1;
-            _colorCounter = PlayerColor.Blue;
+            _idCounter = 0;
         }
 
         /// <summary>
@@ -196,7 +194,7 @@ namespace Jatan.GameLogic
             _gameBoard.RobberMode = _gameSettings.RobberMode;
             _roadBuildingRoadsRemaining = 0;
             _dice.ClearLog();
-            _currentDiceRoll = 0;
+            _currentDiceRoll = null;
             _playersCardsToLose.Clear();
             _playersToStealFrom.Clear();
             _tradeHelper.ClearAllOffers();
@@ -206,7 +204,7 @@ namespace Jatan.GameLogic
 
         public void AddPlayer(string name)
         {
-            _players.Add(new Player(_idCounter++, name, _colorCounter++));
+            _players.Add(new Player(_idCounter++, name, GetAvailableColor()));
         }
 
         #region public player methods
@@ -233,7 +231,7 @@ namespace Jatan.GameLogic
 
                     _tradeHelper.ClearAllOffers();
                     _roadBuildingRoadsRemaining = 0;
-                    _currentDiceRoll = 0;
+                    _currentDiceRoll = null;
 
                     AdvanceToNextPlayerTurn();
                 }
@@ -256,16 +254,16 @@ namespace Jatan.GameLogic
         /// <summary>
         /// Rolls the dice and handles resources/robber logic. Can only be called by the active player.
         /// </summary>
-        public ActionResult<int> PlayerRollDice(int playerId)
+        public ActionResult<RollResult> PlayerRollDice(int playerId)
         {
             var validation = ValidatePlayerAction(PlayerTurnState.NeedToRoll, playerId);
-            if (validation.Failed) return validation.ToGeneric<int>();
+            if (validation.Failed) return validation.ToGeneric<RollResult>();
 
             var diceRoll = _dice.Roll();
 
             // If the roll is a 7, then we do special logic to make players
             // lose cards and we let the active player place the robber.
-            if (diceRoll == 7)
+            if (diceRoll.Total == 7)
             {
                 // Possibly make players lose cards
                 ComputePlayersCardsToLose();
@@ -284,7 +282,7 @@ namespace Jatan.GameLogic
             else
             {
                 // Give resources
-                var allResources = _gameBoard.GetResourcesForDiceRoll(diceRoll);
+                var allResources = _gameBoard.GetResourcesForDiceRoll(diceRoll.Total);
                 foreach (var resources in allResources)
                 {
                     var playerResult = GetPlayerFromId(resources.Key);
@@ -303,7 +301,7 @@ namespace Jatan.GameLogic
             // Save the current roll so we can pass it along to other players.
             _currentDiceRoll = diceRoll;
 
-            return ActionResult<int>.CreateSuccess(diceRoll);
+            return ActionResult<RollResult>.CreateSuccess(diceRoll);
         }
 
         /// <summary>
@@ -878,7 +876,7 @@ namespace Jatan.GameLogic
 
             AdvanceToNextPlayerTurn();
 
-            _currentDiceRoll = 0;
+            _currentDiceRoll = null;
 
             return ActionResult.CreateSuccess();
         }
@@ -1067,6 +1065,17 @@ namespace Jatan.GameLogic
             if (_longestRoad.Item1 == playerId) totalPoints += 2;
 
             return ActionResult<int>.CreateSuccess(totalPoints);
+        }
+
+        private PlayerColor GetAvailableColor()
+        {
+            // Gets an unused color for a player to use.
+            // This method will only work when there are 4 or fewer players.
+            var usedColors = this.Players.Select(p => p.Color).ToList();
+            if (!usedColors.Contains(PlayerColor.Blue)) return PlayerColor.Blue;
+            if (!usedColors.Contains(PlayerColor.Red)) return PlayerColor.Red;
+            if (!usedColors.Contains(PlayerColor.Green)) return PlayerColor.Green;
+            return PlayerColor.Yellow;
         }
 
         #endregion
