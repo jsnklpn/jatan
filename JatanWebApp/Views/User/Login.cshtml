@@ -4,7 +4,15 @@
     ViewBag.Title = "Log In";
     ViewBag.ShowNavbar = false;
 }
-
+@section scripts
+{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(function() {
+            $("#tbUsername").focus();
+        });
+    </script>
+}
 <div class="signin-body">
     <a href="@Url.Action("Index", "Home")" class="signin-logo"></a>
     <div class="form-signin">
@@ -17,7 +25,7 @@
                 @Html.ValidationSummary(true, "", new {@class = "text-danger"})
                 <div class="form-group">
                     @Html.LabelFor(m => m.Username)
-                    @Html.TextBoxFor(m => m.Username, new {@class = "form-control", placeholder = "Username"})
+                    @Html.TextBoxFor(m => m.Username, new {id="tbUsername", @class = "form-control", placeholder = "Username"})
                     @Html.ValidationMessageFor(m => m.Username, "", new {@class = "text-danger"})
                 </div>
                 <div class="form-group">
@@ -47,7 +55,3 @@
         </section>
     </div>
 </div>
-
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-}

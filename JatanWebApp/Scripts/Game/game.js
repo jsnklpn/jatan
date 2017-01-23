@@ -826,6 +826,18 @@ function populatePlayers(players) {
             if (avatarPath) {
                 $(boxId + " > .player-avatar").attr("src", avatarPath);
             }
+
+            $(boxId).removeClass("player-color-blue");
+            $(boxId).removeClass("player-color-red");
+            $(boxId).removeClass("player-color-green");
+            $(boxId).removeClass("player-color-yellow");
+            var color = player["Color"];
+            var colorClass = "";
+            if (color === PlayerColor.Blue) colorClass = "player-color-blue";
+            else if (color === PlayerColor.Red) colorClass = "player-color-red";
+            else if (color === PlayerColor.Green) colorClass = "player-color-green";
+            else if (color === PlayerColor.Yellow) colorClass = "player-color-yellow";
+            $(boxId).addClass(colorClass);
         }
         else {
             $(boxId).addClass("hidden");
