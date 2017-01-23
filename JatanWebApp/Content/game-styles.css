@@ -54,6 +54,16 @@
     height: 48px;
 }
 
+.active-player > .player-avatar {
+    /* http://easings.net/en */
+    -webkit-animation:1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite alternate wobble;
+    -moz-animation:1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite alternate wobble;
+    animation:1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite alternate wobble;
+}
+@-moz-keyframes wobble { from { -moz-transform: rotate(10deg); } to { -moz-transform: rotate(-10deg); } }
+@-webkit-keyframes wobble { from { -webkit-transform: rotate(10deg); } to { -webkit-transform: rotate(-10deg); } }
+@keyframes wobble { from { -webkit-transform: rotate(10deg); transform: rotate(10deg); } to { -webkit-transform: rotate(-10deg); transform: rotate(-10deg); } }
+
 .player-name {
     font-size: 18px;
     font-weight: bold;

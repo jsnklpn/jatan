@@ -432,7 +432,7 @@ function updateGameModel(gameManager) {
             populatePorts();
     }
 
-    populatePlayers(players);
+    populatePlayers();
     populateBuildings();
     populateRoads();
 
@@ -787,12 +787,18 @@ function populateRoads() {
     }
 }
 
-function populatePlayers(players) {
+function populatePlayers() {
+    if (_currentGameManager === null)
+        return;
+
+    var players = _currentGameManager["Players"];
+    var activePlayerId = _currentGameManager["ActivePlayerId"];
+
     for (var i = 0; i < 4; i++) {
         var boxId = "#playerBox" + (i + 1).toString();
         if (players.length > i) {
             var player = players[i];
-            // var id = player["Id"];
+            var playerId = player["Id"];
             var playerName = player["Name"];
             var avatarPath = player["AvatarPath"];
             
@@ -800,6 +806,11 @@ function populatePlayers(players) {
             $(boxId + " > .player-name").text(playerName);
             if (avatarPath) {
                 $(boxId + " > .player-avatar").attr("src", avatarPath);
+            }
+
+            $(boxId).removeClass("active-player");
+            if (playerId === activePlayerId) {
+                $(boxId).addClass("active-player");
             }
 
             $(boxId).removeClass("player-color-blue");
