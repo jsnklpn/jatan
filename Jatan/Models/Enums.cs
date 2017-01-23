@@ -234,7 +234,6 @@ namespace Jatan.Models
         Blue,
         Red,
         Green,
-        Yellow,
-        Pink
+        Yellow
     }
 }

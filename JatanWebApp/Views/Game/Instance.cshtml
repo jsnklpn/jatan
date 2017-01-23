@@ -1,4 +1,5 @@
-﻿@using JatanWebApp.SignalR
+﻿@using JatanWebApp.Helpers
+@using JatanWebApp.SignalR
 @model GameLobby
 @{
     ViewBag.Title = "";
@@ -7,6 +8,7 @@
     string defaultAvatar = @"/Content/Images/avatars/default.jpg";
     string[] avatars = {defaultAvatar, defaultAvatar, defaultAvatar, defaultAvatar};
     string[] names = {"", "", "", ""};
+    string[] colors = { "", "", "", "" };
     for (int i = 0; i < Model.Players.Count; i++)
     {
         string name = Model.Players[i];
@@ -18,6 +20,11 @@
             {
                 avatars[i] = avatarPath;
             }
+        }
+        var player = Model.GameManager.GetPlayerFromName(name);
+        if (player != null)
+        {
+            colors[i] = "player-color-" + player.Color.ToString().ToLower();
         }
     }
 }
@@ -80,7 +87,7 @@
     {
         string boxId = "playerBox" + (i + 1).ToString();
         string visibility = (names[i] == "") ? "hidden" : "";
-        <div id="@boxId" class="player-float-box box-shadow @visibility">
+        <div id="@boxId" class="player-float-box box-shadow @visibility @colors[i]">
             <img class="player-avatar box-shadow" src="@avatars[i]" />
             <div class="player-name">@names[i]</div>
         </div>

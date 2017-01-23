@@ -142,8 +142,8 @@ var PlayerColor = {
     Blue: 0,
     Red: 1,
     Green: 2,
-    Yellow: 3,
-    Pink: 4
+    Yellow: 3
+    //Pink: 4
 };
 
 // The indices of this array must match the ResourceTypes enum.
