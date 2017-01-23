@@ -2,8 +2,6 @@
 // game.js --- This is where all of the client-side game code is located.
 //========================================================================
 
-// Global variables
-
 var _serverGameHub = null; // signal-R hub
 var _currentGameManager = null;
 // Resource tiles and ports are not sent with every manager update, so we save a separate reference to them
@@ -14,6 +12,7 @@ var _loadQueue = null;
 var _canvas = null;
 var _stage = null;
 var _water = null;
+var _toastMessageContainer = null; // used to display important messages to the user
 var _boardContainer = null;
 var _boardTileContainer = null; // child to the board container
 var _boardRoadContainer = null; // child to the board container
@@ -26,6 +25,8 @@ var _selectionMode = SelectionMode.None;
 var _activeMouseButton = null;
 var _boardDragMouseOffsetX = null;
 var _boardDragMouseOffsetY = null;
+
+var _toastMessageTimerId = 0;
 
 var _hexToBeachMap = {}; // Populated when beach tiles are drawn
 var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
@@ -42,6 +43,11 @@ $(function () {
     initHtmlUI();
     loadGameResources();
 });
+
+
+//============================
+// Init functions
+//============================
 
 function initSignalR() {
     // Declare a proxy to reference the hub.
@@ -159,6 +165,11 @@ function initCanvasStage() {
     //_stage.enableMouseOver(10);
     _boardContainer = new createjs.Container();
     
+    // draw water
+    _water = new createjs.Bitmap(_assetMap["imgWater"].data);
+    _water.mouseEnabled = false;
+    _stage.addChild(_water);
+
     // Create multiple containers we can layer the images properly
     _boardTileContainer = new createjs.Container();
     _boardRoadContainer = new createjs.Container();
@@ -166,11 +177,11 @@ function initCanvasStage() {
     _boardContainer.addChild(_boardTileContainer);
     _boardContainer.addChild(_boardRoadContainer);
     _boardContainer.addChild(_boardBuildingContainer);
+    _stage.addChild(_boardContainer);
 
-    // draw water
-    _water = new createjs.Bitmap(_assetMap["imgWater"].data);
-    _water.mouseEnabled = false;
-    _stage.addChild(_water);
+    // add container for toast messages
+    _toastMessageContainer = new createjs.Container();
+    _stage.addChild(_toastMessageContainer);
 
     // draw hexagons
     var beachAsset = _assetMap["imgTileBeach"];
@@ -204,48 +215,23 @@ function initCanvasStage() {
             beachShadow.x = beach.x;
             beachShadow.y = beach.y;
 
-            // create roads
-            //var roadAssets = [_assetMap["imgRoad1"], _assetMap["imgRoad2"], _assetMap["imgRoad3"]];
-            //var roadBitmaps = [new createjs.Bitmap(roadAssets[0].data), new createjs.Bitmap(roadAssets[1].data), new createjs.Bitmap(roadAssets[2].data)];
-            //for (var i = 0; i < roadBitmaps.length; i++) {
-            //    roads.push(roadBitmaps[i]);
-            //    roadBitmaps[i].regX = roadAssets[i].hitbox.centerX;
-            //    roadBitmaps[i].regY = roadAssets[i].hitbox.centerY;
-
-            //    roadBitmaps[i].addEventListener("click", handleClick);
-            //    roadBitmaps[i].addEventListener("mouseover", handleMouseOver);
-            //    roadBitmaps[i].addEventListener("mouseout", handleMouseOut);
-            //}
-            //roadBitmaps[0].x = beach.x + beachWidth * 0.25;
-            //roadBitmaps[0].y = beach.y - beachHeight * 0.39;
-            //roadBitmaps[1].x = beach.x - beachWidth * 0.5;
-            //roadBitmaps[1].y = beach.y;
-            //roadBitmaps[2].x = beach.x - beachWidth * 0.25;
-            //roadBitmaps[2].y = beach.y - beachHeight * 0.39;
-
-
             beachShadows.push(beachShadow);
             beachBitmaps.push(beach);
         }
     }
 
-    // Resource tiles need to always be drawn on top, so they get added after beaches.
+    // Tiles need to be drawn on top of shadows, so they get added after.
     for (var i = 0; i < beachShadows.length; i++) {
         _boardTileContainer.addChild(beachShadows[i]);
     }
     for (var i = 0; i < beachBitmaps.length; i++) {
         _boardTileContainer.addChild(beachBitmaps[i]);
     }
-    //for (var i = 0; i < roads.length; i++) {
-    //    _boardContainer.addChild(roads[i]);
-    //}
     
     _boardContainer.regX = _boardContainer.getBounds().width / 2;
     _boardContainer.regY = _boardContainer.getBounds().height / 2;
     _boardContainer.scaleX = 0.65;
     _boardContainer.scaleY = 0.65;
-    
-    _stage.addChild(_boardContainer);
 
     // allow user to move and scale the board with the mouse
     initMouseWheelScaling();
@@ -253,335 +239,12 @@ function initCanvasStage() {
     checkRender(); // start animation loop
 }
 
-function populateResourceTiles() {
-
-    // If we're here, then we should have a game manager instance from the server.
-    if (_currentGameManager === null || _currentResourceTiles === null) {
-        return;
-    }
-
-    var resTiles = [];
-    var tileIndex = 0;
-    for (var row = 0; row < 5; row++) {
-        var numAcross = 5;
-        if (row === 0 || row === 4) { numAcross = 3; }
-        if (row === 1 || row === 3) { numAcross = 4; }
-        for (var col = 0; col < numAcross; col++) {
-
-            var hexKey = _hexKeys[tileIndex];
-            var beach = _hexToBeachMap[hexKey];
-
-            var resource = _currentResourceTiles[hexKey]["Resource"];
-            var srcKey = _resourceToAssetKeys[resource];
-            var tile = new createjs.Bitmap(_assetMap[srcKey].data);
-            tile.regX = _assetMap[srcKey].hitbox.centerX;
-            tile.regY = _assetMap[srcKey].hitbox.centerY;
-            tile.x = beach.x; // center on beach tile
-            tile.y = beach.y; // center on beach tile
-
-            tile.addEventListener("click", handleClick);
-            tile.addEventListener("mouseover", handleMouseOver);
-            tile.addEventListener("mouseout", handleMouseOut);
-
-            resTiles.push(tile);
-
-            // save the bitmap to the hexmap so we can get which hex it refers to.
-            _hexToResourceTileMap[hexKey] = tile;
-
-            tileIndex++;
-        }
-    }
-    for (var i = 0; i < resTiles.length; i++) {
-        _boardTileContainer.addChild(resTiles[i]);
-    }
-
-    _invalidateCanvas = true;
-}
-
-function populatePorts() {
-    // If we're here, then we should have a game manager instance from the server.
-    if (_currentGameManager === null || _currentResourceTiles === null) {
-        return;
-    }
-
-    var boatAsset = _assetMap["imgBoat"];
-    var dockForwardAsset = _assetMap["imgDock1"];
-    var dockBackwardAsset = _assetMap["imgDock2"];
-    var dfw = dockForwardAsset.hitbox.width;
-    var dfh = dockForwardAsset.hitbox.height;
-    var dbw = dockBackwardAsset.hitbox.width;
-    var dbh = dockBackwardAsset.hitbox.height;
-
-    var beachAsset = _assetMap["imgTileBeach"];
-    var bw = beachAsset.hitbox.width;
-    var bh = beachAsset.hitbox.height;
-
-    var hexEdges = Object.keys(_currentPorts);
-    for (var i = 0; i < hexEdges.length; i++) {
-        var hexEdge = hexEdges[i];
-        var resource = _currentPorts[hexEdge];
-        var tmp = gethexAndDirectionFromEdge(hexEdge);
-        var hex = tmp[0];
-        var dir = tmp[1];
-        var hexValues = hexToValueArray(hex);
-
-        var tile = _hexToResourceTileMap[hex];
-        var beach = _hexToBeachMap[hex];
-        var forwardDock = false;
-
-        // Determine how the dock should be angled
-        if (dir === EdgeDir.TopLeft || dir === EdgeDir.BottomRight) {
-            forwardDock = false;
-        }
-        else if (dir === EdgeDir.TopRight || dir === EdgeDir.BottomLeft) {
-            forwardDock = true;
-        }
-        else if (dir === EdgeDir.Left) {
-            if (hexValues[1] <= 0) { // bottom half
-                forwardDock = true;
-            } else {// top half
-                forwardDock = false;
-            }
-        }
-        else if (dir === EdgeDir.Right) {
-            if (hexValues[1] <= 0) { // bottom half
-                forwardDock = false;
-            } else { // top half
-                forwardDock = true;
-            }
-        } else {
-            forwardDock = true;
-        }
-        
-        var dockAsset = forwardDock ? dockForwardAsset : dockBackwardAsset;
-        var dw = forwardDock ? dfw : dbw;
-        var dh = forwardDock ? dfh : dbh;
-
-        var boat = new createjs.Bitmap(boatAsset.data);
-        var dock1 = new createjs.Bitmap(dockAsset.data);
-        var dock2 = new createjs.Bitmap(dockAsset.data);
-        boat.mouseEnabled = false;
-        dock1.mouseEnabled = false;
-        dock2.mouseEnabled = false;
-        boat.regX = boatAsset.hitbox.centerX;
-        boat.regY = boatAsset.hitbox.centerY;
-        dock1.regX = dockAsset.hitbox.centerX;
-        dock1.regY = dockAsset.hitbox.centerY;
-        dock2.regX = dockAsset.hitbox.centerX;
-        dock2.regY = dockAsset.hitbox.centerY;
-
-        if (dir === EdgeDir.Right) {
-            dock1.x = beach.x + (bw / 2 + dw / 4 + 10);
-            dock1.y = beach.y + (bh / 6 - dh / 4);
-            dock2.x = beach.x + (bw / 2 + dw / 4 + 10);
-            dock2.y = beach.y - (bh / 6 + dh / 2);
-            if (!forwardDock) {
-                dock1.y += bh / 6;
-                dock2.y += bh / 6;
-            }
-            boat.x = beach.x + bw;
-            boat.y = beach.y;
-            boat.y += (forwardDock ? -0.5 : 0.5) * boatAsset.hitbox.height;
-        }
-        else if (dir === EdgeDir.Left) {
-            dock1.x = beach.x - (bw / 2 + dw / 4 + 10);
-            dock1.y = beach.y + (bh / 6 - dh / 4);
-            dock2.x = beach.x - (bw / 2 + dw / 4 + 10);
-            dock2.y = beach.y - (bh / 6 + dh / 2);
-            if (forwardDock) {
-                dock1.y += bh / 6;
-                dock2.y += bh / 6;
-            }
-            boat.x = beach.x - bw;
-            boat.y = beach.y;
-            boat.y += (forwardDock ? 0.5 : -0.5) * boatAsset.hitbox.height;
-        }
-        else if (dir === EdgeDir.BottomRight) {
-            dock1.x = beach.x + dw / 2 - 10;
-            dock1.y = beach.y + bh / 2 + dh / 6;
-            dock2.x = beach.x + bw / 2 + dw / 4;
-            dock2.y = beach.y + bh / 6 + dw / 4;
-
-            boat.x = beach.x + (2 * bw) / 3;
-            boat.y = beach.y + (2 * bh) / 3;
-        }
-        else if (dir === EdgeDir.TopLeft) {
-            dock1.x = beach.x - (dw / 2 - 10);
-            dock1.y = beach.y - (bh / 2 + dh / 6);
-            dock2.x = beach.x - (bw / 2 + dw / 4);
-            dock2.y = beach.y - (bh / 6 + dw / 4);
-
-            boat.x = beach.x - (2 * bw) / 3;
-            boat.y = beach.y - (2 * bh) / 3;
-        }
-        else if (dir === EdgeDir.TopRight) {
-            dock1.x = beach.x + (dw / 2 - 10);
-            dock1.y = beach.y - (bh / 2 + dh / 6);
-            dock2.x = beach.x + (bw / 2 + dw / 4);
-            dock2.y = beach.y - (bh / 6 + dw / 4);
-
-            boat.x = beach.x + (2 * bw) / 3;
-            boat.y = beach.y - (2 * bh) / 3;
-        }
-        else if (dir === EdgeDir.BottomLeft) {
-            dock1.x = beach.x - (dw / 2 - 10);
-            dock1.y = beach.y + bh / 2 + dh / 6;
-            dock2.x = beach.x - (bw / 2 + dw / 4);
-            dock2.y = beach.y + bh / 6 + dw / 4;
-
-            boat.x = beach.x - (2 * bw) / 3;
-            boat.y = beach.y + (2 * bh) / 3;
-        }
-        
-
-        _boardTileContainer.addChild(dock1);
-        _boardTileContainer.addChild(dock2);
-        _boardTileContainer.addChild(boat);
-    }
-
-    _portsPopulated = true;
-    _invalidateCanvas = true;
-}
-
-function populateBuildings() {
-    if (_currentGameManager === null)
-        return;
-
-    // Clear the current buildings
-    _boardBuildingContainer.removeAllChildren();
-
-    var board = _currentGameManager["GameBoard"];
-    var buildings = board["Buildings"];
-
-    var pointKeys = Object.keys(buildings);
-    for (var i = 0; i < pointKeys.length; i++) {
-        var hexPoint = pointKeys[i];
-        var building = buildings[hexPoint];
-        var playerId = building["PlayerId"];
-        var player = getPlayerFromId(playerId);
-        var type = building["Type"];
-        var assetPrefix = (type === BuildingTypes.City) ? "imgCity" : ("imgHouse" + Math.floor(1+Math.random()*3).toString());
-        var assetKey = getAssetKeyFromColor(assetPrefix, player["Color"]);
-        var asset = _assetMap[assetKey];
-        var stageLoc = hexPointToCoordinates(hexPoint);
-        var bitmap = new createjs.Bitmap(asset.data);
-        bitmap.regX = asset.hitbox.centerX;
-        bitmap.regY = asset.hitbox.centerY;
-        bitmap.x = stageLoc[0];
-        bitmap.y = stageLoc[1];
-        _boardBuildingContainer.addChild(bitmap);
-    }
-}
-
-function populateRoads() {
-    if (_currentGameManager === null)
-        return;
-
-    // Clear the current roads
-    _boardRoadContainer.removeAllChildren();
-
-    var board = _currentGameManager["GameBoard"];
-    var roads = board["Roads"];
-
-    var roadEdgeKeys = Object.keys(roads);
-    for (var i = 0; i < roadEdgeKeys.length; i++) {
-        var hexEdge = roadEdgeKeys[i];
-        var road = roads[hexEdge];
-        var playerId = road["PlayerId"];
-        var player = getPlayerFromId(playerId);
-        var color = player["Color"];
-        var tmp = gethexAndDirectionFromEdge(hexEdge);
-        var hex = tmp[0];
-        var direction = tmp[1];
-        var roadType = null;
-        switch(direction) {
-            case EdgeDir.BottomLeft:
-            case EdgeDir.TopRight:
-                roadType = "1";
-                break;
-            case EdgeDir.Left:
-            case EdgeDir.Right:
-                roadType = "2";
-                break;
-            case EdgeDir.TopLeft:
-            case EdgeDir.BottomRight:
-                roadType = "3";
-                break;
-        }
-        if (roadType === null) continue;
-        var roadAssetKey = getAssetKeyFromColor("imgRoad" + roadType, player["Color"]);
-
-        var asset = _assetMap[roadAssetKey];
-        var bitmap = new createjs.Bitmap(asset.data);
-        bitmap.regX = asset.hitbox.centerX;
-        bitmap.regY = asset.hitbox.centerY;
-
-        // get beach tile position
-        var beachAsset = _assetMap["imgTileBeach"];
-        beach = _hexToBeachMap[hex];
-        beachWidth = beachAsset.hitbox.width;
-        beachHeight = beachAsset.hitbox.height;
-
-        if (direction === EdgeDir.Left) {
-            bitmap.x = beach.x - beachWidth * 0.5;
-            bitmap.y = beach.y;
-        }
-        else if (direction === EdgeDir.TopLeft) {
-            bitmap.x = beach.x - beachWidth * 0.25;
-            bitmap.y = beach.y - beachHeight * 0.39;
-        }
-        else if (direction === EdgeDir.TopRight) {
-            bitmap.x = beach.x + beachWidth * 0.25;
-            bitmap.y = beach.y - beachHeight * 0.39;
-        }
-
-        else if (direction === EdgeDir.Right) {
-            bitmap.x = beach.x + beachWidth * 0.5;
-            bitmap.y = beach.y;
-        }
-        else if (direction === EdgeDir.BottomRight) {
-            bitmap.x = beach.x + beachWidth * 0.25;
-            bitmap.y = beach.y + beachHeight * 0.39;
-        }
-        else if (direction === EdgeDir.BottomLeft) {
-            bitmap.x = beach.x - beachWidth * 0.25;
-            bitmap.y = beach.y + beachHeight * 0.39;
-        }
-
-        _boardRoadContainer.addChild(bitmap);
-    }
-}
-
-function gethexAndDirectionFromEdge(hexEdge) {
-    var hexes = hexEdgeToHexagons(hexEdge);
-    var primaryHex = null;
-    var otherHex = null;
-    if (jQuery.inArray(hexes[0], _hexKeys) !== -1) {
-        primaryHex = hexes[0];
-        otherHex = hexes[1];
-    } else {
-        primaryHex = hexes[1];
-        otherHex = hexes[0];
-    }
-    var primary = hexToValueArray(primaryHex);
-    var other = hexToValueArray(otherHex);
-    var x1 = primary[0]; var y1 = primary[1];
-    var x2 = other[0]; var y2 = other[1];
-    var direction = null;
-    if (x2 === (x1 + 0) && y2 === (y1 + 1)) { direction = EdgeDir.TopLeft; }
-    else if (x2 === (x1 + 1) && y2 === (y1 + 1)) { direction = EdgeDir.TopRight; }
-    else if (x2 === (x1 + 1) && y2 === (y1 + 0)) { direction = EdgeDir.Right; }
-    else if (x2 === (x1 + 0) && y2 === (y1 - 1)) { direction = EdgeDir.BottomRight; }
-    else if (x2 === (x1 - 1) && y2 === (y1 - 1)) { direction = EdgeDir.BottomLeft; }
-    else if (x2 === (x1 - 1) && y2 === (y1 + 0)) { direction = EdgeDir.Left; }
-    return [primaryHex, direction];
-}
-
 function checkRender() {
     if (resizeCanvas()) {
         _invalidateCanvas = true;
         centerBoardInCanvas();
         resizeWaterBackground();
+        centerInCanvas(_toastMessageContainer);
     }
     if (_invalidateCanvas) {
         _invalidateCanvas = false;
@@ -623,6 +286,13 @@ function centerBoardInCanvas() {
     // TODO: This should use offsets
     _boardContainer.x = _canvas.width / 2;
     _boardContainer.y = _canvas.height / 2;
+}
+
+function centerInCanvas(container) {
+    if (container != null) {
+        container.x = _canvas.width / 2;
+        container.y = _canvas.height / 2;
+    }
 }
 
 function initMouseWheelScaling() {
@@ -725,6 +395,11 @@ function writeTextToChat(text, chatTextType) {
     $("#chatBoxList").animate({ scrollTop: $("#chatBoxList")[0].scrollHeight }, 10);
 }
 
+
+//===============================
+// Board update from model
+//===============================
+
 function updateGameModel(gameManager) {
     _currentGameManager = gameManager;
     var board = gameManager["GameBoard"];
@@ -807,9 +482,309 @@ function updateGameModel(gameManager) {
     // TODO: Temp code
     $("#gameState").text(gameState);
     $("#turnState").text(playerTurnState);
+    displayToastMessage("The board has been updated.", null);
 
     // Draw when everything has been populated
     _invalidateCanvas = true;
+}
+
+function populateResourceTiles() {
+
+    // If we're here, then we should have a game manager instance from the server.
+    if (_currentGameManager === null || _currentResourceTiles === null) {
+        return;
+    }
+
+    var resTiles = [];
+    var tileIndex = 0;
+    for (var row = 0; row < 5; row++) {
+        var numAcross = 5;
+        if (row === 0 || row === 4) { numAcross = 3; }
+        if (row === 1 || row === 3) { numAcross = 4; }
+        for (var col = 0; col < numAcross; col++) {
+
+            var hexKey = _hexKeys[tileIndex];
+            var beach = _hexToBeachMap[hexKey];
+
+            var resource = _currentResourceTiles[hexKey]["Resource"];
+            var srcKey = _resourceToAssetKeys[resource];
+            var tile = new createjs.Bitmap(_assetMap[srcKey].data);
+            tile.regX = _assetMap[srcKey].hitbox.centerX;
+            tile.regY = _assetMap[srcKey].hitbox.centerY;
+            tile.x = beach.x; // center on beach tile
+            tile.y = beach.y; // center on beach tile
+
+            tile.addEventListener("click", handleClick);
+            tile.addEventListener("mouseover", handleMouseOver);
+            tile.addEventListener("mouseout", handleMouseOut);
+
+            resTiles.push(tile);
+
+            // save the bitmap to the hexmap so we can get which hex it refers to.
+            _hexToResourceTileMap[hexKey] = tile;
+
+            tileIndex++;
+        }
+    }
+    for (var i = 0; i < resTiles.length; i++) {
+        _boardTileContainer.addChild(resTiles[i]);
+    }
+
+    _invalidateCanvas = true;
+}
+
+function populatePorts() {
+    // If we're here, then we should have a game manager instance from the server.
+    if (_currentGameManager === null || _currentResourceTiles === null) {
+        return;
+    }
+
+    var boatAsset = _assetMap["imgBoat"];
+    var dockForwardAsset = _assetMap["imgDock1"];
+    var dockBackwardAsset = _assetMap["imgDock2"];
+    var dfw = dockForwardAsset.hitbox.width;
+    var dfh = dockForwardAsset.hitbox.height;
+    var dbw = dockBackwardAsset.hitbox.width;
+    var dbh = dockBackwardAsset.hitbox.height;
+
+    var beachAsset = _assetMap["imgTileBeach"];
+    var bw = beachAsset.hitbox.width;
+    var bh = beachAsset.hitbox.height;
+
+    var hexEdges = Object.keys(_currentPorts);
+    for (var i = 0; i < hexEdges.length; i++) {
+        var hexEdge = hexEdges[i];
+        var resource = _currentPorts[hexEdge];
+        var tmp = gethexAndDirectionFromEdge(hexEdge);
+        var hex = tmp[0];
+        var dir = tmp[1];
+        var hexValues = hexToValueArray(hex);
+
+        var tile = _hexToResourceTileMap[hex];
+        var beach = _hexToBeachMap[hex];
+        var forwardDock = false;
+
+        // Determine how the dock should be angled
+        if (dir === EdgeDir.TopLeft || dir === EdgeDir.BottomRight) {
+            forwardDock = false;
+        }
+        else if (dir === EdgeDir.TopRight || dir === EdgeDir.BottomLeft) {
+            forwardDock = true;
+        }
+        else if (dir === EdgeDir.Left) {
+            if (hexValues[1] <= 0) { // bottom half
+                forwardDock = true;
+            } else {// top half
+                forwardDock = false;
+            }
+        }
+        else if (dir === EdgeDir.Right) {
+            if (hexValues[1] <= 0) { // bottom half
+                forwardDock = false;
+            } else { // top half
+                forwardDock = true;
+            }
+        } else {
+            forwardDock = true;
+        }
+
+        var dockAsset = forwardDock ? dockForwardAsset : dockBackwardAsset;
+        var dw = forwardDock ? dfw : dbw;
+        var dh = forwardDock ? dfh : dbh;
+
+        var boat = new createjs.Bitmap(boatAsset.data);
+        var dock1 = new createjs.Bitmap(dockAsset.data);
+        var dock2 = new createjs.Bitmap(dockAsset.data);
+        boat.mouseEnabled = false;
+        dock1.mouseEnabled = false;
+        dock2.mouseEnabled = false;
+        boat.regX = boatAsset.hitbox.centerX;
+        boat.regY = boatAsset.hitbox.centerY;
+        dock1.regX = dockAsset.hitbox.centerX;
+        dock1.regY = dockAsset.hitbox.centerY;
+        dock2.regX = dockAsset.hitbox.centerX;
+        dock2.regY = dockAsset.hitbox.centerY;
+
+        if (dir === EdgeDir.Right) {
+            dock1.x = beach.x + (bw / 2 + dw / 4 + 10);
+            dock1.y = beach.y + (bh / 6 - dh / 4);
+            dock2.x = beach.x + (bw / 2 + dw / 4 + 10);
+            dock2.y = beach.y - (bh / 6 + dh / 2);
+            if (!forwardDock) {
+                dock1.y += bh / 6;
+                dock2.y += bh / 6;
+            }
+            boat.x = beach.x + bw;
+            boat.y = beach.y;
+            boat.y += (forwardDock ? -0.5 : 0.5) * boatAsset.hitbox.height;
+        }
+        else if (dir === EdgeDir.Left) {
+            dock1.x = beach.x - (bw / 2 + dw / 4 + 10);
+            dock1.y = beach.y + (bh / 6 - dh / 4);
+            dock2.x = beach.x - (bw / 2 + dw / 4 + 10);
+            dock2.y = beach.y - (bh / 6 + dh / 2);
+            if (forwardDock) {
+                dock1.y += bh / 6;
+                dock2.y += bh / 6;
+            }
+            boat.x = beach.x - bw;
+            boat.y = beach.y;
+            boat.y += (forwardDock ? 0.5 : -0.5) * boatAsset.hitbox.height;
+        }
+        else if (dir === EdgeDir.BottomRight) {
+            dock1.x = beach.x + dw / 2 - 10;
+            dock1.y = beach.y + bh / 2 + dh / 6;
+            dock2.x = beach.x + bw / 2 + dw / 4;
+            dock2.y = beach.y + bh / 6 + dw / 4;
+
+            boat.x = beach.x + (2 * bw) / 3;
+            boat.y = beach.y + (2 * bh) / 3;
+        }
+        else if (dir === EdgeDir.TopLeft) {
+            dock1.x = beach.x - (dw / 2 - 10);
+            dock1.y = beach.y - (bh / 2 + dh / 6);
+            dock2.x = beach.x - (bw / 2 + dw / 4);
+            dock2.y = beach.y - (bh / 6 + dw / 4);
+
+            boat.x = beach.x - (2 * bw) / 3;
+            boat.y = beach.y - (2 * bh) / 3;
+        }
+        else if (dir === EdgeDir.TopRight) {
+            dock1.x = beach.x + (dw / 2 - 10);
+            dock1.y = beach.y - (bh / 2 + dh / 6);
+            dock2.x = beach.x + (bw / 2 + dw / 4);
+            dock2.y = beach.y - (bh / 6 + dw / 4);
+
+            boat.x = beach.x + (2 * bw) / 3;
+            boat.y = beach.y - (2 * bh) / 3;
+        }
+        else if (dir === EdgeDir.BottomLeft) {
+            dock1.x = beach.x - (dw / 2 - 10);
+            dock1.y = beach.y + bh / 2 + dh / 6;
+            dock2.x = beach.x - (bw / 2 + dw / 4);
+            dock2.y = beach.y + bh / 6 + dw / 4;
+
+            boat.x = beach.x - (2 * bw) / 3;
+            boat.y = beach.y + (2 * bh) / 3;
+        }
+
+
+        _boardTileContainer.addChild(dock1);
+        _boardTileContainer.addChild(dock2);
+        _boardTileContainer.addChild(boat);
+    }
+
+    _portsPopulated = true;
+    _invalidateCanvas = true;
+}
+
+function populateBuildings() {
+    if (_currentGameManager === null)
+        return;
+
+    // Clear the current buildings
+    _boardBuildingContainer.removeAllChildren();
+
+    var board = _currentGameManager["GameBoard"];
+    var buildings = board["Buildings"];
+
+    var pointKeys = Object.keys(buildings);
+    for (var i = 0; i < pointKeys.length; i++) {
+        var hexPoint = pointKeys[i];
+        var building = buildings[hexPoint];
+        var playerId = building["PlayerId"];
+        var player = getPlayerFromId(playerId);
+        var type = building["Type"];
+        var assetPrefix = (type === BuildingTypes.City) ? "imgCity" : ("imgHouse" + Math.floor(1 + Math.random() * 3).toString());
+        var assetKey = getAssetKeyFromColor(assetPrefix, player["Color"]);
+        var asset = _assetMap[assetKey];
+        var stageLoc = hexPointToCoordinates(hexPoint);
+        var bitmap = new createjs.Bitmap(asset.data);
+        bitmap.regX = asset.hitbox.centerX;
+        bitmap.regY = asset.hitbox.centerY;
+        bitmap.x = stageLoc[0];
+        bitmap.y = stageLoc[1];
+        _boardBuildingContainer.addChild(bitmap);
+    }
+}
+
+function populateRoads() {
+    if (_currentGameManager === null)
+        return;
+
+    // Clear the current roads
+    _boardRoadContainer.removeAllChildren();
+
+    var board = _currentGameManager["GameBoard"];
+    var roads = board["Roads"];
+
+    var roadEdgeKeys = Object.keys(roads);
+    for (var i = 0; i < roadEdgeKeys.length; i++) {
+        var hexEdge = roadEdgeKeys[i];
+        var road = roads[hexEdge];
+        var playerId = road["PlayerId"];
+        var player = getPlayerFromId(playerId);
+        var color = player["Color"];
+        var tmp = gethexAndDirectionFromEdge(hexEdge);
+        var hex = tmp[0];
+        var direction = tmp[1];
+        var roadType = null;
+        switch (direction) {
+            case EdgeDir.BottomLeft:
+            case EdgeDir.TopRight:
+                roadType = "1";
+                break;
+            case EdgeDir.Left:
+            case EdgeDir.Right:
+                roadType = "2";
+                break;
+            case EdgeDir.TopLeft:
+            case EdgeDir.BottomRight:
+                roadType = "3";
+                break;
+        }
+        if (roadType === null) continue;
+        var roadAssetKey = getAssetKeyFromColor("imgRoad" + roadType, player["Color"]);
+
+        var asset = _assetMap[roadAssetKey];
+        var bitmap = new createjs.Bitmap(asset.data);
+        bitmap.regX = asset.hitbox.centerX;
+        bitmap.regY = asset.hitbox.centerY;
+
+        // get beach tile position
+        var beachAsset = _assetMap["imgTileBeach"];
+        beach = _hexToBeachMap[hex];
+        beachWidth = beachAsset.hitbox.width;
+        beachHeight = beachAsset.hitbox.height;
+
+        if (direction === EdgeDir.Left) {
+            bitmap.x = beach.x - beachWidth * 0.5;
+            bitmap.y = beach.y;
+        }
+        else if (direction === EdgeDir.TopLeft) {
+            bitmap.x = beach.x - beachWidth * 0.25;
+            bitmap.y = beach.y - beachHeight * 0.39;
+        }
+        else if (direction === EdgeDir.TopRight) {
+            bitmap.x = beach.x + beachWidth * 0.25;
+            bitmap.y = beach.y - beachHeight * 0.39;
+        }
+
+        else if (direction === EdgeDir.Right) {
+            bitmap.x = beach.x + beachWidth * 0.5;
+            bitmap.y = beach.y;
+        }
+        else if (direction === EdgeDir.BottomRight) {
+            bitmap.x = beach.x + beachWidth * 0.25;
+            bitmap.y = beach.y + beachHeight * 0.39;
+        }
+        else if (direction === EdgeDir.BottomLeft) {
+            bitmap.x = beach.x - beachWidth * 0.25;
+            bitmap.y = beach.y + beachHeight * 0.39;
+        }
+
+        _boardRoadContainer.addChild(bitmap);
+    }
 }
 
 function populatePlayers(players) {
@@ -845,8 +820,54 @@ function populatePlayers(players) {
     }
 }
 
+
 //===========================
-// Drawing helper functions
+// Toast messages
+//===========================
+
+function displayToastMessage(str, time) {
+
+    // remove any current message and invalidate canvas
+    removeToastMessage();
+
+    if (str == null)
+        return;
+
+    var text = new createjs.Text(str, "22px Arial", "#ffffff");
+    text.lineWidth = _canvas.width - 50;
+    var tr = text.getBounds();
+    if (tr == null)
+        return;
+
+    var padding = 10;
+    var graphics = new createjs.Graphics().beginFill("#000000").drawRect(tr.x - padding, tr.y - padding, tr.width + padding * 2, tr.height + padding * 2);
+    var shape = new createjs.Shape(graphics);
+    shape.alpha = 0.65;
+
+    _toastMessageContainer.regX = (tr.width / 2) + padding;
+    _toastMessageContainer.regY = (tr.height / 2) + padding;
+    centerInCanvas(_toastMessageContainer);
+
+    _toastMessageContainer.addChild(shape);
+    _toastMessageContainer.addChild(text);
+
+    if (time == null || time <= 0) {
+        // automatically calculate the time to display, based on string length.
+        time = (str.length * 60) + 1000;
+    }
+    // remove message after a time
+    _toastMessageTimerId = setTimeout(removeToastMessage, time);
+}
+
+function removeToastMessage() {
+    clearTimeout(_toastMessageTimerId);
+    _toastMessageContainer.removeAllChildren();
+    _invalidateCanvas = true;
+}
+
+
+//===========================
+// Helper functions
 //===========================
 
 function getDictLength(dict) {
@@ -886,6 +907,31 @@ function getHexFromResourceTileBitmap(bitmap) {
         }
     }
     return null;
+}
+
+function gethexAndDirectionFromEdge(hexEdge) {
+    var hexes = hexEdgeToHexagons(hexEdge);
+    var primaryHex = null;
+    var otherHex = null;
+    if (jQuery.inArray(hexes[0], _hexKeys) !== -1) {
+        primaryHex = hexes[0];
+        otherHex = hexes[1];
+    } else {
+        primaryHex = hexes[1];
+        otherHex = hexes[0];
+    }
+    var primary = hexToValueArray(primaryHex);
+    var other = hexToValueArray(otherHex);
+    var x1 = primary[0]; var y1 = primary[1];
+    var x2 = other[0]; var y2 = other[1];
+    var direction = null;
+    if (x2 === (x1 + 0) && y2 === (y1 + 1)) { direction = EdgeDir.TopLeft; }
+    else if (x2 === (x1 + 1) && y2 === (y1 + 1)) { direction = EdgeDir.TopRight; }
+    else if (x2 === (x1 + 1) && y2 === (y1 + 0)) { direction = EdgeDir.Right; }
+    else if (x2 === (x1 + 0) && y2 === (y1 - 1)) { direction = EdgeDir.BottomRight; }
+    else if (x2 === (x1 - 1) && y2 === (y1 - 1)) { direction = EdgeDir.BottomLeft; }
+    else if (x2 === (x1 - 1) && y2 === (y1 + 0)) { direction = EdgeDir.Left; }
+    return [primaryHex, direction];
 }
 
 // Returns a list of hexagons from a hexedge. (e.g. "[(-2,0),(-3,0)]" returns the list ["(-2,0)", "(-3,0)"])
