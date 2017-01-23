@@ -28,17 +28,26 @@
 /* ============ */
 /* Player boxes */
 /* ============ */
+
+.box-shadow {
+    box-shadow: 1px 1px 10px #000;
+    -moz-box-shadow: 1px 1px 10px #000;
+    -webkit-box-shadow: 1px 1px 10px #000;
+}
+
 .player-float-box {
     width: 250px;
     height: 140px;
-    background:white;
     position: fixed;
     display: inline;
     padding: 10px;
 
+    background-image: url("Images/site/wood_tile.png");
+    background-repeat: repeat;
+
     border-style: solid;
     border-width: 1px;
-    border-color: #000;
+    border-color: #311;
 }
 
 .player-avatar {
@@ -47,32 +56,35 @@
 }
 
 .player-name {
-    font-size: 12px;
-    font-weight: bold;    
+    font-size: 18px;
+    font-weight: bold;
+    font-family: serif;
+    color: #eee;
+    text-shadow: 2px 2px 0px #000;
 }
 
 #playerBox1 {
     top: -1px;
     left: -1px;
-    border-bottom-right-radius: 4px;
+    border-right: 10px solid #13f;
 }
 
 #playerBox2 {
     top: -1px;
     right: -1px;
-    border-bottom-left-radius: 4px;
+    border-left: 10px solid #f32;
 }
 
 #playerBox3 {
     bottom: 49px;
     left: -1px;
-    border-top-right-radius: 4px;
+    border-right: 10px solid #2f2;
 }
 
 #playerBox4 {
     bottom: 49px;
     right: -1px;
-    border-top-left-radius: 4px;
+    border-left: 10px solid gold;
 }
 
 /* ========== */
@@ -132,10 +144,9 @@ input[type="text"] {
     width: 100%;
     font-family: sans-serif;
     font-size: 13px;
-    border: 0;
-    appearance: none;
+    border: 1px solid black;
     box-shadow: none;
-    border-radius: 0;
+    appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
 }

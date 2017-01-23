@@ -29,43 +29,10 @@ namespace JatanWebApp.SignalR
             get { return _hubUsers; }
         }
 
-        /// <summary>
-        /// Returns a list of hub users for a specific game.
-        /// </summary>
-        public static List<HubUser> GetHubUsersForGameLobby(string lobbyId)
-        {
-            var result = new List<HubUser>();
-            foreach (var user in _hubUsers)
-            {
-                var lobby = GetGameLobby(user.Key);
-                if (lobby != null && lobby.Uid == lobbyId)
-                {
-                    result.Add(user.Value);
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Returns a list of hub connection ids for a specific game.
-        /// </summary>
-        public static List<string> GetHubConnectionsForGameLobby(string lobbyId)
-        {
-            var result = new List<string>();
-            var users = GetHubUsersForGameLobby(lobbyId);
-            foreach (var user in users)
-            {
-                result.AddRange(user.ConnectionIds);
-            }
-            return result;
-        }
-
         static GameHub()
         {
             _hubUsers = new ConcurrentDictionary<string, HubUser>();
         }
-
-        #region Hub helper methods
 
         #region Hub overrides
 
@@ -120,12 +87,14 @@ namespace JatanWebApp.SignalR
 
         #endregion
 
+        #region Hub helper methods
+
         private string GetUserName()
         {
             return Context.User.Identity.Name;
         }
 
-        private static HubUser GetUser(string userName)
+        public static HubUser GetUser(string userName)
         {
             HubUser user;
             _hubUsers.TryGetValue(userName, out user);
@@ -138,7 +107,7 @@ namespace JatanWebApp.SignalR
             return GetUser(userName);
         }
 
-        private static GameLobby GetGameLobby(string userName)
+        public static GameLobby GetGameLobby(string userName)
         {
             return GameLobbyManager.GetGameLobbyForPlayer(userName);
         }
@@ -150,7 +119,7 @@ namespace JatanWebApp.SignalR
             return GetGameLobby(user.Username);
         }
 
-        private static int GetJatanPlayerId(string userName)
+        public static int GetJatanPlayerId(string userName)
         {
             var lobby = GameLobbyManager.GetGameLobbyForPlayer(userName);
             if (lobby == null)
@@ -165,6 +134,71 @@ namespace JatanWebApp.SignalR
         {
             string userName = Context.User.Identity.Name;
             return GetJatanPlayerId(userName);
+        }
+
+        public static IGameHubClient GetClientsForGame(string userName)
+        {
+            var connectionIds = new List<string>();
+            var lobby = GetGameLobby(userName);
+            if (lobby != null)
+            {
+                foreach (var name in HubUsers.Keys)
+                {
+                    if (lobby.Players.Contains(name))
+                    {
+                        connectionIds.AddRange(HubUsers[name].ConnectionIds);
+                    }
+                }
+            }
+            return GameHubReference.Context.Clients.Clients(connectionIds);
+        }
+
+        private IGameHubClient GetClientsForGame()
+        {
+            var connectionIds = new List<string>();
+            var lobby = GetGameLobby();
+            if (lobby != null)
+            {
+                foreach (var name in HubUsers.Keys)
+                {
+                    if (lobby.Players.Contains(name))
+                    {
+                        connectionIds.AddRange(HubUsers[name].ConnectionIds);
+                    }
+                }
+            }
+            return this.Clients.Clients(connectionIds);
+        }
+
+        /// <summary>
+        /// Returns a list of hub users for a specific game.
+        /// </summary>
+        public static List<HubUser> GetHubUsersForGameLobby(string lobbyId)
+        {
+            var result = new List<HubUser>();
+            foreach (var user in _hubUsers)
+            {
+                var lobby = GetGameLobby(user.Key);
+                if (lobby != null && lobby.Uid == lobbyId)
+                {
+                    result.Add(user.Value);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of hub connection ids for a specific game.
+        /// </summary>
+        public static List<string> GetHubConnectionsForGameLobby(string lobbyId)
+        {
+            var result = new List<string>();
+            var users = GetHubUsersForGameLobby(lobbyId);
+            foreach (var user in users)
+            {
+                result.AddRange(user.ConnectionIds);
+            }
+            return result;
         }
 
         #endregion
@@ -184,8 +218,8 @@ namespace JatanWebApp.SignalR
         /// </summary>
         public void GetGameManagerUpdate(bool fullUpdate)
         {
-            var callerPlayerId = GetJatanPlayerId();
             var lobby = GetGameLobby();
+            if (lobby == null) return;
             var managerDto = lobby.ToGameManagerDTO(GetUserName(), fullUpdate, fullUpdate);
             Clients.Caller.updateGameManager(managerDto);
         }
@@ -199,7 +233,7 @@ namespace JatanWebApp.SignalR
             var lobby = GetGameLobby();
 
             // Only the owned can start the game.
-            if (lobby.InProgress || GetUserName() != lobby.Owner)
+            if (lobby == null || lobby.InProgress || GetUserName() != lobby.Owner)
                 return;
 
             lobby.GameManager.StartNewGame();
@@ -213,6 +247,7 @@ namespace JatanWebApp.SignalR
         {
             var playerId = GetJatanPlayerId();
             var lobby = GetGameLobby();
+            if (lobby == null) return;
             var result = lobby.GameManager.PlayerEndTurn(playerId);
             if (result.Succeeded)
             {
@@ -231,14 +266,13 @@ namespace JatanWebApp.SignalR
 
         private void UpdateAllClientGameManagers(bool fullUpdate = false)
         {
-            foreach (var userName in HubUsers.Keys)
+            var lobby = GetGameLobby();
+            if (lobby == null) return;
+            foreach (var userName in HubUsers.Keys.Where(u => lobby.Players.Contains(u)))
             {
-                var lobby = GetGameLobby();
                 var managerDto = lobby.ToGameManagerDTO(userName, fullUpdate, fullUpdate);
-                foreach (var connectionId in HubUsers[userName].ConnectionIds)
-                {
-                    Clients.Client(connectionId).updateGameManager(managerDto);
-                }
+                var ids = HubUsers[userName].ConnectionIds.ToList();
+                Clients.Clients(ids).updateGameManager(managerDto);
             }
         }
     }

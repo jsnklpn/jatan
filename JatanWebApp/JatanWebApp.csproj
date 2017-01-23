@@ -276,6 +276,7 @@
     <Content Include="Content\Images\site\jatantext-styled.png" />
     <Content Include="Content\Images\site\jatantext-white.png" />
     <Content Include="Content\Images\site\water_background3.jpg" />
+    <Content Include="Content\Images\site\wood_tile.png" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />

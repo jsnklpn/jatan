@@ -66,18 +66,15 @@ namespace JatanWebApp.SignalR
             if (!GameLobbies.ContainsKey(ownerUserName))
                 return;
 
-            // Save connections to all players.
-            var lobby = GameLobbies[ownerUserName];
-            var connections = GameHub.GetHubConnectionsForGameLobby(lobby.Uid);
+            // Notify all players that the game shut down.
+            var hubClients = GameHub.GetClientsForGame(ownerUserName);
+            GameHub.GetClientsForGame(ownerUserName).gameAborted();
 
             GameLobby tmp;
             if (GameLobbies.TryRemove(ownerUserName, out tmp))
             {
                 tmp.CancelGame();
             }
-
-            // Notify all players that the game shut down.
-            GameHubReference.Context.Clients.Clients(connections).gameAborted();
         }
 
         /// <summary>
@@ -100,8 +97,7 @@ namespace JatanWebApp.SignalR
                 if (result.Succeeded)
                 {
                     // Tell all hub clients in the lobby that a new player has joined.
-                    var connections = GameHub.GetHubConnectionsForGameLobby(lobby.Uid);
-                    GameHubReference.Context.Clients.Clients(connections).newPlayerJoined(userName);
+                    GameHub.GetClientsForGame(userName).newPlayerJoined(userName);
                 }
                 return result;
             }
@@ -124,11 +120,10 @@ namespace JatanWebApp.SignalR
             }
             else
             {
-                lobby.AbandonGame(userName);
-
                 // Alert other users that the player left.
-                var connections = GameHub.GetHubConnectionsForGameLobby(lobby.Uid);
-                GameHubReference.Context.Clients.Clients(connections).playerLeft(userName);
+                GameHub.GetClientsForGame(userName).playerLeft(userName);
+
+                lobby.AbandonGame(userName);
             }
         }
     }
