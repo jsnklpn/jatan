@@ -237,6 +237,7 @@ namespace JatanWebApp.SignalR
                 return;
 
             lobby.GameManager.StartNewGame();
+
             UpdateAllClientGameManagers(true);
         }
 
@@ -262,6 +263,52 @@ namespace JatanWebApp.SignalR
         {
             var username = GetUserName();
             GameLobbyManager.AbandonCurrentGame(username);
+        }
+
+        /// <summary>
+        /// The client selected a road location.
+        /// </summary>
+        public ActionResult SelectRoad(string strHexEdge)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            var location = new HexEdge();
+            try { location.FromString(strHexEdge); }
+            catch (Exception e) { return ActionResult.CreateFailed(e.Message); }
+
+            ActionResult result;
+            if (lobby.GameManager.PlayerTurnState == PlayerTurnState.RoadBuildingSelectingRoads)
+                result = lobby.GameManager.PlayerPlaceRoadForRoadBuilding(playerId, location);
+            else
+                result = lobby.GameManager.PlayerPlaceRoad(playerId, location);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
+        /// The client selected a building location.
+        /// </summary>
+        public ActionResult SelectBuilding(string strHexPoint, BuildingTypes type)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            var location = new HexPoint();
+            try { location.FromString(strHexPoint); }
+            catch (Exception e) { return ActionResult.CreateFailed(e.Message); }
+
+            ActionResult result = lobby.GameManager.PlayerPlaceBuilding(playerId, type, location);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
         }
 
         private void UpdateAllClientGameManagers(bool fullUpdate = false)

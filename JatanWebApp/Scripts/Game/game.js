@@ -17,6 +17,7 @@ var _boardContainer = null;
 var _boardTileContainer = null; // child to the board container
 var _boardRoadContainer = null; // child to the board container
 var _boardBuildingContainer = null; // child to the board container
+var _boardSelectItemsContainer = null; // child to the board container
 var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
 
 // change this to allow the user to select various things on the UI
@@ -30,6 +31,7 @@ var _toastMessageTimerId = 0;
 
 var _hexToBeachMap = {}; // Populated when beach tiles are drawn
 var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
+var _selectableItemsMap = {}; // map of hexpoints and hexedges to their respective bitmaps
 var _portsPopulated = false;
 
 
@@ -162,7 +164,6 @@ function completedLoading() {
 function initCanvasStage() {
 
     _stage = new createjs.Stage("gameCanvas");
-    //_stage.enableMouseOver(10);
     _boardContainer = new createjs.Container();
     
     // draw water
@@ -170,12 +171,14 @@ function initCanvasStage() {
     _water.mouseEnabled = false;
     _stage.addChild(_water);
 
-    // Create multiple containers we can layer the images properly
+    // Create multiple containers so we can layer the images properly
     _boardTileContainer = new createjs.Container();
     _boardRoadContainer = new createjs.Container();
     _boardBuildingContainer = new createjs.Container();
+    _boardSelectItemsContainer = new createjs.Container();
     _boardContainer.addChild(_boardTileContainer);
     _boardContainer.addChild(_boardRoadContainer);
+    _boardContainer.addChild(_boardSelectItemsContainer);
     _boardContainer.addChild(_boardBuildingContainer);
     _stage.addChild(_boardContainer);
 
@@ -440,6 +443,7 @@ function updateGameModel(gameManager) {
     populatePlayers();
     populateBuildings();
     populateRoads();
+    populateSelectItems();
 
     // TODO ...
     if (myPlayerId === activePlayerId) { // We are currently the active player.
@@ -519,9 +523,10 @@ function populateResourceTiles() {
             tile.x = beach.x; // center on beach tile
             tile.y = beach.y; // center on beach tile
 
-            tile.addEventListener("click", handleClick);
-            tile.addEventListener("mouseover", handleMouseOver);
-            tile.addEventListener("mouseout", handleMouseOut);
+            tile.mouseEnabled = false;
+            //tile.addEventListener("click", handleClick);
+            //tile.addEventListener("mouseover", handleMouseOver);
+            //tile.addEventListener("mouseout", handleMouseOut);
 
             resTiles.push(tile);
 
@@ -705,6 +710,7 @@ function populateBuildings() {
         var asset = _assetMap[assetKey];
         var stageLoc = hexPointToCoordinates(hexPoint);
         var bitmap = new createjs.Bitmap(asset.data);
+        bitmap.mouseEnabled = false;
         bitmap.regX = asset.hitbox.centerX;
         bitmap.regY = asset.hitbox.centerY;
         bitmap.x = stageLoc[0];
@@ -728,68 +734,82 @@ function populateRoads() {
         var hexEdge = roadEdgeKeys[i];
         var road = roads[hexEdge];
         var playerId = road["PlayerId"];
-        var player = getPlayerFromId(playerId);
-        var color = player["Color"];
-        var tmp = gethexAndDirectionFromEdge(hexEdge);
-        var hex = tmp[0];
-        var direction = tmp[1];
-        var roadType = null;
-        switch (direction) {
-            case EdgeDir.BottomLeft:
-            case EdgeDir.TopRight:
-                roadType = "1";
-                break;
-            case EdgeDir.Left:
-            case EdgeDir.Right:
-                roadType = "2";
-                break;
-            case EdgeDir.TopLeft:
-            case EdgeDir.BottomRight:
-                roadType = "3";
-                break;
-        }
-        if (roadType === null) continue;
-        var roadAssetKey = getAssetKeyFromColor("imgRoad" + roadType, player["Color"]);
 
-        var asset = _assetMap[roadAssetKey];
-        var bitmap = new createjs.Bitmap(asset.data);
-        bitmap.regX = asset.hitbox.centerX;
-        bitmap.regY = asset.hitbox.centerY;
-
-        // get beach tile position
-        var beachAsset = _assetMap["imgTileBeach"];
-        beach = _hexToBeachMap[hex];
-        beachWidth = beachAsset.hitbox.width;
-        beachHeight = beachAsset.hitbox.height;
-
-        if (direction === EdgeDir.Left) {
-            bitmap.x = beach.x - beachWidth * 0.5;
-            bitmap.y = beach.y;
-        }
-        else if (direction === EdgeDir.TopLeft) {
-            bitmap.x = beach.x - beachWidth * 0.25;
-            bitmap.y = beach.y - beachHeight * 0.39;
-        }
-        else if (direction === EdgeDir.TopRight) {
-            bitmap.x = beach.x + beachWidth * 0.25;
-            bitmap.y = beach.y - beachHeight * 0.39;
-        }
-
-        else if (direction === EdgeDir.Right) {
-            bitmap.x = beach.x + beachWidth * 0.5;
-            bitmap.y = beach.y;
-        }
-        else if (direction === EdgeDir.BottomRight) {
-            bitmap.x = beach.x + beachWidth * 0.25;
-            bitmap.y = beach.y + beachHeight * 0.39;
-        }
-        else if (direction === EdgeDir.BottomLeft) {
-            bitmap.x = beach.x - beachWidth * 0.25;
-            bitmap.y = beach.y + beachHeight * 0.39;
-        }
+        var bitmap = createRoadBitmap(hexEdge, playerId);
+        if (bitmap == null) continue;
+        bitmap.mouseEnabled = false;
 
         _boardRoadContainer.addChild(bitmap);
     }
+}
+
+function createRoadBitmap(hexEdge, playerId) {
+    var tmp = gethexAndDirectionFromEdge(hexEdge);
+    var hex = tmp[0];
+    var direction = tmp[1];
+    var roadType = null;
+    switch (direction) {
+        case EdgeDir.BottomLeft:
+        case EdgeDir.TopRight:
+            roadType = "1";
+            break;
+        case EdgeDir.Left:
+        case EdgeDir.Right:
+            roadType = "2";
+            break;
+        case EdgeDir.TopLeft:
+        case EdgeDir.BottomRight:
+            roadType = "3";
+            break;
+    }
+    if (roadType == null) return null;
+
+    var roadAssetKey = "";
+    if (playerId != null) {
+        var player = getPlayerFromId(playerId);
+        var color = player["Color"];
+        roadAssetKey = getAssetKeyFromColor("imgRoad" + roadType, player["Color"]);
+    } else {
+        roadAssetKey = "imgRoad" + roadType;
+    }
+
+    var asset = _assetMap[roadAssetKey];
+    var bitmap = new createjs.Bitmap(asset.data);
+    bitmap.regX = asset.hitbox.centerX;
+    bitmap.regY = asset.hitbox.centerY;
+
+    // get beach tile position
+    var beachAsset = _assetMap["imgTileBeach"];
+    var beach = _hexToBeachMap[hex];
+    var beachWidth = beachAsset.hitbox.width;
+    var beachHeight = beachAsset.hitbox.height;
+
+    if (direction === EdgeDir.Left) {
+        bitmap.x = beach.x - beachWidth * 0.5;
+        bitmap.y = beach.y;
+    }
+    else if (direction === EdgeDir.TopLeft) {
+        bitmap.x = beach.x - beachWidth * 0.25;
+        bitmap.y = beach.y - beachHeight * 0.39;
+    }
+    else if (direction === EdgeDir.TopRight) {
+        bitmap.x = beach.x + beachWidth * 0.25;
+        bitmap.y = beach.y - beachHeight * 0.39;
+    }
+    else if (direction === EdgeDir.Right) {
+        bitmap.x = beach.x + beachWidth * 0.5;
+        bitmap.y = beach.y;
+    }
+    else if (direction === EdgeDir.BottomRight) {
+        bitmap.x = beach.x + beachWidth * 0.25;
+        bitmap.y = beach.y + beachHeight * 0.39;
+    }
+    else if (direction === EdgeDir.BottomLeft) {
+        bitmap.x = beach.x - beachWidth * 0.25;
+        bitmap.y = beach.y + beachHeight * 0.39;
+    }
+
+    return bitmap;
 }
 
 function populatePlayers() {
@@ -836,6 +856,86 @@ function populatePlayers() {
             $(boxId).addClass("hidden");
         }
     }
+}
+
+function populateSelectItems() {
+    if (_currentGameManager === null)
+        return;
+
+    // TODO: Remove all event listeners from children before removing them.
+    _boardSelectItemsContainer.removeAllChildren();
+    _selectableItemsMap = {};
+
+    // valid placement lists are only populated if needed.
+    var validRoadPlacements = _currentGameManager["ValidRoadPlacements"];
+    var validSettlementPlacements = _currentGameManager["ValidSettlementPlacements"];
+    var validCityPlacements = _currentGameManager["ValidCityPlacements"];
+
+    var playerId = _currentGameManager["MyPlayerId"];
+
+    // disable mouse rollover events by default
+    _stage.enableMouseOver(0);
+
+    if (validRoadPlacements != null) {
+
+        // enable mouse rollover events
+        _stage.enableMouseOver(20);
+
+        for (var i = 0; i < validRoadPlacements.length; i++) {
+            var hexEdge = validRoadPlacements[i];
+            var roadBitmap = createRoadBitmap(hexEdge, playerId);
+            roadBitmap.mouseEnabled = true;
+            roadBitmap.addEventListener("click", handleClickRoad);
+            roadBitmap.addEventListener("mouseover", handleMouseOverRoad);
+            roadBitmap.addEventListener("mouseout", handleMouseOutRoad);
+
+            roadBitmap.alpha = 0.4; // Semi-transparent to indicate it's just a selection helper.
+            _boardSelectItemsContainer.addChild(roadBitmap);
+
+            _selectableItemsMap[hexEdge] = roadBitmap;
+        }
+    }
+   
+}
+
+function handleMouseOverRoad(event) {
+    var obj = event.target;
+    obj.scaleX = 1.1;
+    obj.scaleY = 1.1;
+    obj.alpha = 0.5;
+    _invalidateCanvas = true;
+}
+
+function handleMouseOutRoad(event) {
+    var obj = event.target;
+    obj.scaleX = 1.0;
+    obj.scaleY = 1.0;
+    obj.alpha = 0.4;
+    _invalidateCanvas = true;
+}
+
+function handleClickRoad(event) {
+    var obj = event.target;
+    var hexEdge = selectableItemToHexKey(obj);
+
+    if (hexEdge == null || _serverGameHub == null)
+        return;
+
+    _serverGameHub.selectRoad(hexEdge).done(function(result) {
+        if (!result["Succeeded"]) { // failed. display error message.
+            displayToastMessage(result["Message"]);
+        }
+    });
+}
+
+function selectableItemToHexKey(item) {
+    var keys = Object.keys(_selectableItemsMap);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (_selectableItemsMap[key] === item)
+            return key;
+    }
+    return null;
 }
 
 
@@ -897,7 +997,6 @@ function getAssetKeyFromColor(assetPrefix, playerColor) {
     if (playerColor === PlayerColor.Green) return assetPrefix + "Green";
     if (playerColor === PlayerColor.Red) return assetPrefix + "Red";
     if (playerColor === PlayerColor.Yellow) return assetPrefix + "Yellow";
-    if (playerColor === PlayerColor.Pink) return assetPrefix + "Pink";
     return assetPrefix;
 }
 
