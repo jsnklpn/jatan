@@ -420,6 +420,11 @@ function updateGameModel(gameManager) {
     var currentDiceRoll = gameManager["CurrentDiceRoll"];
     var players = gameManager["Players"];
 
+    // valid placement lists are only populated if needed.
+    var validRoadPlacements = gameManager["ValidRoadPlacements"];
+    var validSettlementPlacements = gameManager["ValidSettlementPlacements"];
+    var validCityPlacements = gameManager["ValidCityPlacements"];
+
     if (resourceTiles && getDictLength(resourceTiles) > 0) {
         _currentResourceTiles = resourceTiles;
         // if we haven't populated the resource tiles on the board yet, do it.
@@ -793,6 +798,8 @@ function populatePlayers() {
 
     var players = _currentGameManager["Players"];
     var activePlayerId = _currentGameManager["ActivePlayerId"];
+    var gameState = _currentGameManager["GameState"];
+    var gameStarted = (gameState === GameState.InitialPlacement || gameState === GameState.GameInProgress);
 
     for (var i = 0; i < 4; i++) {
         var boxId = "#playerBox" + (i + 1).toString();
@@ -809,7 +816,7 @@ function populatePlayers() {
             }
 
             $(boxId).removeClass("active-player");
-            if (playerId === activePlayerId) {
+            if (gameStarted && playerId === activePlayerId) {
                 $(boxId).addClass("active-player");
             }
 

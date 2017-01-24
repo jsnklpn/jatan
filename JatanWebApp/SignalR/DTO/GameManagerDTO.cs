@@ -21,6 +21,11 @@ namespace JatanWebApp.SignalR.DTO
         public RollResult CurrentDiceRoll { get; set; }
         public List<PlayerDTO> Players { get; set; }
 
+        // These properties are populated only when needed.
+        public List<HexEdge> ValidRoadPlacements { get; set; }
+        public List<HexPoint> ValidSettlementPlacements { get; set; }
+        public List<HexPoint> ValidCityPlacements { get; set; }
+
         public GameManagerDTO(GameLobby lobby, int requestingPlayerId, bool includeBoardConstants, bool includeAvatarPaths)
         {
             var manager = lobby.GameManager;
@@ -40,6 +45,21 @@ namespace JatanWebApp.SignalR.DTO
                     playerDto.AvatarPath = lobby.AvatarPaths.ContainsKey(p.Name) ? lobby.AvatarPaths[p.Name] : null;
                 }
                 this.Players.Add(playerDto);
+            }
+
+            // Check if we need to send valid item placements
+            if (requestingPlayerId == this.ActivePlayerId)
+            {
+                if (manager.PlayerTurnState == PlayerTurnState.PlacingRoad ||
+                    manager.PlayerTurnState == PlayerTurnState.RoadBuildingSelectingRoads)
+                {
+                    ValidRoadPlacements = manager.GetLegalRoadPlacements(requestingPlayerId);
+                }
+                if (manager.PlayerTurnState == PlayerTurnState.PlacingBuilding)
+                {
+                    ValidSettlementPlacements = manager.GetLegalBuildingPlacements(requestingPlayerId, BuildingTypes.Settlement);
+                    ValidCityPlacements = manager.GetLegalBuildingPlacements(requestingPlayerId, BuildingTypes.City);
+                }
             }
         }
     }

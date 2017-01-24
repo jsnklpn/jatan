@@ -372,13 +372,19 @@ namespace Jatan.Models
                 if (_buildings[point].PlayerId != playerId)
                     return new ActionResult(false, string.Format("The location {0} is already used by another player.", point));
 
-                // If this play has something here, make sure that it's not a city, which can't be upgraded.
+                // If this player has something here, make sure that it's not a city, which can't be upgraded.
                 if (_buildings[point].Type == BuildingTypes.City)
                     return new ActionResult(false, string.Format("The location {0} already contains a city.", point));
 
                 // If the existing building is a settlement, make sure the building being placed is not a settlement.
                 if (buildingType == BuildingTypes.Settlement)
                     return new ActionResult(false, string.Format("The location {0} already contains a settlement.", point));
+            }
+            else
+            {
+                // If there is nothing here, we can only place a settlement.
+                if (buildingType == BuildingTypes.City)
+                    return new ActionResult(false, string.Format("A city can only be placed on a settlement.", point));
             }
 
             // Check that there isn't a neighboring building.
@@ -478,6 +484,30 @@ namespace Jatan.Models
                     absoluteMax = currentMax;
             }
             return absoluteMax;
+        }
+
+        /// <summary>
+        /// Returns all the hexagons for this board.
+        /// </summary>
+        public List<Hexagon> GetAllBoardHexagons()
+        {
+            return new List<Hexagon>(_validBoardHexagons);
+        }
+
+        /// <summary>
+        /// Returns all the edges contained in this board.
+        /// </summary>
+        public List<HexEdge> GetAllBoardEdges()
+        {
+            return new List<HexEdge>(_validBoardEdges);
+        }
+
+        /// <summary>
+        /// Returns all the points contained in this board.
+        /// </summary>
+        public List<HexPoint> GetAllBoardPoints()
+        {
+            return new List<HexPoint>(_validBoardPoints);
         }
 
         /// <summary>

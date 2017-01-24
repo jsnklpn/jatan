@@ -883,6 +883,48 @@ namespace Jatan.GameLogic
 
         #endregion
 
+        #region Public client helper methods
+
+        /// <summary>
+        /// Returns a list of all legal placements for a road for the given player.
+        /// </summary>
+        public List<HexEdge> GetLegalRoadPlacements(int playerId)
+        {
+            List<HexEdge> result = new List<HexEdge>();
+            var edges = _gameBoard.GetAllBoardEdges();
+            bool startOfGame = (_gameState == GameState.InitialPlacement);
+            foreach (var edge in edges)
+            {
+                var placementResult = _gameBoard.ValidateRoadPlacement(playerId, edge, startOfGame);
+                if (placementResult.Succeeded)
+                {
+                    result.Add(edge);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Returns a list of all legal placements for a building for the given player.
+        /// </summary>
+        public List<HexPoint> GetLegalBuildingPlacements(int playerId, BuildingTypes type)
+        {
+            List<HexPoint> result = new List<HexPoint>();
+            var points = _gameBoard.GetAllBoardPoints();
+            bool startOfGame = (_gameState == GameState.InitialPlacement);
+            foreach (var point in points)
+            {
+                var placementResult = _gameBoard.ValidateBuildingPlacement(playerId, type, point, startOfGame);
+                if (placementResult.Succeeded)
+                {
+                    result.Add(point);
+                }
+            }
+            return result;
+        }
+
+        #endregion
+
         #region private setup methods
 
         private void SetupDevelopmentCards()
