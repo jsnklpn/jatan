@@ -614,7 +614,8 @@ function populatePorts() {
     var hexEdges = Object.keys(_currentPorts);
     for (var i = 0; i < hexEdges.length; i++) {
         var hexEdge = hexEdges[i];
-        var resource = _currentPorts[hexEdge];
+        var port = _currentPorts[hexEdge];
+        var resource = port["Resource"];
         var tmp = gethexAndDirectionFromEdge(hexEdge);
         var hex = tmp[0];
         var dir = tmp[1];
@@ -728,10 +729,53 @@ function populatePorts() {
             boat.y = beach.y + (2 * bh) / 3;
         }
 
+        // Create resource type and ratio label
+        var strRatio = (resource === ResourceTypes.None) ? "3:1" : "2:1";
+
+        var graphics = new createjs.Graphics();
+        var boxWidth = 100;
+        var boxHeight = 65;
+        graphics.setStrokeStyle(1).beginStroke("#000000").beginFill("#dddddd").drawRect(-boxWidth / 2, -boxHeight / 2, boxWidth, boxHeight);
+        var boxShape = new createjs.Shape(graphics);
+        boxShape.mouseEnabled = false;
+        boxShape.x = boat.x;
+        boxShape.y = boat.y;
+        boxShape.alpha = 0.75;
+        var ratioText = new createjs.Text(strRatio, "bold 24px Serif", "#000000");
+        ratioText.mouseEnabled = false;
+        var tr = ratioText.getBounds();
+        if (tr != null) {
+            ratioText.regX = tr.width / 2;
+            ratioText.regY = tr.height / 2;
+        }
+        ratioText.x = boxShape.x;
+        ratioText.y = boxShape.y - boxHeight / 4;
+
+        // TODO: Replace resource text with an icon
+        var strResource = (resource === ResourceTypes.Brick) ? "Brick"
+            : (resource === ResourceTypes.Ore) ? "Ore"
+            : (resource === ResourceTypes.Sheep) ? "Sheep"
+            : (resource === ResourceTypes.Wheat) ? "Wheat"
+            : (resource === ResourceTypes.Wood) ? "Wood"
+            : (resource === ResourceTypes.None) ? "?" : "";
+        var resourceText = new createjs.Text(strResource, "bold 20px Serif", "#000000");
+        resourceText.mouseEnabled = false;
+        tr = resourceText.getBounds();
+        if (tr != null) {
+            resourceText.regX = tr.width / 2;
+            resourceText.regY = tr.height / 2;
+        }
+        resourceText.x = boxShape.x;
+        resourceText.y = boxShape.y + boxHeight / 4;
+
 
         _boardTileContainer.addChild(dock1);
         _boardTileContainer.addChild(dock2);
         _boardTileContainer.addChild(boat);
+
+        _boardTileContainer.addChild(boxShape);
+        _boardTileContainer.addChild(ratioText);
+        _boardTileContainer.addChild(resourceText);
     }
 
     _portsPopulated = true;
