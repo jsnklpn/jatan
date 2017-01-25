@@ -702,21 +702,41 @@ function populateBuildings() {
     for (var i = 0; i < pointKeys.length; i++) {
         var hexPoint = pointKeys[i];
         var building = buildings[hexPoint];
-        var playerId = building["PlayerId"];
-        var player = getPlayerFromId(playerId);
         var type = building["Type"];
-        var assetPrefix = (type === BuildingTypes.City) ? "imgCity" : ("imgHouse" + Math.floor(1 + Math.random() * 3).toString());
-        var assetKey = getAssetKeyFromColor(assetPrefix, player["Color"]);
-        var asset = _assetMap[assetKey];
-        var stageLoc = hexPointToCoordinates(hexPoint);
-        var bitmap = new createjs.Bitmap(asset.data);
-        bitmap.mouseEnabled = false;
-        bitmap.regX = asset.hitbox.centerX;
-        bitmap.regY = asset.hitbox.centerY;
-        bitmap.x = stageLoc[0];
-        bitmap.y = stageLoc[1];
+        var playerId = building["PlayerId"];
+
+        var bitmap = createBuildingBitmap(hexPoint, type, playerId);
+
         _boardBuildingContainer.addChild(bitmap);
     }
+}
+
+function createBuildingBitmap(hexPoint, buildingType, playerId) {
+    var assetPrefix = (buildingType === BuildingTypes.City) ? "imgCity" : ("imgHouse" + hexPointToHouseType(hexPoint).toString());
+    var assetKey = assetPrefix;
+    if (playerId != null) {
+        var player = getPlayerFromId(playerId);
+        var color = player["Color"];
+        assetKey = getAssetKeyFromColor(assetPrefix, player["Color"]);
+    }
+    var asset = _assetMap[assetKey];
+    var stageLoc = hexPointToCoordinates(hexPoint);
+    var bitmap = new createjs.Bitmap(asset.data);
+    bitmap.regX = asset.hitbox.centerX;
+    bitmap.regY = asset.hitbox.centerY;
+    bitmap.x = stageLoc[0];
+    bitmap.y = stageLoc[1];
+    return bitmap;
+}
+
+function hexPointToHouseType(hexPoint) {
+    // This function generates a specific house type of a hex point.
+    var total = 0;
+    for (var i = 0; i < hexPoint.length; i++) {
+        total += hexPoint[i].charCodeAt(0);
+    }
+    total %= 3;
+    return total + 1;
 }
 
 function populateRoads() {
@@ -874,31 +894,68 @@ function populateSelectItems() {
     var playerId = _currentGameManager["MyPlayerId"];
 
     // disable mouse rollover events by default
-    _stage.enableMouseOver(0);
-
+    var enableMouseOver = false;
     if (validRoadPlacements != null) {
-
-        // enable mouse rollover events
-        _stage.enableMouseOver(20);
+        enableMouseOver = true;
 
         for (var i = 0; i < validRoadPlacements.length; i++) {
             var hexEdge = validRoadPlacements[i];
             var roadBitmap = createRoadBitmap(hexEdge, playerId);
             roadBitmap.mouseEnabled = true;
             roadBitmap.addEventListener("click", handleClickRoad);
-            roadBitmap.addEventListener("mouseover", handleMouseOverRoad);
-            roadBitmap.addEventListener("mouseout", handleMouseOutRoad);
-
+            roadBitmap.addEventListener("mouseover", handleMouseOverSelectable);
+            roadBitmap.addEventListener("mouseout", handleMouseOutSelectable);
             roadBitmap.alpha = 0.4; // Semi-transparent to indicate it's just a selection helper.
             _boardSelectItemsContainer.addChild(roadBitmap);
 
             _selectableItemsMap[hexEdge] = roadBitmap;
         }
     }
-   
+    if (validSettlementPlacements != null) {
+        enableMouseOver = true;
+
+        for (var i = 0; i < validSettlementPlacements.length; i++) {
+            var hexPoint = validSettlementPlacements[i];
+            var type = BuildingTypes.Settlement;
+
+            var settlementBitmap = createBuildingBitmap(hexPoint, type, playerId);
+            settlementBitmap.mouseEnabled = true;
+            settlementBitmap.addEventListener("click", handleClickSettlement);
+            settlementBitmap.addEventListener("mouseover", handleMouseOverSelectable);
+            settlementBitmap.addEventListener("mouseout", handleMouseOutSelectable);
+            settlementBitmap.alpha = 0.4; // Semi-transparent to indicate it's just a selection helper.
+            _boardSelectItemsContainer.addChild(settlementBitmap);
+
+            _selectableItemsMap[hexPoint] = settlementBitmap;
+        }
+    }
+    if (validCityPlacements != null) {
+        enableMouseOver = true;
+
+        for (var i = 0; i < validCityPlacements.length; i++) {
+            var hexPoint = validCityPlacements[i];
+            var type = BuildingTypes.City;
+
+            var cityBitmap = createBuildingBitmap(hexPoint, type, playerId);
+            cityBitmap.mouseEnabled = true;
+            cityBitmap.addEventListener("click", handleClickCity);
+            cityBitmap.addEventListener("mouseover", handleMouseOverSelectable);
+            cityBitmap.addEventListener("mouseout", handleMouseOutSelectable);
+            cityBitmap.alpha = 0.4; // Semi-transparent to indicate it's just a selection helper.
+            _boardSelectItemsContainer.addChild(cityBitmap);
+
+            _selectableItemsMap[hexPoint] = cityBitmap;
+        }
+    }
+
+    if (enableMouseOver) {
+        _stage.enableMouseOver(20);
+    } else {
+        _stage.enableMouseOver(0);
+    }
 }
 
-function handleMouseOverRoad(event) {
+function handleMouseOverSelectable(event) {
     var obj = event.target;
     obj.scaleX = 1.1;
     obj.scaleY = 1.1;
@@ -906,7 +963,7 @@ function handleMouseOverRoad(event) {
     _invalidateCanvas = true;
 }
 
-function handleMouseOutRoad(event) {
+function handleMouseOutSelectable(event) {
     var obj = event.target;
     obj.scaleX = 1.0;
     obj.scaleY = 1.0;
@@ -922,6 +979,32 @@ function handleClickRoad(event) {
         return;
 
     _serverGameHub.selectRoad(hexEdge).done(function(result) {
+        if (!result["Succeeded"]) { // failed. display error message.
+            displayToastMessage(result["Message"]);
+        }
+    });
+}
+
+function handleClickSettlement(event) {
+    var obj = event.target;
+    var hexPoint = selectableItemToHexKey(obj);
+    if (hexPoint == null || _serverGameHub == null)
+        return;
+
+    _serverGameHub.selectBuilding(hexPoint, BuildingTypes.Settlement).done(function (result) {
+        if (!result["Succeeded"]) { // failed. display error message.
+            displayToastMessage(result["Message"]);
+        }
+    });
+}
+
+function handleClickCity(event) {
+    var obj = event.target;
+    var hexPoint = selectableItemToHexKey(obj);
+    if (hexPoint == null || _serverGameHub == null)
+        return;
+
+    _serverGameHub.selectBuilding(hexPoint, BuildingTypes.City).done(function (result) {
         if (!result["Succeeded"]) { // failed. display error message.
             displayToastMessage(result["Message"]);
         }

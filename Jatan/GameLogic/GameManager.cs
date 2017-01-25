@@ -81,7 +81,12 @@ namespace Jatan.GameLogic
         /// </summary>
         public Player ActivePlayer
         {
-            get { return _players[_playerTurnIndex]; }
+            get
+            {
+                if (_playerTurnIndex >= 0 && _playerTurnIndex < _players.Count)
+                    return _players[_playerTurnIndex];
+                return null;
+            }
         }
 
         /// <summary>
