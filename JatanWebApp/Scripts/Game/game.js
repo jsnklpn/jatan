@@ -33,7 +33,7 @@ var _hexToBeachMap = {}; // Populated when beach tiles are drawn
 var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
 var _selectableItemsMap = {}; // map of hexpoints and hexedges to their respective bitmaps
 var _portsPopulated = false;
-
+var _resourceTilesPopulated = false;
 
 $(function () {
 
@@ -89,7 +89,7 @@ function initSignalR() {
 
 function initHubButtons() {
     $("#btnUpdateGameManager").click(function () {
-        var fullUpdate = (!_portsPopulated || getDictLength(_hexToResourceTileMap) === 0);
+        var fullUpdate = (!_portsPopulated || !_resourceTilesPopulated);
         _serverGameHub.getGameManagerUpdate(fullUpdate);
     });
     $("#btnStartGame").click(function () {
@@ -428,13 +428,13 @@ function updateGameModel(gameManager) {
     var validSettlementPlacements = gameManager["ValidSettlementPlacements"];
     var validCityPlacements = gameManager["ValidCityPlacements"];
 
-    if (resourceTiles && getDictLength(resourceTiles) > 0) {
+    if (resourceTiles != null && getDictLength(resourceTiles) > 0) {
         _currentResourceTiles = resourceTiles;
         // if we haven't populated the resource tiles on the board yet, do it.
-        if (getDictLength(_hexToResourceTileMap) === 0)
+        if (!_resourceTilesPopulated)
             populateResourceTiles();
     }
-    if (ports && getDictLength(ports) > 0) {
+    if (ports != null && getDictLength(ports) > 0) {
         _currentPorts = ports;
         if (!_portsPopulated)
             populatePorts();
@@ -502,7 +502,7 @@ function updateGameModel(gameManager) {
 function populateResourceTiles() {
 
     // If we're here, then we should have a game manager instance from the server.
-    if (_currentGameManager === null || _currentResourceTiles === null) {
+    if (_currentGameManager == null || _currentResourceTiles == null) {
         return;
     }
 
@@ -526,6 +526,7 @@ function populateResourceTiles() {
             tile.x = beach.x; // center on beach tile
             tile.y = beach.y; // center on beach tile
 
+            // TODO: Eventually we want to be able to select a tile (like when moving the robber.)
             tile.mouseEnabled = false;
             //tile.addEventListener("click", handleClick);
             //tile.addEventListener("mouseover", handleMouseOver);
@@ -546,6 +547,7 @@ function populateResourceTiles() {
             graphics.beginFill("#dddddd");
             graphics.drawCircle(0, 0, circleRadius);
             var shape = new createjs.Shape(graphics);
+            shape.mouseEnabled = false;
             shape.x = beach.x;
             shape.y = beach.y + 30;
             shape.alpha = 0.75;
@@ -561,6 +563,7 @@ function populateResourceTiles() {
                 
                 var dotG = new createjs.Graphics().beginFill(dotColor).drawCircle(0, 0, dotRadius);
                 var dotShape = new createjs.Shape(dotG);
+                dotShape.mouseEnabled = false;
                 dotShape.x = shape.x + posX;
                 dotShape.y = shape.y + (circleRadius / 2);
                 posX += (3 * dotRadius);
@@ -568,6 +571,7 @@ function populateResourceTiles() {
             }
 
             var text = new createjs.Text(number.toString(), "bold 28px Serif", dotColor);
+            text.mouseEnabled = false;
             var tr = text.getBounds();
             if (tr != null) {
                 text.regX = tr.width / 2;
@@ -585,12 +589,13 @@ function populateResourceTiles() {
         _boardTileContainer.addChild(numberTiles[i]);
     }
 
+    _resourceTilesPopulated = true;
     _invalidateCanvas = true;
 }
 
 function populatePorts() {
     // If we're here, then we should have a game manager instance from the server.
-    if (_currentGameManager === null || _currentResourceTiles === null) {
+    if (_currentGameManager == null || _currentResourceTiles == null) {
         return;
     }
 
@@ -734,7 +739,7 @@ function populatePorts() {
 }
 
 function populateBuildings() {
-    if (_currentGameManager === null)
+    if (_currentGameManager == null)
         return;
 
     // Clear the current buildings
@@ -751,6 +756,7 @@ function populateBuildings() {
         var playerId = building["PlayerId"];
 
         var bitmap = createBuildingBitmap(hexPoint, type, playerId);
+        bitmap.mouseEnabled = false;
 
         _boardBuildingContainer.addChild(bitmap);
     }
@@ -785,7 +791,7 @@ function hexPointToHouseType(hexPoint) {
 }
 
 function populateRoads() {
-    if (_currentGameManager === null)
+    if (_currentGameManager == null)
         return;
 
     // Clear the current roads
@@ -878,7 +884,7 @@ function createRoadBitmap(hexEdge, playerId) {
 }
 
 function populatePlayers() {
-    if (_currentGameManager === null)
+    if (_currentGameManager == null)
         return;
 
     var players = _currentGameManager["Players"];
@@ -924,7 +930,7 @@ function populatePlayers() {
 }
 
 function populateSelectItems() {
-    if (_currentGameManager === null)
+    if (_currentGameManager == null)
         return;
 
     // TODO: Remove all event listeners from children before removing them.
@@ -1134,7 +1140,7 @@ function getAssetKeyFromColor(assetPrefix, playerColor) {
 }
 
 function getPlayerFromId(playerId) {
-    if (_currentGameManager === null)
+    if (_currentGameManager == null)
         return null;
 
     var players = _currentGameManager["Players"];
