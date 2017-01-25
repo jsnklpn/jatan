@@ -55,9 +55,12 @@ namespace JatanWebApp.SignalR.DTO
                 {
                     ValidRoadPlacements = manager.GetLegalRoadPlacements(requestingPlayerId);
                 }
-                if (manager.PlayerTurnState == PlayerTurnState.PlacingBuilding)
+                if (manager.PlayerTurnState == PlayerTurnState.PlacingSettlement)
                 {
                     ValidSettlementPlacements = manager.GetLegalBuildingPlacements(requestingPlayerId, BuildingTypes.Settlement);
+                }
+                if (manager.PlayerTurnState == PlayerTurnState.PlacingCity)
+                {
                     ValidCityPlacements = manager.GetLegalBuildingPlacements(requestingPlayerId, BuildingTypes.City);
                 }
             }

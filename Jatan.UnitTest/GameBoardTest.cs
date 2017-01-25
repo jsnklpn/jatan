@@ -29,6 +29,8 @@ namespace Jatan.UnitTest
 
             var middleResourceTile = board.ResourceTiles[Hexagon.Zero];
             board.PlaceBuilding(1, BuildingTypes.Settlement, new HexPoint(0, 0, 1, 1, 1, 0), true);
+
+            board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(0, 0, -1, 0, -1, -1), true);
             board.PlaceBuilding(2, BuildingTypes.City, new HexPoint(0, 0, -1, 0, -1, -1), true);
 
             var rollResult = board.GetResourcesForDiceRoll(middleResourceTile.RetrieveNumber);
@@ -52,6 +54,8 @@ namespace Jatan.UnitTest
 
             var middleResourceTile = board.ResourceTiles[Hexagon.Zero];
             board.PlaceBuilding(1, BuildingTypes.Settlement, new HexPoint(0, 0, 1, 1, 1, 0), true);
+
+            board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(0, 0, -1, 0, -1, -1), true);
             board.PlaceBuilding(2, BuildingTypes.City, new HexPoint(0, 0, -1, 0, -1, -1), true);
 
             // Put the robber in the middle.
@@ -78,6 +82,8 @@ namespace Jatan.UnitTest
 
             var middleResourceTile = board.ResourceTiles[Hexagon.Zero];
             board.PlaceBuilding(1, BuildingTypes.Settlement, new HexPoint(0, 0, 1, 1, 1, 0), true);
+
+            board.PlaceBuilding(2, BuildingTypes.Settlement, new HexPoint(0, 0, 0, 1, -1, 0), true);
             board.PlaceBuilding(2, BuildingTypes.City, new HexPoint(0, 0, 0, 1, -1, 0), true);
 
             // Put the robber in the middle.

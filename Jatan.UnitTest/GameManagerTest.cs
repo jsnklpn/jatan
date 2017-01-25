@@ -26,7 +26,7 @@ namespace Jatan.UnitTest
             manager.StartNewGame();
 
             Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
-            Assert.AreEqual(PlayerTurnState.PlacingBuilding, manager.PlayerTurnState, "The player state should be in building placement mode.");
+            Assert.AreEqual(PlayerTurnState.PlacingSettlement, manager.PlayerTurnState, "The player state should be in settlement placement mode.");
 
             // First, player 0 must place 1 settlement
 
@@ -82,7 +82,7 @@ namespace Jatan.UnitTest
             Assert.IsTrue(ar.Succeeded, "The player should be able to place a road.");
 
             Assert.AreEqual(PLAYER_2, manager.ActivePlayer.Id, "It should still be player 2's turn.");
-            Assert.AreEqual(PlayerTurnState.PlacingBuilding, manager.PlayerTurnState, "The player state should be in road placement mode.");
+            Assert.AreEqual(PlayerTurnState.PlacingSettlement, manager.PlayerTurnState, "The player state should be in settlement placement mode.");
 
             // Create around a different hexagon since the middle is filled up.
             Hexagon otherHex = new Hexagon(2, 0);

@@ -204,7 +204,7 @@ namespace Jatan.GameLogic
             _playersToStealFrom.Clear();
             _tradeHelper.ClearAllOffers();
             _gameState = GameState.InitialPlacement;
-            _playerTurnState = PlayerTurnState.PlacingBuilding; // TODO: Possibly wait for something to trigger the game start.
+            _playerTurnState = PlayerTurnState.PlacingSettlement; // TODO: Possibly wait for something to trigger the game start.
         }
 
         public void AddPlayer(string name)
@@ -228,9 +228,28 @@ namespace Jatan.GameLogic
             if (!_players.Select(p => p.Id).Contains(playerId))
                 return ActionResult.CreateFailed("Player is not currently in this game.");
 
+            // First, figure out which player we should select as active after this player leaves.
+            Player playerToSetAsActive = null;
+            bool isActivePlayer = (ActivePlayer != null && ActivePlayer.Id == playerId);
+            if (isActivePlayer)
+            {
+                var nextPlayerIndex = (_playerTurnIndex + 1)%_players.Count;
+                if (nextPlayerIndex < _players.Count)
+                    playerToSetAsActive = _players[nextPlayerIndex];
+            }
+            else
+            {
+                playerToSetAsActive = this.ActivePlayer;
+            }
+
+            // Remove player from internal players list
+            _players.RemoveAll(p => p.Id == playerId);
+
             if (_gameState == GameState.GameInProgress)
             {
-                if (ActivePlayer != null && ActivePlayer.Id == playerId)
+                _playerTurnIndex = _players.IndexOf(playerToSetAsActive);
+
+                if (isActivePlayer)
                 {
                     // The player leaving is the active player.
 
@@ -238,20 +257,19 @@ namespace Jatan.GameLogic
                     _roadBuildingRoadsRemaining = 0;
                     _currentDiceRoll = null;
 
-                    AdvanceToNextPlayerTurn();
+                    // Go to next player's turn.
+                    _playerTurnState = PlayerTurnState.NeedToRoll;
                 }
                 else // The player leaving is a non-active player
                 {
                     _tradeHelper.CancelCounterOffer(playerId);
-                }    
+                }
             }
             else if (_gameState == GameState.InitialPlacement)
             {
                 // If a player leaves during initial placement, just restart the game.
                 StartNewGame();
             }
-
-            _players.RemoveAll(p => p.Id == playerId);
 
             return ActionResult.CreateSuccess();
         }
@@ -605,6 +623,28 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
+        /// Causes the player to enter the placing road state. This action does
+        /// not cost any resources, but the player must have enough for a road.
+        /// </summary>
+        public ActionResult PlayerBeginPlacingRoad(int playerId)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            if (validation.Failed) return validation;
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+            var player = pr.Data;
+
+            if (!player.CanAfford(PurchasableItems.Road))
+                return ActionResult.CreateFailed("Cannot afford a road.");
+
+            // Enter the placing road state.
+            _playerTurnState = PlayerTurnState.PlacingRoad;
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
         /// Places a road for the given player at the given location.
         /// If it's the initial placement phase of the game, the road is free.
         /// Otherwise, resources will be removed from the player.
@@ -650,7 +690,7 @@ namespace Jatan.GameLogic
                 if (LastPlayerIsActive && buildingCount == 1)
                 {
                     // The "last" player gets to place twice.
-                    _playerTurnState = PlayerTurnState.PlacingBuilding;
+                    _playerTurnState = PlayerTurnState.PlacingSettlement;
                 }
                 else
                 {
@@ -667,13 +707,55 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
+        /// Causes the player to enter the placing settlement or city state. This action does
+        /// not cost any resources, but the player must be able to afford the item.
+        /// </summary>
+        public ActionResult PlayerBeginPlacingBuilding(int playerId, BuildingTypes type)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            if (validation.Failed) return validation;
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+            var player = pr.Data;
+
+            if (type == BuildingTypes.Settlement)
+            {
+                if (!player.CanAfford(PurchasableItems.Settlement))
+                    return ActionResult.CreateFailed("Cannot afford a settlement.");
+
+                // There must be at least one valid space on the board to build.
+                if (!GetLegalBuildingPlacements(playerId, type).Any())
+                    return ActionResult.CreateFailed("There are no valid locations to build a settlement.");
+
+                // Enter the placing settlement state.
+                _playerTurnState = PlayerTurnState.PlacingSettlement;
+            }
+            else if (type == BuildingTypes.City)
+            {
+                if (!player.CanAfford(PurchasableItems.City))
+                    return ActionResult.CreateFailed("Cannot afford a city.");
+
+                // There must be at least one valid space on the board to build.
+                if (!GetLegalBuildingPlacements(playerId, type).Any())
+                    return ActionResult.CreateFailed("There are no valid locations to build a city.");
+
+                // Enter the placing settlement state.
+                _playerTurnState = PlayerTurnState.PlacingCity;
+            }
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
         /// Places a building for the given player at the given location.
         /// If it's the start of the game, the building is free.
         /// Otherwise, resources will be removed from the player.
         /// </summary>
         public ActionResult PlayerPlaceBuilding(int playerId, BuildingTypes type, HexPoint location)
         {
-            var validation = ValidatePlayerAction(PlayerTurnState.PlacingBuilding, playerId);
+            var requiredState = (type == BuildingTypes.City) ? PlayerTurnState.PlacingCity : PlayerTurnState.PlacingSettlement;
+            var validation = ValidatePlayerAction(requiredState, playerId);
             if (validation.Failed) return validation;
 
             var pr = GetPlayerFromId(playerId);
@@ -697,9 +779,7 @@ namespace Jatan.GameLogic
             var placementValidation = _gameBoard.ValidateBuildingPlacement(playerId, type, location, startOfGame);
             if (placementValidation.Failed) return placementValidation;
 
-            PurchasableItems itemToBuy = (type == BuildingTypes.City)
-                ? PurchasableItems.City
-                : PurchasableItems.Settlement;
+            PurchasableItems itemToBuy = (type == BuildingTypes.City) ? PurchasableItems.City : PurchasableItems.Settlement;
 
             var purchaseResult = player.Purchase(itemToBuy, startOfGame);
             if (purchaseResult.Failed) return purchaseResult;
@@ -709,7 +789,7 @@ namespace Jatan.GameLogic
             System.Diagnostics.Debug.Assert(placement.Succeeded);
 
             // Update game and player states.
-            if (_gameState == GameState.InitialPlacement)
+            if (startOfGame)
             {
                 var buildingCount = _gameBoard.GetBuildingCountForPlayer(playerId);
                 if (buildingCount == 2)
@@ -977,10 +1057,11 @@ namespace Jatan.GameLogic
             {
                 // The following actions can be taken during the initial placement phase or during the normal phase.
                 case PlayerTurnState.PlacingRoad:
-                case PlayerTurnState.PlacingBuilding:
+                case PlayerTurnState.PlacingSettlement:
                     validAction = (_gameState == GameState.GameInProgress || _gameState == GameState.InitialPlacement);
                     break;
                 // The following actions require the normal game phase to be in progress.
+                case PlayerTurnState.PlacingCity:
                 case PlayerTurnState.NeedToRoll:
                 case PlayerTurnState.PlacingRobber:
                 case PlayerTurnState.RequestingPlayerTrade:
@@ -1010,8 +1091,7 @@ namespace Jatan.GameLogic
             // Advances to the next player's turn.
             if (_gameState == GameState.GameInProgress)
             {
-                _playerTurnIndex++;
-                _playerTurnIndex %= _players.Count;
+                _playerTurnIndex = (_playerTurnIndex + 1) % _players.Count;
                 _playerTurnState = PlayerTurnState.NeedToRoll;
             }
             else if (_gameState == GameState.InitialPlacement)
@@ -1022,7 +1102,7 @@ namespace Jatan.GameLogic
                 {
                     // The last player has not placed yet. Count up.
                     _playerTurnIndex++;
-                    _playerTurnState = PlayerTurnState.PlacingBuilding;
+                    _playerTurnState = PlayerTurnState.PlacingSettlement;
                 }
                 else
                 {
@@ -1038,7 +1118,7 @@ namespace Jatan.GameLogic
                     }
                     else
                     {
-                        _playerTurnState = PlayerTurnState.PlacingBuilding;    
+                        _playerTurnState = PlayerTurnState.PlacingSettlement;
                     }
                 }
                 

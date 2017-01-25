@@ -454,7 +454,9 @@ function updateGameModel(gameManager) {
                 break;
             case PlayerTurnState.NeedToRoll:
                 break;
-            case PlayerTurnState.PlacingBuilding:
+            case PlayerTurnState.PlacingSettlement:
+                break;
+            case PlayerTurnState.PlacingCity:
                 break;
             case PlayerTurnState.PlacingRoad:
                 break;
@@ -905,7 +907,7 @@ function populateSelectItems() {
             roadBitmap.addEventListener("click", handleClickRoad);
             roadBitmap.addEventListener("mouseover", handleMouseOverSelectable);
             roadBitmap.addEventListener("mouseout", handleMouseOutSelectable);
-            roadBitmap.alpha = 0.4; // Semi-transparent to indicate it's just a selection helper.
+            roadBitmap.alpha = 0.5; // Semi-transparent to indicate it's just a selection helper.
             _boardSelectItemsContainer.addChild(roadBitmap);
 
             _selectableItemsMap[hexEdge] = roadBitmap;
@@ -923,7 +925,7 @@ function populateSelectItems() {
             settlementBitmap.addEventListener("click", handleClickSettlement);
             settlementBitmap.addEventListener("mouseover", handleMouseOverSelectable);
             settlementBitmap.addEventListener("mouseout", handleMouseOutSelectable);
-            settlementBitmap.alpha = 0.4; // Semi-transparent to indicate it's just a selection helper.
+            settlementBitmap.alpha = 0.5; // Semi-transparent to indicate it's just a selection helper.
             _boardSelectItemsContainer.addChild(settlementBitmap);
 
             _selectableItemsMap[hexPoint] = settlementBitmap;
@@ -941,7 +943,7 @@ function populateSelectItems() {
             cityBitmap.addEventListener("click", handleClickCity);
             cityBitmap.addEventListener("mouseover", handleMouseOverSelectable);
             cityBitmap.addEventListener("mouseout", handleMouseOutSelectable);
-            cityBitmap.alpha = 0.4; // Semi-transparent to indicate it's just a selection helper.
+            cityBitmap.alpha = 0.5; // Semi-transparent to indicate it's just a selection helper.
             _boardSelectItemsContainer.addChild(cityBitmap);
 
             _selectableItemsMap[hexPoint] = cityBitmap;
@@ -959,7 +961,7 @@ function handleMouseOverSelectable(event) {
     var obj = event.target;
     obj.scaleX = 1.1;
     obj.scaleY = 1.1;
-    obj.alpha = 0.5;
+    obj.alpha = 0.7;
     _invalidateCanvas = true;
 }
 
@@ -967,7 +969,7 @@ function handleMouseOutSelectable(event) {
     var obj = event.target;
     obj.scaleX = 1.0;
     obj.scaleY = 1.0;
-    obj.alpha = 0.4;
+    obj.alpha = 0.5;
     _invalidateCanvas = true;
 }
 

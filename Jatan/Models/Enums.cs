@@ -180,10 +180,15 @@ namespace Jatan.Models
         PlacingRoad,
 
         /// <summary>
-        /// The player is placing a building.
+        /// The player is placing a settlement building.
         /// </summary>
-        PlacingBuilding,
-        
+        PlacingSettlement,
+
+        /// <summary>
+        /// The player is upgrading a settlement to a city.
+        /// </summary>
+        PlacingCity,
+
         /// <summary>
         /// The player is requesting a trade from another player.
         /// </summary>

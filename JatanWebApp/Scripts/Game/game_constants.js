@@ -124,11 +124,12 @@ var PlayerTurnState = {
     SelectingPlayerToStealFrom: 4,
     TakeAction: 5,
     PlacingRoad: 6,
-    PlacingBuilding: 7,
-    RequestingPlayerTrade: 8,
-    MonopolySelectingResource: 9,
-    RoadBuildingSelectingRoads: 10,
-    YearOfPlentySelectingResources: 11
+    PlacingSettlement: 7,
+    PlacingCity: 8,
+    RequestingPlayerTrade: 9,
+    MonopolySelectingResource: 10,
+    RoadBuildingSelectingRoads: 11,
+    YearOfPlentySelectingResources: 12
 };
 
 // Types of player buildings
