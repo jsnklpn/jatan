@@ -974,9 +974,10 @@ function handleMouseOutSelectable(event) {
 }
 
 function handleClickRoad(event) {
+    if (event.nativeEvent.button !== 0)
+        return;
     var obj = event.target;
     var hexEdge = selectableItemToHexKey(obj);
-
     if (hexEdge == null || _serverGameHub == null)
         return;
 
@@ -988,6 +989,8 @@ function handleClickRoad(event) {
 }
 
 function handleClickSettlement(event) {
+    if (event.nativeEvent.button !== 0)
+        return;
     var obj = event.target;
     var hexPoint = selectableItemToHexKey(obj);
     if (hexPoint == null || _serverGameHub == null)
@@ -1001,6 +1004,8 @@ function handleClickSettlement(event) {
 }
 
 function handleClickCity(event) {
+    if (event.nativeEvent.button !== 0)
+        return;
     var obj = event.target;
     var hexPoint = selectableItemToHexKey(obj);
     if (hexPoint == null || _serverGameHub == null)
