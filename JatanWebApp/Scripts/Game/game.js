@@ -507,6 +507,7 @@ function populateResourceTiles() {
     }
 
     var resTiles = [];
+    var numberTiles = [];
     var tileIndex = 0;
     for (var row = 0; row < 5; row++) {
         var numAcross = 5;
@@ -514,7 +515,7 @@ function populateResourceTiles() {
         if (row === 1 || row === 3) { numAcross = 4; }
         for (var col = 0; col < numAcross; col++) {
 
-            var hexKey = _hexKeys[tileIndex];
+            var hexKey = _hexKeys[tileIndex++];
             var beach = _hexToBeachMap[hexKey];
 
             var resource = _currentResourceTiles[hexKey]["Resource"];
@@ -535,11 +536,53 @@ function populateResourceTiles() {
             // save the bitmap to the hexmap so we can get which hex it refers to.
             _hexToResourceTileMap[hexKey] = tile;
 
-            tileIndex++;
+            // Create number tile which shows the roll needed to active this resource.
+            if (resource === ResourceTypes.None) continue; // No need to draw a number on the desert tile.
+
+            var graphics = new createjs.Graphics();
+            var circleRadius = 30;
+            graphics.setStrokeStyle(1);
+            graphics.beginStroke("#000000");
+            graphics.beginFill("#dddddd");
+            graphics.drawCircle(0, 0, circleRadius);
+            var shape = new createjs.Shape(graphics);
+            shape.x = beach.x;
+            shape.y = beach.y + 30;
+            shape.alpha = 0.75;
+            numberTiles.push(shape);
+
+            var number = _currentResourceTiles[hexKey]["RetrieveNumber"];
+            var dots = getProbabilityFromRoll(number);
+            var dotColor = (dots === 5) ? "#ff0000" : "#000000";
+            var dotRadius = circleRadius / 12;
+            var spanWidth = (2 * dotRadius * dots) + (dots - 1) * dotRadius;
+            var posX = (-spanWidth / 2) + dotRadius;
+            for (var i = 0; i < dots; i++) {
+                
+                var dotG = new createjs.Graphics().beginFill(dotColor).drawCircle(0, 0, dotRadius);
+                var dotShape = new createjs.Shape(dotG);
+                dotShape.x = shape.x + posX;
+                dotShape.y = shape.y + (circleRadius / 2);
+                posX += (3 * dotRadius);
+                numberTiles.push(dotShape);
+            }
+
+            var text = new createjs.Text(number.toString(), "bold 28px Serif", dotColor);
+            var tr = text.getBounds();
+            if (tr != null) {
+                text.regX = tr.width / 2;
+                text.regY = tr.height / 2;
+            }
+            text.x = shape.x;
+            text.y = shape.y - (circleRadius / 8);
+            numberTiles.push(text);
         }
     }
     for (var i = 0; i < resTiles.length; i++) {
         _boardTileContainer.addChild(resTiles[i]);
+    }
+    for (var i = 0; i < numberTiles.length; i++) {
+        _boardTileContainer.addChild(numberTiles[i]);
     }
 
     _invalidateCanvas = true;
@@ -1221,4 +1264,29 @@ function resourceToColor(resource) {
 // Makes a string safe for insertion into html.
 function encodeForHtml(str) {
     return $("<span />").text(str).html();
+}
+
+function getProbabilityFromRoll(roll) {
+    if (roll < 2 || roll > 12) return 0;
+    switch (roll) {
+        case 2:
+        case 12:
+            return 1;
+        case 3:
+        case 11:
+            return 2;
+        case 4:
+        case 10:
+            return 3;
+        case 5:
+        case 9:
+            return 4;
+        case 6:
+        case 8:
+            return 5;
+        case 7:
+            return 6;
+        default:
+            return 0;
+    }
 }
