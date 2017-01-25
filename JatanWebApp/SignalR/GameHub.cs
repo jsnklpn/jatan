@@ -244,16 +244,16 @@ namespace JatanWebApp.SignalR
         /// <summary>
         /// Ends the turn of the current player.
         /// </summary>
-        public void EndTurn()
+        public ActionResult EndTurn()
         {
             var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
             var lobby = GetGameLobby();
-            if (lobby == null) return;
+            if (lobby == null) return ActionResult.CreateFailed();
+
             var result = lobby.GameManager.PlayerEndTurn(playerId);
-            if (result.Succeeded)
-            {
-                UpdateAllClientGameManagers();
-            }
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
         }
 
         /// <summary>
@@ -263,6 +263,77 @@ namespace JatanWebApp.SignalR
         {
             var username = GetUserName();
             GameLobbyManager.AbandonCurrentGame(username);
+        }
+
+        /// <summary>
+        /// Rolls the dice.
+        /// </summary>
+        public ActionResult RollDice()
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.PlayerRollDice(playerId);
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
+        /// The client wants to buy a road. Start the process.
+        /// </summary>
+        public ActionResult BeginBuyingRoad()
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.PlayerBeginPlacingRoad(playerId);
+            if (result.Succeeded)
+            {
+                // Update the caller game model
+                var managerDto = lobby.ToGameManagerDTO(GetUserName(), false, false);
+                Clients.Caller.updateGameManager(managerDto);    
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// The client wants to buy a building. Start the process.
+        /// </summary>
+        public ActionResult BeginBuyingBuilding(BuildingTypes buildingType)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.PlayerBeginPlacingBuilding(playerId, buildingType);
+            if (result.Succeeded)
+            {
+                // Update the caller game model
+                var managerDto = lobby.ToGameManagerDTO(GetUserName(), false, false);
+                Clients.Caller.updateGameManager(managerDto);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// The client selected to buy a development card.
+        /// </summary>
+        public ActionResult BuyDevelopmentCard()
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.PlayerBuyDevelopmentCard(playerId);
+            if (result.Succeeded) UpdateAllClientGameManagers();
+
+            return result;
         }
 
         /// <summary>

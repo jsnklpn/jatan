@@ -59,17 +59,26 @@
     <ul class="nav navbar-nav">
         <li><a id="btnUpdateGameManager" href="#">Update Manager</a></li>
         <li><a id="btnStartGame" href="#">Start Game</a></li>
-        <li><a id="btnBuy" href="#">Buy</a></li>
+        <li><a id="btnRollDice" href="#">Roll Dice</a></li>
+        <li class="dropup">
+            <a id="btnBuy" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="False">Buy <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                <li><a id="btnBuyRoad" href="#">Road</a></li>
+                <li><a id="btnBuySettlement" href="#">Settlement</a></li>
+                <li><a id="btnBuyCity" href="#">City</a></li>
+                <li><a id="btnBuyDevelopmentCard" href="#">Development Card</a></li>
+            </ul>
+        </li>
         <li><a id="btnTrade" href="#">Trade</a></li>
         <li><a id="btnEndTurn" href="#">End Turn</a></li>
         <li><a id="btnLeaveGame" href="@Url.Action("Index", "Home")" class="text-danger">Leave Game</a></li>
     </ul>
-    <ul class="nav navbar-nav navbar-right">
+    @*<ul class="nav navbar-nav navbar-right">
         <li>
             <p class="navbar-text">GameState: <span id="gameState">@Model.GameManager.GameState</span></p>
             <p class="navbar-text">TurnState: <span id="turnState">@Model.GameManager.PlayerTurnState</span></p>
         </li>
-    </ul>
+    </ul>*@
 </div>
 
 <div id="chatBox">

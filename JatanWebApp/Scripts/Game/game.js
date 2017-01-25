@@ -95,11 +95,51 @@ function initHubButtons() {
     $("#btnStartGame").click(function () {
         _serverGameHub.startGame();
     });
+    $("#btnRollDice").click(function () {
+        _serverGameHub.rollDice().done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                displayToastMessage(result["Message"]);
+            }
+        });
+    });
     $("#btnEndTurn").click(function () {
-        _serverGameHub.endTurn();
+        _serverGameHub.endTurn().done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                displayToastMessage(result["Message"]);
+            }
+        });
     });
     $("#btnLeaveGame").click(function () {
         _serverGameHub.leaveGame();
+    });
+    // Buy buttons
+    $("#btnBuyRoad").click(function () {
+        _serverGameHub.beginBuyingRoad().done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                displayToastMessage(result["Message"]);
+            }
+        });
+    });
+    $("#btnBuySettlement").click(function () {
+        _serverGameHub.beginBuyingBuilding(BuildingTypes.Settlement).done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                displayToastMessage(result["Message"]);
+            }
+        });
+    });
+    $("#btnBuyCity").click(function () {
+        _serverGameHub.beginBuyingBuilding(BuildingTypes.City).done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                displayToastMessage(result["Message"]);
+            }
+        });
+    });
+    $("#btnBuyDevelopmentCard").click(function () {
+        _serverGameHub.buyDevelopmentCard().done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                displayToastMessage(result["Message"]);
+            }
+        });
     });
 }
 
@@ -108,7 +148,7 @@ function initHtmlUI() {
         var keycode = (event.keyCode ? event.keyCode : event.which);
         // Enter key pressed
         if (keycode === 13) {
-            if (_serverGameHub) {
+            if (_serverGameHub != null) {
                 var msgToSend = $("#chatBoxInputText").val().trim();
                 if (msgToSend.length > 0) {
                     _serverGameHub.sendChatMessage(msgToSend);
