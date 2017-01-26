@@ -8,6 +8,7 @@ var _currentGameManager = null;
 var _currentResourceTiles = null;
 var _currentPorts = null;
 
+var _allResourcesLoaded = false;
 var _loadQueue = null;
 var _canvas = null;
 var _stage = null;
@@ -84,7 +85,18 @@ function initSignalR() {
         _serverGameHub = gameHub.server;
 
         initHubButtons();
+        initGameManagerModel();
     });
+}
+
+function initGameManagerModel() {
+    if (_serverGameHub != null && _allResourcesLoaded) {
+        _serverGameHub.getGameManagerUpdate(true);
+    } else {
+        // If the server hub is not initialized or the game
+        // resources are not loaded yet, keep retrying
+        setTimeout(initGameManagerModel, 100);
+    }
 }
 
 function initHubButtons() {
@@ -199,12 +211,17 @@ function onLoadQueueCompleted(event) {
 function completedLoading() {
     $("#loadingResourcesDiv").hide();
     initCanvasStage();
+    _allResourcesLoaded = true;
+
+    // Show the chat box after resources have loaded.
+    $("#chatBox").removeClass("hidden");
 }
 
 function initCanvasStage() {
 
     _stage = new createjs.Stage("gameCanvas");
     _boardContainer = new createjs.Container();
+    _boardContainer.visible = false; // The board will be invisible until we get the game manager model.
     
     // draw water
     _water = new createjs.Bitmap(_assetMap["imgWater"].data);
@@ -531,9 +548,8 @@ function updateGameModel(gameManager) {
         }
     }
 
-    // TODO: Temp code
-    $("#gameState").text(gameState);
-    $("#turnState").text(playerTurnState);
+    // If the game has started, make the board visible.
+    _boardContainer.visible = (gameState !== GameState.NotStarted);
 
     // Draw when everything has been populated
     _invalidateCanvas = true;

@@ -4,29 +4,6 @@
 @{
     ViewBag.Title = "";
     ViewBag.ShowNavbar = false;
-
-    string defaultAvatar = @"/Content/Images/avatars/default.jpg";
-    string[] avatars = {defaultAvatar, defaultAvatar, defaultAvatar, defaultAvatar};
-    string[] names = {"", "", "", ""};
-    string[] colors = { "", "", "", "" };
-    for (int i = 0; i < Model.Players.Count; i++)
-    {
-        string name = Model.Players[i];
-        names[i] = name;
-        if (Model.AvatarPaths.ContainsKey(name))
-        {
-            var avatarPath = Model.AvatarPaths[name];
-            if (!string.IsNullOrEmpty(avatarPath))
-            {
-                avatars[i] = avatarPath;
-            }
-        }
-        var player = Model.GameManager.GetPlayerFromName(name);
-        if (player != null)
-        {
-            colors[i] = "player-color-" + player.Color.ToString().ToLower();
-        }
-    }
 }
 
 @section scripts
@@ -73,15 +50,9 @@
         <li><a id="btnEndTurn" href="#">End Turn</a></li>
         <li><a id="btnLeaveGame" href="@Url.Action("Index", "Home")" class="text-danger">Leave Game</a></li>
     </ul>
-    @*<ul class="nav navbar-nav navbar-right">
-        <li>
-            <p class="navbar-text">GameState: <span id="gameState">@Model.GameManager.GameState</span></p>
-            <p class="navbar-text">TurnState: <span id="turnState">@Model.GameManager.PlayerTurnState</span></p>
-        </li>
-    </ul>*@
 </div>
 
-<div id="chatBox">
+<div id="chatBox" class="hidden">
     <ul id="chatBoxList" oncontextmenu="return false;">
         <li class="chat-text-info">Welcome to @Model.Name!</li>
         <li class="chat-text-info">*************</li>
@@ -91,9 +62,9 @@
     </div>
 </div>
 
-<div id="turnInfoBox" class="box-shadow">
+<div id="turnInfoBox" class="box-shadow hidden">
     <div id="userInfoText">
-        <span id="userInfoTextactiveUser" class=""></span><span id="userInfoTextSpan">Waiting for players to join...</span>
+        <span id="userInfoTextactiveUser" class=""></span><span id="userInfoTextSpan"></span>
     </div>
     <div id="turnInfoText"></div>
 </div>
@@ -102,10 +73,9 @@
 {
     {
         string boxId = "playerBox" + (i + 1).ToString();
-        string visibility = (names[i] == "") ? "hidden" : "";
-        <div id="@boxId" class="player-float-box box-shadow @visibility @colors[i]">
-            <img class="player-avatar box-shadow" src="@avatars[i]" />
-            <div class="player-name">@names[i]</div>
+        <div id="@boxId" class="player-float-box box-shadow hidden">
+            <img class="player-avatar box-shadow" src="" />
+            <div class="player-name"></div>
         </div>
     }
 }
