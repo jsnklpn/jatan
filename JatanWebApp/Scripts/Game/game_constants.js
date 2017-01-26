@@ -132,6 +132,22 @@ var PlayerTurnState = {
     YearOfPlentySelectingResources: 12
 };
 
+var PlayerTurnStateText = {
+    0: "",  // None
+    1: "Waiting for player to roll the dice...", // NeedToRoll
+    2: "Players are selecing cards to lose.", // AnyPlayerSelectingCardsToLose
+    3: "Player is moving the robber.", // PlacingRobber
+    4: "Player is choosing someone to rob.", // SelectingPlayerToStealFrom
+    5: "Player is thinking...", // TakeAction
+    6: "Player is placing a road.", // PlacingRoad
+    7: "Player is building a settlement.", // PlacingSettlement
+    8: "Player is building a city.", // PlacingCity
+    9: "Player is requesting a trade.", // RequestingPlayerTrade
+    10: "Player played the Monopoly card.", // MonopolySelectingResource
+    11: "Player played the Road Building card.", // RoadBuildingSelectingRoads
+    12: "Player played the Year of Plenty card." // YearOfPlentySelectingResources
+};
+
 // Types of player buildings
 var BuildingTypes = {
     Settlement: 0,

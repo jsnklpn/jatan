@@ -480,6 +480,7 @@ function updateGameModel(gameManager) {
             populatePorts();
     }
 
+    populateTurnInfoBox();
     populatePlayers();
     populateBuildings();
     populateRoads();
@@ -533,7 +534,6 @@ function updateGameModel(gameManager) {
     // TODO: Temp code
     $("#gameState").text(gameState);
     $("#turnState").text(playerTurnState);
-    displayToastMessage("The board has been updated.", null);
 
     // Draw when everything has been populated
     _invalidateCanvas = true;
@@ -965,6 +965,54 @@ function createRoadBitmap(hexEdge, playerId) {
     }
 
     return bitmap;
+}
+
+function populateTurnInfoBox() {
+    if (_currentGameManager == null)
+        return;
+
+    var players = _currentGameManager["Players"];
+    var activePlayerId = _currentGameManager["ActivePlayerId"];
+    var gameState = _currentGameManager["GameState"];
+    var playerTurnState = _currentGameManager["PlayerTurnState"];
+    var gameStarted = (gameState === GameState.InitialPlacement || gameState === GameState.GameInProgress);
+
+    $("#turnInfoBox").removeClass("hidden");
+    var activePlayer = getPlayerFromId(activePlayerId);
+    $("#userInfoTextactiveUser").removeClass("text-color-blue");
+    $("#userInfoTextactiveUser").removeClass("text-color-red");
+    $("#userInfoTextactiveUser").removeClass("text-color-green");
+    $("#userInfoTextactiveUser").removeClass("text-color-yellow");
+    if (gameStarted && activePlayer != null) {
+        $("#userInfoTextactiveUser").text(activePlayer["Name"]);
+        var activeColorClass = "";
+        var activePlayerColor = activePlayer["Color"];
+        if (activePlayerColor === PlayerColor.Blue) activeColorClass = "text-color-blue";
+        else if (activePlayerColor === PlayerColor.Red) activeColorClass = "text-color-red";
+        else if (activePlayerColor === PlayerColor.Green) activeColorClass = "text-color-green";
+        else if (activePlayerColor === PlayerColor.Yellow) activeColorClass = "text-color-yellow";
+        $("#userInfoTextactiveUser").addClass(activeColorClass);
+        $("#userInfoTextSpan").text("'s turn");
+
+        var turnInfoText = PlayerTurnStateText[playerTurnState]; // get info text for the current turn state.
+        $("#turnInfoText").text(turnInfoText);
+    }
+    else if (gameState === GameState.NotStarted) {
+        $("#userInfoTextactiveUser").text("");
+        $("#userInfoTextSpan").text("Waiting for players to join...");
+        if (players.length >= 2) {
+            $("#turnInfoText").text("The host can now start the game.");
+        } else {
+            $("#turnInfoText").text("");
+        }
+    }
+    else if (gameState === GameState.EndOfGame) {
+        $("#userInfoTextactiveUser").text("");
+        $("#userInfoTextSpan").text("The game is over!");
+        $("#turnInfoText").text("");
+    } else {
+        $("#turnInfoBox").addClass("hidden");
+    }
 }
 
 function populatePlayers() {

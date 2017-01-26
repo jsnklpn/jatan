@@ -25,6 +25,56 @@
     text-align: center;
 }
 
+/* ============= */
+/* Game info box */
+/* ============= */
+#turnInfoBox {
+    position: fixed;
+    top: -1px;
+    height: 65px;
+    width: 400px;
+    right: 0;
+    left: 0;
+    margin-left: auto;
+    margin-right: auto;
+
+    padding: 2px;
+    
+    background-image: url("Images/site/wood_tile.png");
+    background-repeat: repeat;
+
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+
+    font-weight: bold;
+    font-family: serif;
+    color: #eee;
+    text-shadow: 2px 2px 0px #000;
+    text-align: center;
+}
+
+#userInfoText {
+    font-size: 24px;
+}
+
+#turnInfoText {
+    font-size: 16px;
+}
+
+.text-color-blue {
+    color: #13f;
+}
+.text-color-red {
+    color: #f32;
+}
+.text-color-green {
+    color: #2f2;
+}
+.text-color-yellow {
+    color: gold;
+}
+
 /* ============ */
 /* Player boxes */
 /* ============ */
