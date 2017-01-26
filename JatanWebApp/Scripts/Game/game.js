@@ -156,20 +156,34 @@ function initHubButtons() {
 }
 
 function initHtmlUI() {
-    $("#chatBoxInputText").keyup(function (event) {
+
+    // Show chat input box when the enter key is pressed.
+    $(document).keyup(function (event) {
         var keycode = (event.keyCode ? event.keyCode : event.which);
-        // Enter key pressed
-        if (keycode === 13) {
-            if (_serverGameHub != null) {
-                var msgToSend = $("#chatBoxInputText").val().trim();
-                if (msgToSend.length > 0) {
+        if (keycode === 13) { // Enter key pressed
+            var $inputBox = $("#chatInputBox");
+            var $inputText = $("#chatInputText");
+            if ($inputBox.hasClass("hidden")) { // the chat input is not showing
+                $inputBox.removeClass("hidden");
+                $inputText.focus();
+            } else { // the chat input is visible.
+                var msgToSend = $inputText.val().trim();
+                if (_serverGameHub != null && msgToSend.length > 0) {
                     _serverGameHub.sendChatMessage(msgToSend);
-                    $(this).val("").focus();
                 }
+                $inputText.val("");
+                $inputBox.addClass("hidden");
+                $("#gameCanvas").focus();
             }
         }
-        else if (keycode === 27) {
-            $(this).val("").focus();
+        else if (keycode === 27) { // escape key pressed. Close the chat window if its showing.
+            var $inputBox = $("#chatInputBox");
+            var $inputText = $("#chatInputText");
+            if ($inputBox.hasClass("hidden") === false) { // chat input is showing
+                $inputText.val("");
+                $inputBox.addClass("hidden");
+                $("#gameCanvas").focus();
+            }
         }
     });
 }
@@ -214,7 +228,7 @@ function completedLoading() {
     _allResourcesLoaded = true;
 
     // Show the chat box after resources have loaded.
-    $("#chatBox").removeClass("hidden");
+    $("#chatMessagesBox").removeClass("hidden");
 }
 
 function initCanvasStage() {
@@ -451,8 +465,8 @@ function writeTextToChat(text, chatTextType) {
     if (chatTextType) {
         textClass = chatTextType;
     }
-    $("#chatBoxList").append("<li class='" + textClass + "'>" + encodeForHtml(text) + "</li>");
-    $("#chatBoxList").animate({ scrollTop: $("#chatBoxList")[0].scrollHeight }, 10);
+    $("#chatMessagesList").append("<li class='" + textClass + "'>" + encodeForHtml(text) + "</li>");
+    $("#chatMessagesList").animate({ scrollTop: $("#chatMessagesList")[0].scrollHeight }, 10);
 }
 
 
