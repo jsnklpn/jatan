@@ -515,7 +515,12 @@ function updateGameModel(gameManager) {
     populatePlayers();
     populateBuildings();
     populateRoads();
+    populateRobber();
     populateSelectItems();
+    setResourceTileSelectionMode();
+
+    // By default, don't generate stage mouseover events. They are expensive.
+    var enableMouseOverEvents = false;
 
     // TODO ...
     if (myPlayerId === activePlayerId) { // We are currently the active player.
@@ -527,12 +532,16 @@ function updateGameModel(gameManager) {
             case PlayerTurnState.NeedToRoll:
                 break;
             case PlayerTurnState.PlacingSettlement:
+                enableMouseOverEvents = true;
                 break;
             case PlayerTurnState.PlacingCity:
+                enableMouseOverEvents = true;
                 break;
             case PlayerTurnState.PlacingRoad:
+                enableMouseOverEvents = true;
                 break;
             case PlayerTurnState.PlacingRobber:
+                enableMouseOverEvents = true;
                 break;
             case PlayerTurnState.SelectingPlayerToStealFrom:
                 break;
@@ -543,6 +552,7 @@ function updateGameModel(gameManager) {
             case PlayerTurnState.MonopolySelectingResource:
                 break;
             case PlayerTurnState.RoadBuildingSelectingRoads:
+                enableMouseOverEvents = true;
                 break;
             case PlayerTurnState.YearOfPlentySelectingResources:
                 break;
@@ -560,6 +570,12 @@ function updateGameModel(gameManager) {
             default:
                 break;
         }
+    }
+
+    if (enableMouseOverEvents) {
+        _stage.enableMouseOver(20);
+    } else {
+        _stage.enableMouseOver(0);
     }
 
     // If the game has started, make the board visible.
@@ -596,11 +612,10 @@ function populateResourceTiles() {
             tile.x = beach.x; // center on beach tile
             tile.y = beach.y; // center on beach tile
 
-            // TODO: Eventually we want to be able to select a tile (like when moving the robber.)
-            tile.mouseEnabled = false;
-            //tile.addEventListener("click", handleClick);
-            //tile.addEventListener("mouseover", handleMouseOver);
-            //tile.addEventListener("mouseout", handleMouseOut);
+            tile.mouseEnabled = false; // Only set mouse enabled when placing the robber.
+            tile.addEventListener("click", handleResTileClick);
+            tile.addEventListener("mouseover", handleResTileMouseOver);
+            tile.addEventListener("mouseout", handleResTileMouseOut);
 
             resTiles.push(tile);
 
@@ -661,6 +676,56 @@ function populateResourceTiles() {
 
     _resourceTilesPopulated = true;
     _invalidateCanvas = true;
+}
+
+function setResourceTileSelectionMode() {
+    if (_currentGameManager == null || _currentResourceTiles == null) {
+        return;
+    }
+    var hexKeys = Object.keys(_hexToResourceTileMap);
+    for (var i = 0; i < hexKeys.length; i++) {
+        var hexKey = hexKeys[i];
+        var resTileBmp = _hexToResourceTileMap[hexKey];
+        if (_currentGameManager["PlayerTurnState"] === PlayerTurnState.PlacingRobber) {
+            resTileBmp.mouseEnabled = true;
+            
+        } else {
+            resTileBmp.mouseEnabled = false;
+        }
+    }
+}
+
+function handleResTileMouseOver(event) {
+    var obj = event.target;
+    obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
+    obj.cache(-500, -500, 1000, 1000);
+    _invalidateCanvas = true;
+}
+
+function handleResTileMouseOut(event) {
+    var obj = event.target;
+    obj.filters = [];
+    obj.updateCache();
+    _invalidateCanvas = true;
+}
+
+function handleResTileClick(event) {
+    if (event.nativeEvent.button !== 0)
+        return;
+    var obj = event.target;
+    obj.filters = [];
+    obj.updateCache();
+    _invalidateCanvas = true;
+
+    var hex = getHexFromResourceTileBitmap(obj);
+    if (hex == null || _serverGameHub == null)
+        return;
+
+    _serverGameHub.selectTileForRobber(hex).done(function (result) {
+        if (!result["Succeeded"]) { // failed. display error message.
+            displayToastMessage(result["Message"]);
+        }
+    });
 }
 
 function populatePorts() {
@@ -1091,6 +1156,13 @@ function populatePlayers() {
     }
 }
 
+function populateRobber() {
+    if (_currentGameManager == null)
+        return;
+
+    // TODO
+}
+
 function populateSelectItems() {
     if (_currentGameManager == null)
         return;
@@ -1106,11 +1178,7 @@ function populateSelectItems() {
 
     var playerId = _currentGameManager["MyPlayerId"];
 
-    // disable mouse rollover events by default
-    var enableMouseOver = false;
     if (validRoadPlacements != null) {
-        enableMouseOver = true;
-
         for (var i = 0; i < validRoadPlacements.length; i++) {
             var hexEdge = validRoadPlacements[i];
             var roadBitmap = createRoadBitmap(hexEdge, playerId);
@@ -1125,8 +1193,6 @@ function populateSelectItems() {
         }
     }
     if (validSettlementPlacements != null) {
-        enableMouseOver = true;
-
         for (var i = 0; i < validSettlementPlacements.length; i++) {
             var hexPoint = validSettlementPlacements[i];
             var type = BuildingTypes.Settlement;
@@ -1143,8 +1209,6 @@ function populateSelectItems() {
         }
     }
     if (validCityPlacements != null) {
-        enableMouseOver = true;
-
         for (var i = 0; i < validCityPlacements.length; i++) {
             var hexPoint = validCityPlacements[i];
             var type = BuildingTypes.City;
@@ -1159,12 +1223,6 @@ function populateSelectItems() {
 
             _selectableItemsMap[hexPoint] = cityBitmap;
         }
-    }
-
-    if (enableMouseOver) {
-        _stage.enableMouseOver(20);
-    } else {
-        _stage.enableMouseOver(0);
     }
 }
 

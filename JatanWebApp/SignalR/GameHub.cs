@@ -382,6 +382,27 @@ namespace JatanWebApp.SignalR
             return result;
         }
 
+        /// <summary>
+        /// The client selected a tile location for the robber.
+        /// </summary>
+        public ActionResult SelectTileForRobber(string strHex)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            var location = new Hexagon();
+            try { location.FromString(strHex); }
+            catch (Exception e) { return ActionResult.CreateFailed(e.Message); }
+
+            ActionResult result = lobby.GameManager.PlayerMoveRobber(playerId, location);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
         private void UpdateAllClientGameManagers(bool fullUpdate = false)
         {
             var lobby = GetGameLobby();
