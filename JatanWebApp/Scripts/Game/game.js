@@ -517,6 +517,7 @@ function updateGameModel(gameManager) {
             populatePorts();
     }
 
+    populateDice();
     populateTurnInfoBox();
     populatePlayers();
     populateBuildings();
@@ -1066,6 +1067,48 @@ function createRoadBitmap(hexEdge, playerId) {
     }
 
     return bitmap;
+}
+
+function populateDice() {
+    if (_currentGameManager == null)
+        return;
+
+    var playerState = _currentGameManager["PlayerTurnState"];
+    var diceRoll = _currentGameManager["CurrentDiceRoll"];
+    var $diceInfoBox = $("#diceInfoBox");
+
+    if (playerState === PlayerTurnState.None ||
+        playerState === PlayerTurnState.NeedToRoll ||
+        diceRoll == null) {
+        // hide the dice info box.
+        $diceInfoBox.removeClass("dice-box-show");
+    }
+    else {
+        var total = diceRoll["Total"];
+        if (total != null) {
+            $("#diceText").text(total.toString());
+        } else {
+            $("#diceText").text("");
+        }
+        
+        // Set dice images
+        var diceArray = diceRoll["Dice"];
+        if (diceArray != null && diceArray.length >= 2) {
+            var diceValue1 = diceArray[0];
+            var diceValue2 = diceArray[1];
+            var diceAsset1 = _assetMap["imgDice" + diceValue1.toString()];
+            var diceAsset2 = _assetMap["imgDice" + diceValue2.toString()];
+            $("#diceImage1").attr("src", diceAsset1.src);
+            $("#diceImage2").attr("src", diceAsset2.src);
+        }
+        else {
+            $("#diceImage1").attr("src", "");
+            $("#diceImage2").attr("src", "");
+        }
+
+        // show the dice info box.
+        $diceInfoBox.addClass("dice-box-show");
+    }
 }
 
 function populateTurnInfoBox() {

@@ -25,6 +25,19 @@
     text-align: center;
 }
 
+.box-shadow {
+    box-shadow: 1px 1px 10px #000;
+}
+
+.center-vertical {
+    position: relative;
+    top: 50%;
+    -moz-transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
 /* ============= */
 /* Game info box */
 /* ============= */
@@ -75,15 +88,78 @@
     color: gold;
 }
 
+/* ============= */
+/* Dice info box */
+/* ============= */
+
+#diceInfoBox {
+    position: fixed;
+    height: 100px;
+    width: 170px;
+    right: -200px;
+    top: 0;
+    bottom: 0;
+    margin-top: auto;
+    margin-bottom: auto;
+    
+    background-image: url("Images/site/wood_tile.png");
+    background-repeat: repeat;
+
+    border: 1px solid black;
+
+    font-weight: bold;
+    font-family: serif;
+    color: #eee;
+    font-size: 16px;
+    text-shadow: 2px 2px 0px #000;
+    text-align: center;
+
+    transition: right 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#diceInfoBox.dice-box-show {
+    right: -1px;
+}
+
+#diceLeftDiv {
+    float:left;
+    width:40%;
+    height:100%;
+}
+
+#diceRightDiv {
+    float:right;
+    width:60%;
+    height:100%;
+}
+
+#diceText {
+    font-family: sans-serif;
+    color: #fff;
+    font-size: 42px;
+}
+
+#diceBottomText {
+    position:absolute;
+    bottom:0;
+    width:60%;
+}
+
+.dice-div {
+    width:100%;
+    height:50%;
+    text-align:center;
+}
+
+.dice-image {
+    width:42px;
+    height:42px;
+    background-color:white;
+}
+
 /* ============ */
 /* Player boxes */
 /* ============ */
-.box-shadow {
-    box-shadow: 1px 1px 10px #000;
-    -moz-box-shadow: 1px 1px 10px #000;
-    -webkit-box-shadow: 1px 1px 10px #000;
-}
-
 .player-float-box {
     width: 250px;
     height: 140px;
@@ -237,9 +313,9 @@ input[type="text"] {
     background: rgba(0, 0, 0, 0.75);
     border: 1px solid black;
     box-shadow: none;
-    appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
+    appearance: none;
 }
 input[type="text"]:focus {
     outline: none;

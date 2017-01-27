@@ -85,7 +85,14 @@ var _assetMap = {
     "imgThief": { src: "/Content/Images/board/thief.png", data: null, hitbox: theifHitbox },
     "imgBoat": { src: "/Content/Images/board/boat.png", data: null, hitbox: boatHitbox },
     "imgDock1": { src: "/Content/Images/board/dock1.png", data: null, hitbox: dock1Hitbox },
-    "imgDock2": { src: "/Content/Images/board/dock2.png", data: null, hitbox: dock2Hitbox }
+    "imgDock2": { src: "/Content/Images/board/dock2.png", data: null, hitbox: dock2Hitbox },
+    // Dice - TODO: Add images
+    "imgDice1": { src: "/Content/Images/board/dice1.png", data: null, hitbox: null },
+    "imgDice2": { src: "/Content/Images/board/dice2.png", data: null, hitbox: null },
+    "imgDice3": { src: "/Content/Images/board/dice3.png", data: null, hitbox: null },
+    "imgDice4": { src: "/Content/Images/board/dice4.png", data: null, hitbox: null },
+    "imgDice5": { src: "/Content/Images/board/dice5.png", data: null, hitbox: null },
+    "imgDice6": { src: "/Content/Images/board/dice6.png", data: null, hitbox: null }
 };
 
 // Resource types enum
