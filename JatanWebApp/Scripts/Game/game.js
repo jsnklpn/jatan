@@ -18,7 +18,9 @@ var _boardContainer = null;
 var _boardTileContainer = null; // child to the board container
 var _boardRoadContainer = null; // child to the board container
 var _boardBuildingContainer = null; // child to the board container
+var _boardRobberContainer = null; // child to the board container
 var _boardSelectItemsContainer = null; // child to the board container
+var _boardLabelContainer = null; // child to the board container
 var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
 
 // change this to allow the user to select various things on the UI
@@ -247,10 +249,14 @@ function initCanvasStage() {
     _boardRoadContainer = new createjs.Container();
     _boardBuildingContainer = new createjs.Container();
     _boardSelectItemsContainer = new createjs.Container();
+    _boardRobberContainer = new createjs.Container();
+    _boardLabelContainer = new createjs.Container();
     _boardContainer.addChild(_boardTileContainer);
     _boardContainer.addChild(_boardRoadContainer);
     _boardContainer.addChild(_boardSelectItemsContainer);
     _boardContainer.addChild(_boardBuildingContainer);
+    _boardContainer.addChild(_boardRobberContainer);
+    _boardContainer.addChild(_boardLabelContainer);
     _stage.addChild(_boardContainer);
 
     // add container for toast messages
@@ -671,7 +677,7 @@ function populateResourceTiles() {
         _boardTileContainer.addChild(resTiles[i]);
     }
     for (var i = 0; i < numberTiles.length; i++) {
-        _boardTileContainer.addChild(numberTiles[i]);
+        _boardLabelContainer.addChild(numberTiles[i]);
     }
 
     _resourceTilesPopulated = true;
@@ -1160,7 +1166,16 @@ function populateRobber() {
     if (_currentGameManager == null)
         return;
 
-    // TODO
+    _boardRobberContainer.removeAllChildren();
+    var robberLocation = _currentGameManager["GameBoard"]["RobberLocation"];
+    var beach = _hexToBeachMap[robberLocation];
+    var asset = _assetMap["imgThief"];
+    var robber = new createjs.Bitmap(asset.data);
+    robber.regX = asset.hitbox.centerX;
+    robber.regY = asset.hitbox.centerY;
+    robber.x = beach.x; // center on beach tile
+    robber.y = beach.y; // center on beach tile
+    _boardRobberContainer.addChild(robber);
 }
 
 function populateSelectItems() {

@@ -78,7 +78,6 @@
 /* ============ */
 /* Player boxes */
 /* ============ */
-
 .box-shadow {
     box-shadow: 1px 1px 10px #000;
     -moz-box-shadow: 1px 1px 10px #000;
@@ -180,6 +179,7 @@
     right: 0;
     top: 0;
     bottom: 0px;
+    max-height: 300px;
     padding: 4px;
     margin-bottom: 0px;
     overflow: hidden;

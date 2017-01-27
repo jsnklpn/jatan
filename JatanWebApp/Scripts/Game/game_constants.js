@@ -11,16 +11,17 @@ var brickTileHitbox = { width: 291, height: 231, centerX: 145.5, centerY: 122 };
 var sheepTileHitbox = { width: 291, height: 220, centerX: 145.5, centerY: 112 };
 var oreTileHitbox = { width: 291, height: 226, centerX: 145.5, centerY: 118 };
 var wheatTileHitbox = { width: 291, height: 220, centerX: 145.5, centerY: 112 };
-var cityHitbox = { width: 192, height: 126, centerX: 96, centerY: 63 };
-var house1Hitbox = { width: 99, height: 86, centerX: 49.5, centerY: 43 };
-var house2Hitbox = { width: 100, height: 76, centerX: 50, centerY: 38 };
-var house3Hitbox = { width: 96, height: 81, centerX: 48, centerY: 40.5 };
+var cityHitbox = { width: 192, height: 126, centerX: 107, centerY: 100 };
+var house1Hitbox = { width: 99, height: 86, centerX: 63, centerY: 62 };
+var house2Hitbox = { width: 100, height: 76, centerX: 68, centerY: 54 };
+var house3Hitbox = { width: 96, height: 81, centerX: 67, centerY: 56 };
 var road1Hitbox = { width: 163, height: 83, centerX: 81.5, centerY: 41.5 };
 var road2Hitbox = { width: 42, height: 95, centerX: 21, centerY: 47.5 };
 var road3Hitbox = { width: 161, height: 83, centerX: 80.5, centerY: 41.5 };
 var dock1Hitbox = { width: 123, height: 76, centerX: 70, centerY: 30 };
 var dock2Hitbox = { width: 118, height: 74, centerX: 65, centerY: 30 };
 var boatHitbox = { width: 65, height: 71, centerX: 32, centerY: 44 };
+var theifHitbox = { width: 86, height: 123, centerX: 53, centerY: 97 };
 
 // Map to hold all game assets to be preloaded
 var _assetMap = {
@@ -81,7 +82,7 @@ var _assetMap = {
     "imgRoad2Yellow": { src: "/Content/Images/board/road_yellow2.png", data: null, hitbox: road2Hitbox },
     "imgRoad3Yellow": { src: "/Content/Images/board/road_yellow3.png", data: null, hitbox: road3Hitbox },
     // Other
-    "imgThief": { src: "/Content/Images/board/thief.png", data: null, hitbox: null },
+    "imgThief": { src: "/Content/Images/board/thief.png", data: null, hitbox: theifHitbox },
     "imgBoat": { src: "/Content/Images/board/boat.png", data: null, hitbox: boatHitbox },
     "imgDock1": { src: "/Content/Images/board/dock1.png", data: null, hitbox: dock1Hitbox },
     "imgDock2": { src: "/Content/Images/board/dock2.png", data: null, hitbox: dock2Hitbox }
