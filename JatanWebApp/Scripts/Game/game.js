@@ -35,6 +35,7 @@ var _toastMessageTimerId = 0;
 var _hexToBeachMap = {}; // Populated when beach tiles are drawn
 var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
 var _selectableItemsMap = {}; // map of hexpoints and hexedges to their respective bitmaps
+var _numberTileMap = {}; // map of retrieve numbers to list of numberTile containers.
 var _portsPopulated = false;
 var _resourceTilesPopulated = false;
 
@@ -63,7 +64,7 @@ function initSignalR() {
         writeTextToChat(name + ": " + message, ChatTextType.User);
     };
 
-    gameHub.client.updateGameManager = function(gameManager) {
+    gameHub.client.updateGameManager = function (gameManager) {
         updateGameModel(gameManager);
     };
 
@@ -72,12 +73,12 @@ function initSignalR() {
         _serverGameHub.getGameManagerUpdate(true); // A new player joined, so lets get a full game update.
     };
 
-    gameHub.client.playerLeft = function(playerName) {
+    gameHub.client.playerLeft = function (playerName) {
         writeTextToChat(playerName + " has left the game.", ChatTextType.Danger);
         _serverGameHub.getGameManagerUpdate(true); // A player left, so lets get a full game update.
     }
 
-    gameHub.client.gameAborted = function() {
+    gameHub.client.gameAborted = function () {
         writeTextToChat("*** The game has been shut down by the host ***", ChatTextType.Danger);
     };
 
@@ -238,7 +239,7 @@ function initCanvasStage() {
     _stage = new createjs.Stage("gameCanvas");
     _boardContainer = new createjs.Container();
     _boardContainer.visible = false; // The board will be invisible until we get the game manager model.
-    
+
     // draw water
     _water = new createjs.Bitmap(_assetMap["imgWater"].data);
     _water.mouseEnabled = false;
@@ -251,6 +252,13 @@ function initCanvasStage() {
     _boardSelectItemsContainer = new createjs.Container();
     _boardRobberContainer = new createjs.Container();
     _boardLabelContainer = new createjs.Container();
+
+    // Containers with nothing selectable should disalbe mouse interactions for all children.
+    _boardRoadContainer.mouseChildren = false;
+    _boardBuildingContainer.mouseChildren = false;
+    _boardRobberContainer.mouseChildren = false;
+    _boardLabelContainer.mouseChildren = false;
+
     _boardContainer.addChild(_boardTileContainer);
     _boardContainer.addChild(_boardRoadContainer);
     _boardContainer.addChild(_boardSelectItemsContainer);
@@ -261,6 +269,7 @@ function initCanvasStage() {
 
     // add container for toast messages
     _toastMessageContainer = new createjs.Container();
+    _toastMessageContainer.mouseChildren = false;
     _stage.addChild(_toastMessageContainer);
 
     // draw hexagons
@@ -280,7 +289,7 @@ function initCanvasStage() {
         for (var col = 0; col < numAcross; col++) {
             var hexKey = _hexKeys[hexIndex++];
             var beach = new createjs.Bitmap(beachAsset.data);
-            //beach.mouseEnabled = false;
+            beach.mouseEnabled = true;
             beach.regX = beachAsset.hitbox.centerX;
             beach.regY = beachAsset.hitbox.centerY;
             beach.x = (beachWidth / 2) + col * beachWidth + shiftX;
@@ -307,7 +316,7 @@ function initCanvasStage() {
     for (var i = 0; i < beachBitmaps.length; i++) {
         _boardTileContainer.addChild(beachBitmaps[i]);
     }
-    
+
     _boardContainer.regX = _boardContainer.getBounds().width / 2;
     _boardContainer.regY = _boardContainer.getBounds().height / 2;
     _boardContainer.scaleX = 0.65;
@@ -525,6 +534,7 @@ function updateGameModel(gameManager) {
     populateRobber();
     populateSelectItems();
     setResourceTileSelectionMode();
+    setGlowForDiceRoll();
 
     // By default, don't generate stage mouseover events. They are expensive.
     var enableMouseOverEvents = false;
@@ -599,8 +609,8 @@ function populateResourceTiles() {
         return;
     }
 
+    _numberTileMap = {};
     var resTiles = [];
-    var numberTiles = [];
     var tileIndex = 0;
     for (var row = 0; row < 5; row++) {
         var numAcross = 5;
@@ -632,18 +642,23 @@ function populateResourceTiles() {
             // Create number tile which shows the roll needed to active this resource.
             if (resource === ResourceTypes.None) continue; // No need to draw a number on the desert tile.
 
+            var numberTileContainer = new createjs.Container();
+            numberTileContainer.mouseChildren = false;
+            numberTileContainer.mouseEnabled = false;
+
             var graphics = new createjs.Graphics();
             var circleRadius = 30;
             graphics.setStrokeStyle(1);
             graphics.beginStroke("#000000");
-            graphics.beginFill("#dddddd");
+            graphics.beginFill("#ffffff");
             graphics.drawCircle(0, 0, circleRadius);
             var shape = new createjs.Shape(graphics);
+            shape.name = "circle";
             shape.mouseEnabled = false;
-            shape.x = beach.x;
-            shape.y = beach.y + 30;
-            shape.alpha = 0.75;
-            numberTiles.push(shape);
+            shape.alpha = 0.65;
+            shape.x = 0;
+            shape.y = 0;
+            numberTileContainer.addChild(shape);
 
             var number = _currentResourceTiles[hexKey]["RetrieveNumber"];
             var dots = getProbabilityFromRoll(number);
@@ -652,14 +667,14 @@ function populateResourceTiles() {
             var spanWidth = (2 * dotRadius * dots) + (dots - 1) * dotRadius;
             var posX = (-spanWidth / 2) + dotRadius;
             for (var i = 0; i < dots; i++) {
-                
+
                 var dotG = new createjs.Graphics().beginFill(dotColor).drawCircle(0, 0, dotRadius);
                 var dotShape = new createjs.Shape(dotG);
                 dotShape.mouseEnabled = false;
                 dotShape.x = shape.x + posX;
                 dotShape.y = shape.y + (circleRadius / 2);
                 posX += (3 * dotRadius);
-                numberTiles.push(dotShape);
+                numberTileContainer.addChild(dotShape);
             }
 
             var text = new createjs.Text(number.toString(), "bold 28px Serif", dotColor);
@@ -671,14 +686,21 @@ function populateResourceTiles() {
             }
             text.x = shape.x;
             text.y = shape.y - (circleRadius / 8);
-            numberTiles.push(text);
+            numberTileContainer.addChild(text);
+
+            numberTileContainer.x = beach.x;
+            numberTileContainer.y = beach.y + 30;
+
+            // Save a map so we can quickly lookup a number tile from a roll number.
+            if (_numberTileMap[number] == null)
+                _numberTileMap[number] = [];
+            _numberTileMap[number].push(numberTileContainer);
+
+            _boardLabelContainer.addChild(numberTileContainer);
         }
     }
     for (var i = 0; i < resTiles.length; i++) {
         _boardTileContainer.addChild(resTiles[i]);
-    }
-    for (var i = 0; i < numberTiles.length; i++) {
-        _boardLabelContainer.addChild(numberTiles[i]);
     }
 
     _resourceTilesPopulated = true;
@@ -695,10 +717,76 @@ function setResourceTileSelectionMode() {
         var resTileBmp = _hexToResourceTileMap[hexKey];
         if (_currentGameManager["PlayerTurnState"] === PlayerTurnState.PlacingRobber) {
             resTileBmp.mouseEnabled = true;
-            
+
         } else {
             resTileBmp.mouseEnabled = false;
         }
+    }
+}
+
+function setGlowForDiceRoll() {
+    // Make the tiles that generated resources glow.
+    if (_currentGameManager == null || _currentResourceTiles == null)
+        return;
+
+    var playerState = _currentGameManager["PlayerTurnState"];
+    var diceRoll = _currentGameManager["CurrentDiceRoll"];
+
+    if (playerState === PlayerTurnState.None ||
+        playerState === PlayerTurnState.NeedToRoll ||
+        diceRoll == null) {
+
+        // Remove the tile glows.
+        var hexKeys = Object.keys(_hexToResourceTileMap);
+        for (var i = 0; i < hexKeys.length; i++) {
+            var bitmap = _hexToResourceTileMap[hexKeys[i]];
+            bitmap.shadow = null;
+        }
+        setNumberTileGlow(false, 0);
+
+        return;
+    }
+
+    var rollTotal = diceRoll["Total"];
+    var hexKeys = Object.keys(_currentResourceTiles);
+    for (var i = 0; i < hexKeys.length; i++) {
+        var hex = hexKeys[i];
+        var resourceTile = _currentResourceTiles[hex];
+        var bitmap = _hexToResourceTileMap[hex];
+        var tileNumber = resourceTile["RetrieveNumber"];
+        if (tileNumber === rollTotal) {
+            // This tile generated resources.
+            bitmap.shadow = new createjs.Shadow("#fff", 0, 0, 10);
+        } else {
+            bitmap.shadow = null;
+        }
+    }
+    setNumberTileGlow(true, rollTotal);
+}
+
+function setNumberTileGlow(glow, number) {
+    for (var i = 2; i <= 12; i++) {
+        if (_numberTileMap[i] == null) continue;
+
+        for (var j = 0; j < _numberTileMap[i].length; j++) {
+            var container = _numberTileMap[i][j];
+            if (glow) {
+                if (number === i) {
+                    container.shadow = new createjs.Shadow("#fff", 0, 0, 20);
+                    container.scaleX = 1.2;
+                    container.scaleY = 1.2;
+                    var circle = container.getChildByName("circle");
+                    circle.alpha = 1.0;
+                }
+            } else {
+                container.shadow = null;
+                container.scaleX = 1.0;
+                container.scaleY = 1.0;
+                var circle = container.getChildByName("circle");
+                circle.alpha = 0.65;
+            }
+        }
+
     }
 }
 
@@ -1090,7 +1178,7 @@ function populateDice() {
         } else {
             $("#diceText").text("");
         }
-        
+
         // Set dice images
         var diceArray = diceRoll["Dice"];
         if (diceArray != null && diceArray.length >= 2) {
@@ -1175,7 +1263,7 @@ function populatePlayers() {
             var playerId = player["Id"];
             var playerName = player["Name"];
             var avatarPath = player["AvatarPath"];
-            
+
             $(boxId).removeClass("hidden");
             $(boxId + " > .player-name").text(playerName);
             if (avatarPath) {
@@ -1308,7 +1396,7 @@ function handleClickRoad(event) {
     if (hexEdge == null || _serverGameHub == null)
         return;
 
-    _serverGameHub.selectRoad(hexEdge).done(function(result) {
+    _serverGameHub.selectRoad(hexEdge).done(function (result) {
         if (!result["Succeeded"]) { // failed. display error message.
             displayToastMessage(result["Message"]);
         }
