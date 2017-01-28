@@ -220,6 +220,12 @@
     <Content Include="Content\Images\board\city_pink.png" />
     <Content Include="Content\Images\board\city_red.png" />
     <Content Include="Content\Images\board\city_yellow.png" />
+    <Content Include="Content\Images\board\dice1.png" />
+    <Content Include="Content\Images\board\dice2.png" />
+    <Content Include="Content\Images\board\dice3.png" />
+    <Content Include="Content\Images\board\dice4.png" />
+    <Content Include="Content\Images\board\dice5.png" />
+    <Content Include="Content\Images\board\dice6.png" />
     <Content Include="Content\Images\board\dock1.png" />
     <Content Include="Content\Images\board\dock2.png" />
     <Content Include="Content\Images\board\house1.png" />

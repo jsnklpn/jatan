@@ -22,6 +22,7 @@ var dock1Hitbox = { width: 123, height: 76, centerX: 70, centerY: 30 };
 var dock2Hitbox = { width: 118, height: 74, centerX: 65, centerY: 30 };
 var boatHitbox = { width: 65, height: 71, centerX: 32, centerY: 44 };
 var theifHitbox = { width: 86, height: 123, centerX: 53, centerY: 97 };
+var diceHitbox = { width: 128, height: 128, centerX: 64, centerY: 64 };
 
 // Map to hold all game assets to be preloaded
 var _assetMap = {
@@ -86,13 +87,13 @@ var _assetMap = {
     "imgBoat": { src: "/Content/Images/board/boat.png", data: null, hitbox: boatHitbox },
     "imgDock1": { src: "/Content/Images/board/dock1.png", data: null, hitbox: dock1Hitbox },
     "imgDock2": { src: "/Content/Images/board/dock2.png", data: null, hitbox: dock2Hitbox },
-    // Dice - TODO: Add images
-    "imgDice1": { src: "/Content/Images/board/dice1.png", data: null, hitbox: null },
-    "imgDice2": { src: "/Content/Images/board/dice2.png", data: null, hitbox: null },
-    "imgDice3": { src: "/Content/Images/board/dice3.png", data: null, hitbox: null },
-    "imgDice4": { src: "/Content/Images/board/dice4.png", data: null, hitbox: null },
-    "imgDice5": { src: "/Content/Images/board/dice5.png", data: null, hitbox: null },
-    "imgDice6": { src: "/Content/Images/board/dice6.png", data: null, hitbox: null }
+    // Dice
+    "imgDice1": { src: "/Content/Images/board/dice1.png", data: null, hitbox: diceHitbox },
+    "imgDice2": { src: "/Content/Images/board/dice2.png", data: null, hitbox: diceHitbox },
+    "imgDice3": { src: "/Content/Images/board/dice3.png", data: null, hitbox: diceHitbox },
+    "imgDice4": { src: "/Content/Images/board/dice4.png", data: null, hitbox: diceHitbox },
+    "imgDice5": { src: "/Content/Images/board/dice5.png", data: null, hitbox: diceHitbox },
+    "imgDice6": { src: "/Content/Images/board/dice6.png", data: null, hitbox: diceHitbox }
 };
 
 // Resource types enum
