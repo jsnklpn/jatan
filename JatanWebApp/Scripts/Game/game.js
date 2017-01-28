@@ -18,7 +18,8 @@ var _boardContainer = null;
 var _boardTileContainer = null; // child to the board container
 var _boardRoadContainer = null; // child to the board container
 var _boardBuildingContainer = null; // child to the board container
-var _boardRobberContainer = null; // child to the board container
+var _boardRobber = null; // child to the board container
+var _boardRobberMoving = null; // child to the board container
 var _boardSelectItemsContainer = null; // child to the board container
 var _boardLabelContainer = null; // child to the board container
 var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
@@ -245,25 +246,38 @@ function initCanvasStage() {
     _water.mouseEnabled = false;
     _stage.addChild(_water);
 
+    // create theif
+    var robberAsset = _assetMap["imgThief"];
+    _boardRobber = new createjs.Bitmap(robberAsset.data);
+    _boardRobber.mouseEnabled = false;
+    _boardRobber.regX = robberAsset.hitbox.centerX;
+    _boardRobber.regY = robberAsset.hitbox.centerY;
+    // theif for when it's being moved
+    _boardRobberMoving = new createjs.Bitmap(robberAsset.data);
+    _boardRobberMoving.mouseEnabled = false;
+    _boardRobberMoving.regX = robberAsset.hitbox.centerX;
+    _boardRobberMoving.regY = robberAsset.hitbox.centerY;
+    _boardRobberMoving.alpha = 0.75;
+    _boardRobberMoving.visible = false;
+
     // Create multiple containers so we can layer the images properly
     _boardTileContainer = new createjs.Container();
     _boardRoadContainer = new createjs.Container();
     _boardBuildingContainer = new createjs.Container();
     _boardSelectItemsContainer = new createjs.Container();
-    _boardRobberContainer = new createjs.Container();
     _boardLabelContainer = new createjs.Container();
 
     // Containers with nothing selectable should disalbe mouse interactions for all children.
     _boardRoadContainer.mouseChildren = false;
     _boardBuildingContainer.mouseChildren = false;
-    _boardRobberContainer.mouseChildren = false;
     _boardLabelContainer.mouseChildren = false;
 
     _boardContainer.addChild(_boardTileContainer);
     _boardContainer.addChild(_boardRoadContainer);
     _boardContainer.addChild(_boardSelectItemsContainer);
     _boardContainer.addChild(_boardBuildingContainer);
-    _boardContainer.addChild(_boardRobberContainer);
+    _boardContainer.addChild(_boardRobber);
+    _boardContainer.addChild(_boardRobberMoving);
     _boardContainer.addChild(_boardLabelContainer);
     _stage.addChild(_boardContainer);
 
@@ -445,34 +459,6 @@ function initMouseWheelScaling() {
         _boardDragMouseOffsetX = null;
         _boardDragMouseOffsetY = null;
     });
-}
-
-function handleMouseOver(event) {
-    var obj = event.target;
-    //obj.stage.setChildIndex(obj, obj.stage.numChildren - 1);
-    //obj.shadow = new createjs.Shadow("#fff", 0, 0, 30);
-    obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
-    obj.cache(-500, -500, 1000, 1000);
-    _invalidateCanvas = true;
-}
-
-function handleMouseOut(event) {
-    var obj = event.target;
-    //obj.shadow = null;
-    obj.filters = [];
-    obj.updateCache();
-    _invalidateCanvas = true;
-}
-
-function handleClick(event) {
-    var obj = event.target;
-
-    var hex = getHexFromResourceTileBitmap(obj);
-    if (hex !== null) {
-        console.log(hex + " clicked!");
-    }
-
-    _invalidateCanvas = true;
 }
 
 function writeTextToChat(text, chatTextType) {
@@ -794,6 +780,11 @@ function handleResTileMouseOver(event) {
     var obj = event.target;
     obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
     obj.cache(-500, -500, 1000, 1000);
+
+    _boardRobberMoving.visible = true;
+    _boardRobberMoving.x = obj.x;
+    _boardRobberMoving.y = obj.y;
+
     _invalidateCanvas = true;
 }
 
@@ -801,6 +792,9 @@ function handleResTileMouseOut(event) {
     var obj = event.target;
     obj.filters = [];
     obj.updateCache();
+
+    _boardRobberMoving.visible = false;
+
     _invalidateCanvas = true;
 }
 
@@ -815,6 +809,8 @@ function handleResTileClick(event) {
     var hex = getHexFromResourceTileBitmap(obj);
     if (hex == null || _serverGameHub == null)
         return;
+
+    _boardRobberMoving.visible = false;
 
     _serverGameHub.selectTileForRobber(hex).done(function (result) {
         if (!result["Succeeded"]) { // failed. display error message.
@@ -1297,16 +1293,12 @@ function populateRobber() {
     if (_currentGameManager == null)
         return;
 
-    _boardRobberContainer.removeAllChildren();
     var robberLocation = _currentGameManager["GameBoard"]["RobberLocation"];
     var beach = _hexToBeachMap[robberLocation];
-    var asset = _assetMap["imgThief"];
-    var robber = new createjs.Bitmap(asset.data);
-    robber.regX = asset.hitbox.centerX;
-    robber.regY = asset.hitbox.centerY;
-    robber.x = beach.x; // center on beach tile
-    robber.y = beach.y; // center on beach tile
-    _boardRobberContainer.addChild(robber);
+    _boardRobber.x = beach.x; // center on beach tile
+    _boardRobber.y = beach.y; // center on beach tile
+
+    _boardRobberMoving.visible = false;
 }
 
 function populateSelectItems() {
