@@ -181,13 +181,13 @@
 
 .active-player > .player-avatar {
     /* http://easings.net/en */
-    -webkit-animation:1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite alternate wobble;
-    -moz-animation:1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite alternate wobble;
-    animation:1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite alternate wobble;
+    -webkit-animation:1s cubic-bezier(0.445, 0.05, 0.55, 0.95) 0s infinite alternate pulse;
+    -moz-animation:1s cubic-bezier(0.445, 0.05, 0.55, 0.95) 0s infinite alternate pulse;
+    animation:1s cubic-bezier(0.445, 0.05, 0.55, 0.95) 0s infinite alternate pulse;
 }
-@-moz-keyframes wobble { from { -moz-transform: rotate(10deg); } to { -moz-transform: rotate(-10deg); } }
-@-webkit-keyframes wobble { from { -webkit-transform: rotate(10deg); } to { -webkit-transform: rotate(-10deg); } }
-@keyframes wobble { from { -webkit-transform: rotate(10deg); transform: rotate(10deg); } to { -webkit-transform: rotate(-10deg); transform: rotate(-10deg); } }
+@-moz-keyframes pulse { from { -moz-transform: scale(1.0); } to { -moz-transform: scale(1.15); } }
+@-webkit-keyframes pulse { from { -webkit-transform: scale(1.0); } to { -webkit-transform: scale(1.15); } }
+@keyframes pulse { from { -webkit-transform:scale(1.0); transform: scale(1.0); } to { -webkit-transform: scale(1.15); transform: scale(1.15); } }
 
 .player-name {
     font-size: 18px;
