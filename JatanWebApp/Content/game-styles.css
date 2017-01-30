@@ -88,6 +88,62 @@
     color: gold;
 }
 
+/* ================= */
+/* Player bottom HUD */
+/* ================= */
+#lowerHud {
+    position: fixed;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    height: 80px;
+    background-color: gray;
+    border-top: 1px solid black;
+    z-index: 1;
+}
+
+#hudCenteredDiv {
+    position: absolute;
+    width: 600px;
+    margin-right: auto;
+    margin-left: auto;
+    right: 0;
+    left: 0;
+    background-color: lightsteelblue;
+}
+
+#cardCanvas {
+    margin-top: -20px;
+    width: 320px;
+    height: 100px;
+}
+
+.hud-button {
+    margin: 10px;
+    width: 50px;
+    height: 50px;
+    background-color: salmon;
+}
+
+#btnStartGame {
+    float: left;
+}
+#btnRollDice {
+    float: left;
+}
+#btnBuyDiv {
+    float: left;
+}
+#btnTrade {
+    float: left;
+}
+#btnEndTurn {
+    float: right;
+}
+#btnLeaveGame {
+    float: right;
+}
+
 /* ============= */
 /* Dice info box */
 /* ============= */
@@ -211,13 +267,13 @@
 }
 
 #playerBox3 {
-    bottom: 49px;
+    bottom: 79px;
     left: -1px;
     border-right-width: 10px;
 }
 
 #playerBox4 {
-    bottom: 49px;
+    bottom: 79px;
     right: -1px;
     border-left-width: 10px;
 }

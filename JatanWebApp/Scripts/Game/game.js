@@ -24,6 +24,12 @@ var _boardSelectItemsContainer = null; // child to the board container
 var _boardLabelContainer = null; // child to the board container
 var _invalidateCanvas = true; // set to true to redraw canvas on next animation frame
 
+// Canvas to draw the user's cards on their HUD.
+var _cardCanvas = null;
+var _cardStage = null;
+var _cardContainer = null;
+var _invalidateCardCanvas = true; // set to true to redraw the card canvas on next animation frame
+
 // change this to allow the user to select various things on the UI
 var _selectionMode = SelectionMode.None;
 
@@ -46,6 +52,12 @@ $(function () {
     $("body").on("contextmenu", "#gameCanvas", function (e) { return false; });
 
     _canvas = $("#gameCanvas")[0];
+    
+    // Set the card canvas size
+    _cardCanvas = $("#cardCanvas")[0];
+    _cardCanvas.width = _cardCanvas.clientWidth;
+    _cardCanvas.height = _cardCanvas.clientHeight;
+
     initSignalR();
     initHtmlUI();
     loadGameResources();
@@ -237,6 +249,12 @@ function completedLoading() {
 
 function initCanvasStage() {
 
+    // Create stage for resource cards
+    _cardStage = new createjs.Stage("cardCanvas");
+    _cardContainer = new createjs.Container();
+    _cardStage.addChild(_cardContainer);
+
+    // Init the main stage.
     _stage = new createjs.Stage("gameCanvas");
     _boardContainer = new createjs.Container();
     _boardContainer.visible = false; // The board will be invisible until we get the game manager model.
@@ -353,6 +371,10 @@ function checkRender() {
         _invalidateCanvas = false;
         _stage.update();
     }
+    if (_invalidateCardCanvas) {
+        _invalidateCardCanvas = false;
+        _cardStage.update();
+    }
     requestAnimationFrame(checkRender);
 }
 
@@ -402,7 +424,7 @@ function initMouseWheelScaling() {
     var maxScale = 1.0;
     var minScale = 0.4;
     var scaleStep = 0.02;
-    $("#gameCanvas").bind('mousewheel DOMMouseScroll', function (event) {
+    $("#gameCanvas").bind("mousewheel DOMMouseScroll", function (event) {
         if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
             // scroll up
             if (_boardContainer.scaleX < maxScale) {
@@ -514,6 +536,7 @@ function updateGameModel(gameManager) {
 
     populateDice();
     populateTurnInfoBox();
+    populateResourceCards();
     populatePlayers();
     populateBuildings();
     populateRoads();
@@ -1435,6 +1458,66 @@ function selectableItemToHexKey(item) {
     return null;
 }
 
+function populateResourceCards() {
+    if (_currentGameManager == null)
+        return;
+
+    _cardContainer.removeAllChildren();
+    _invalidateCardCanvas = true;
+
+    var myPlayerId = _currentGameManager["MyPlayerId"];
+    var player = getPlayerFromId(myPlayerId);
+    if (player == null)
+        return;
+
+    var cards = player["ResourceCards"];
+    var cardBitmaps = [];
+    var resNames = ["Wood", "Brick", "Sheep", "Wheat", "Ore"];
+    for (var i = 0; i < resNames.length; i++) {
+        var strRes = resNames[i];
+        var resCount = cards[strRes];
+        if (resCount != null && resCount > 0) {
+            var asset = _assetMap["imgCard" + strRes];
+            for (var j = 0; j < resCount; j++) {
+                var bitmap = new createjs.Bitmap(asset.data);
+                cardBitmaps.push(bitmap);
+            }
+        }
+    }
+
+    if (cardBitmaps.length === 0) {
+        return;
+    }
+
+    // Add the cards to the stage. Center the cards and evenly space them.
+    // Start to overlap when there are too many cards to fit in the canvas.
+    var hitbox = _assetMap["imgCardWood"].hitbox;
+    var cardWidth = hitbox.width;
+    var cardHeight = hitbox.height;
+    var canvasWidth = _cardCanvas.width;
+    var canvasHeight = _cardCanvas.height;
+    var scale = canvasHeight / cardHeight;
+    cardWidth *= scale;
+    var spacing = cardWidth;
+    if (cardBitmaps.length * cardWidth > canvasWidth) {
+        // Too many cards. Start to overlap.
+        spacing = (canvasWidth - cardWidth) / (cardBitmaps.length - 1);
+    }
+    for (var i = 0; i < cardBitmaps.length; i++) {
+        var card = cardBitmaps[i];
+        card.x = i * spacing;
+        card.y = 0;
+        card.scaleX = scale;
+        card.scaleY = scale;
+        card.shadow = new createjs.Shadow("#000000", -2, 3, 7);
+        _cardContainer.addChild(card);
+    }
+
+    // Center the container in the stage
+    var cb = _cardContainer.getBounds();
+    _cardContainer.regX = cb.width / 2;
+    _cardContainer.x = canvasWidth / 2;
+}
 
 //===========================
 // Toast messages
