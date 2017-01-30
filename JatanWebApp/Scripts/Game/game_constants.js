@@ -23,6 +23,7 @@ var dock2Hitbox = { width: 118, height: 74, centerX: 65, centerY: 30 };
 var boatHitbox = { width: 65, height: 71, centerX: 32, centerY: 44 };
 var theifHitbox = { width: 86, height: 123, centerX: 53, centerY: 97 };
 var diceHitbox = { width: 128, height: 128, centerX: 64, centerY: 64 };
+var resourceCardHitbox = { width: 132, height: 186, centerX: 66, centerY: 93 };
 
 // Map to hold all game assets to be preloaded
 var _assetMap = {
@@ -93,7 +94,13 @@ var _assetMap = {
     "imgDice3": { src: "/Content/Images/board/dice3.png", data: null, hitbox: diceHitbox },
     "imgDice4": { src: "/Content/Images/board/dice4.png", data: null, hitbox: diceHitbox },
     "imgDice5": { src: "/Content/Images/board/dice5.png", data: null, hitbox: diceHitbox },
-    "imgDice6": { src: "/Content/Images/board/dice6.png", data: null, hitbox: diceHitbox }
+    "imgDice6": { src: "/Content/Images/board/dice6.png", data: null, hitbox: diceHitbox },
+    // Cards
+    "imgCardWood": { src: "/Content/Images/board/cardWood.png", data: null, hitbox: resourceCardHitbox },
+    "imgCardWheat": { src: "/Content/Images/board/cardWheat.png", data: null, hitbox: resourceCardHitbox },
+    "imgCardSheep": { src: "/Content/Images/board/cardSheep.png", data: null, hitbox: resourceCardHitbox },
+    "imgCardOre": { src: "/Content/Images/board/cardOre.png", data: null, hitbox: resourceCardHitbox },
+    "imgCardBrick": { src: "/Content/Images/board/cardBrick.png", data: null, hitbox: resourceCardHitbox }
 };
 
 // Resource types enum
