@@ -214,6 +214,11 @@
     <Content Include="Content\game-styles.css" />
     <Content Include="Content\Images\avatars\default.jpg" />
     <Content Include="Content\Images\board\boat.png" />
+    <Content Include="Content\Images\board\cardBrick.png" />
+    <Content Include="Content\Images\board\cardOre.png" />
+    <Content Include="Content\Images\board\cardSheep.png" />
+    <Content Include="Content\Images\board\cardWheat.png" />
+    <Content Include="Content\Images\board\cardWood.png" />
     <Content Include="Content\Images\board\city.png" />
     <Content Include="Content\Images\board\city_blue.png" />
     <Content Include="Content\Images\board\city_green.png" />
