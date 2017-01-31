@@ -173,6 +173,12 @@ function initHubButtons() {
 
 function initHtmlUI() {
 
+    // Init click handlers for selecting player boxes.
+    $("#playerBox1").click(function () { playerBoxClicked(1); });
+    $("#playerBox2").click(function () { playerBoxClicked(2); });
+    $("#playerBox3").click(function () { playerBoxClicked(3); });
+    $("#playerBox4").click(function () { playerBoxClicked(4); });
+
     // Show chat input box when the enter key is pressed.
     $(document).keyup(function (event) {
         var keycode = (event.keyCode ? event.keyCode : event.which);
@@ -202,6 +208,33 @@ function initHtmlUI() {
             }
         }
     });
+}
+
+function playerBoxClicked(boxId) {
+    if (_serverGameHub == null || _currentGameManager == null)
+        return;
+
+    var turnState = _currentGameManager["PlayerTurnState"];
+    var players = _currentGameManager["Players"];
+    var playerId = _currentGameManager["MyPlayerId"];
+    var activePlayerId = _currentGameManager["ActivePlayerId"];
+    if (turnState == null || players == null || playerId === null || activePlayerId == null) return;
+
+    if (playerId === activePlayerId && turnState === PlayerTurnState.SelectingPlayerToStealFrom) {
+        var robbedPlayerIndex = boxId - 1;
+        if (robbedPlayerIndex >= 0 && robbedPlayerIndex < players.length) {
+            var robbedPlayer = players[robbedPlayerIndex];
+            var robbedId = robbedPlayer["Id"];
+            if (robbedId != null && robbedId !== playerId) {
+                // Call the server hub method
+                _serverGameHub.stealResourceCard(robbedId).done(function (result) {
+                    if (!result["Succeeded"]) { // failed. display error message.
+                        displayToastMessage(result["Message"]);
+                    }
+                });
+            }
+        }
+    }
 }
 
 function loadGameResources() {
@@ -1329,7 +1362,27 @@ function populateSelectItems() {
     if (_currentGameManager == null)
         return;
 
-    // TODO: Remove all event listeners from children before removing them.
+    var playerId = _currentGameManager["MyPlayerId"];
+    var players = _currentGameManager["Players"];
+    var activePlayerId = _currentGameManager["ActivePlayerId"];
+    var playerTurnState = _currentGameManager["PlayerTurnState"];
+
+    // Make player boxes selectable if needed.
+    if (activePlayerId === playerId && playerTurnState === PlayerTurnState.SelectingPlayerToStealFrom) {
+        for (var i = 0; i < players.length; i++) {
+            // Make all other players selectable.
+            if (players[i]["Id"] !== playerId) {
+                var boxId = "#playerBox" + (i + 1).toString();
+                $(boxId).addClass("selectable");
+            }
+        }
+    } else {
+        // make no players selectable
+        $(".player-float-box").removeClass("selectable");
+    }
+
+
+// TODO: Remove all event listeners from children before removing them.
     _boardSelectItemsContainer.removeAllChildren();
     _selectableItemsMap = {};
 
@@ -1337,8 +1390,6 @@ function populateSelectItems() {
     var validRoadPlacements = _currentGameManager["ValidRoadPlacements"];
     var validSettlementPlacements = _currentGameManager["ValidSettlementPlacements"];
     var validCityPlacements = _currentGameManager["ValidCityPlacements"];
-
-    var playerId = _currentGameManager["MyPlayerId"];
 
     if (validRoadPlacements != null) {
         for (var i = 0; i < validRoadPlacements.length; i++) {
@@ -1567,7 +1618,7 @@ function displayToastMessage(str, time) {
     // remove any current message and invalidate canvas
     removeToastMessage();
 
-    if (str == null)
+    if (str == null || str === "")
         return;
 
     var text = new createjs.Text(str, "22px Arial", "#ffffff");

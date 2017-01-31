@@ -403,6 +403,23 @@ namespace JatanWebApp.SignalR
             return result;
         }
 
+        /// <summary>
+        /// Selects a player to steal from.
+        /// </summary>
+        public ActionResult StealResourceCard(int robbedPlayerId)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.PlayerStealResourceCard(playerId, robbedPlayerId);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
         private void UpdateAllClientGameManagers(bool fullUpdate = false)
         {
             var lobby = GetGameLobby();

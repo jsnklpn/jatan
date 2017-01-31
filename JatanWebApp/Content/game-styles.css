@@ -278,6 +278,36 @@
     border-width: 1px;
 }
 
+/* transparent layer that will turn slightly white during
+    hover when the parent has a class of 'selectable'. */
+.hover-layer {
+    position: fixed;
+    width: inherit;
+    height: inherit;
+    top: inherit;
+    bottom: inherit;
+    left: inherit;
+    right: inherit;
+    background-color: rgba(255, 255, 255, 0.0);
+}
+.selectable {
+    cursor: pointer;
+}
+.selectable > .hover-layer {
+    -webkit-animation:500ms infinite alternate pulse-white;
+    -moz-animation:500ms infinite alternate pulse-white;
+    animation:500ms infinite alternate pulse-white;
+}
+.selectable > .hover-layer:hover {
+    -webkit-animation: none;
+    -moz-animation: none;
+    animation: none;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+@-moz-keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.2); } }
+@-webkit-keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.2); } }
+@keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.2); } }
+
 .player-avatar {
     width: 48px;
     height: 48px;
