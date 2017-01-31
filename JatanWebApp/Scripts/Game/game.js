@@ -544,6 +544,7 @@ function updateGameModel(gameManager) {
     populateSelectItems();
     setResourceTileSelectionMode();
     setGlowForDiceRoll();
+    populateBuyButtons();
 
     // By default, don't generate stage mouseover events. They are expensive.
     var enableMouseOverEvents = false;
@@ -1491,9 +1492,8 @@ function populateResourceCards() {
 
     // Add the cards to the stage. Center the cards and evenly space them.
     // Start to overlap when there are too many cards to fit in the canvas.
-    var hitbox = _assetMap["imgCardWood"].hitbox;
-    var cardWidth = hitbox.width;
-    var cardHeight = hitbox.height;
+    var cardWidth = resourceCardHitbox.width;
+    var cardHeight = resourceCardHitbox.height;
     var canvasWidth = _cardCanvas.width;
     var canvasHeight = _cardCanvas.height;
     var scale = canvasHeight / cardHeight;
@@ -1509,7 +1509,8 @@ function populateResourceCards() {
         card.y = 0;
         card.scaleX = scale;
         card.scaleY = scale;
-        card.shadow = new createjs.Shadow("#000000", -2, 3, 7);
+        if (spacing < cardWidth)
+            card.shadow = new createjs.Shadow("#000000", -2, 3, 7);
         _cardContainer.addChild(card);
     }
 
@@ -1517,6 +1518,44 @@ function populateResourceCards() {
     var cb = _cardContainer.getBounds();
     _cardContainer.regX = cb.width / 2;
     _cardContainer.x = canvasWidth / 2;
+}
+
+function populateBuyButtons() {
+    if (_currentGameManager == null)
+        return;
+
+    var myPlayerId = _currentGameManager["MyPlayerId"];
+    var player = getPlayerFromId(myPlayerId);
+    if (player == null)
+        return;
+
+    var cards = player["ResourceCards"];
+    var wood = cards["Wood"];
+    var brick = cards["Brick"];
+    var wheat = cards["Wheat"];
+    var sheep = cards["Sheep"];
+    var ore = cards["Ore"];
+
+    if (wood >= 1 && brick >= 1) {
+        $("#btnBuyRoad").removeClass("disabled");
+    } else {
+        $("#btnBuyRoad").addClass("disabled");
+    }
+    if (wood >= 1 && brick >= 1 && sheep >= 1 && wheat >= 1) {
+        $("#btnBuySettlement").removeClass("disabled");
+    } else {
+        $("#btnBuySettlement").addClass("disabled");
+    }
+    if (wheat >= 2 && ore >= 3) {
+        $("#btnBuyCity").removeClass("disabled");
+    } else {
+        $("#btnBuyCity").addClass("disabled");
+    }
+    if (sheep >= 1 && wheat >= 1 && ore >= 1) {
+        $("#btnBuyDevelopmentCard").removeClass("disabled");
+    } else {
+        $("#btnBuyDevelopmentCard").addClass("disabled");
+    }
 }
 
 //===========================

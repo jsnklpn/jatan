@@ -187,6 +187,10 @@
     font-family: serif;
 }
 
+#btnBuyDiv > ul > li > a.btn {
+    text-align: left;
+}
+
 /* ============= */
 /* Dice info box */
 /* ============= */
