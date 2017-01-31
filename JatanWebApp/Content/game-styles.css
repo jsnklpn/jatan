@@ -38,6 +38,43 @@
     transform: translateY(-50%);
 }
 
+/* =========== */
+/*    Icons    */
+/* =========== */
+.res-icon {
+    width: 39px;
+    height: 33px;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+    margin: 0px;
+}
+.res-icon-wood {
+    /*width: 36px;
+    height: 23px;*/
+    background-image: url('Images/site/icon_wood.png');
+}
+.res-icon-brick {
+    /*width: 35px;
+    height: 19px;*/
+    background-image: url('Images/site/icon_brick.png');
+}
+.res-icon-wheat {
+    /*width: 27px;
+    height: 33px;*/
+    background-image: url('Images/site/icon_wheat.png');
+}
+.res-icon-sheep {
+    /*width: 39px;
+    height: 26px;*/
+    background-image: url('Images/site/icon_sheep.png');
+}
+.res-icon-ore {
+    /*width: 37px;
+    height: 25px;*/
+    background-image: url('Images/site/icon_ore.png');
+}
+
 /* ============= */
 /* Game info box */
 /* ============= */
@@ -142,6 +179,12 @@
 }
 #btnLeaveGame {
     float: right;
+}
+
+.buy-item-text {
+    font-size: 18px;
+    font-weight: bold;
+    font-family: serif;
 }
 
 /* ============= */
