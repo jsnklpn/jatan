@@ -44,6 +44,13 @@ namespace JatanWebApp.SignalR.DTO
                 {
                     playerDto.AvatarPath = lobby.AvatarPaths.ContainsKey(p.Name) ? lobby.AvatarPaths[p.Name] : null;
                 }
+                playerDto.AvailableToRob = manager.PlayersAvailableToRob.Select(r => r.Id).Contains(p.Id);
+                if (manager.PlayersSelectingCardsToLose.Select(r => r.Id).Contains(p.Id))
+                {
+                    var count = p.ResourceCards.GetResourceCount();
+                    var toLose = (int) Math.Floor(count/2d);
+                    playerDto.CardsToLose = toLose;
+                }
                 this.Players.Add(playerDto);
             }
 

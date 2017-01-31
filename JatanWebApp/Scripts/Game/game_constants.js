@@ -113,6 +113,15 @@ var ResourceTypes = {
     Ore: 5
 };
 
+var NameToResourceTypeMap = {
+    "None": 0,
+    "Brick": 1,
+    "Wood": 2,
+    "Wheat": 3,
+    "Sheep": 4,
+    "Ore": 5
+}
+
 // The side of a hexagon that is pointed on the top and bottom.
 var EdgeDir = {
     Right: 0,

@@ -28,6 +28,7 @@ var _invalidateCanvas = true; // set to true to redraw canvas on next animation 
 var _cardCanvas = null;
 var _cardStage = null;
 var _cardContainer = null;
+var _selectedCards = [];
 var _invalidateCardCanvas = true; // set to true to redraw the card canvas on next animation frame
 
 // change this to allow the user to select various things on the UI
@@ -544,11 +545,13 @@ function updateGameModel(gameManager) {
 
     // state properties
     var myPlayerId = gameManager["MyPlayerId"];
+    var player = getPlayerFromId(myPlayerId);
     var gameState = gameManager["GameState"];
     var playerTurnState = gameManager["PlayerTurnState"];
     var activePlayerId = gameManager["ActivePlayerId"];
     var currentDiceRoll = gameManager["CurrentDiceRoll"];
     var players = gameManager["Players"];
+    var cardsToLose = player["CardsToLose"];
 
     // valid placement lists are only populated if needed.
     var validRoadPlacements = gameManager["ValidRoadPlacements"];
@@ -606,6 +609,9 @@ function updateGameModel(gameManager) {
             case PlayerTurnState.SelectingPlayerToStealFrom:
                 break;
             case PlayerTurnState.AnyPlayerSelectingCardsToLose:
+                if (cardsToLose > 0) {
+                    displayToastMessage("A 7 was rolled! Select " + cardsToLose.toString() + " resource cards to discard.", null);
+                }
                 break;
             case PlayerTurnState.RequestingPlayerTrade:
                 break;
@@ -625,7 +631,9 @@ function updateGameModel(gameManager) {
                 // TODO: Allow sending a counter offer
                 break;
             case PlayerTurnState.AnyPlayerSelectingCardsToLose:
-                // TODO: Allow select cards to lose (a 7 was rolled)
+                if (cardsToLose > 0) {
+                    displayToastMessage("A 7 was rolled! Select " + cardsToLose.toString() + " resource cards to discard.", null);
+                }
                 break;
             default:
                 break;
@@ -844,7 +852,6 @@ function handleResTileMouseOver(event) {
 
     _invalidateCanvas = true;
 }
-
 function handleResTileMouseOut(event) {
     var obj = event.target;
     obj.filters = [];
@@ -854,7 +861,6 @@ function handleResTileMouseOut(event) {
 
     _invalidateCanvas = true;
 }
-
 function handleResTileClick(event) {
     if (event.nativeEvent.button !== 0)
         return;
@@ -1370,8 +1376,8 @@ function populateSelectItems() {
     // Make player boxes selectable if needed.
     if (activePlayerId === playerId && playerTurnState === PlayerTurnState.SelectingPlayerToStealFrom) {
         for (var i = 0; i < players.length; i++) {
-            // Make all other players selectable.
-            if (players[i]["Id"] !== playerId) {
+            // Make robbable players selectable.
+            if (players[i]["AvailableToRob"]) {
                 var boxId = "#playerBox" + (i + 1).toString();
                 $(boxId).addClass("selectable");
             }
@@ -1380,7 +1386,6 @@ function populateSelectItems() {
         // make no players selectable
         $(".player-float-box").removeClass("selectable");
     }
-
 
 // TODO: Remove all event listeners from children before removing them.
     _boardSelectItemsContainer.removeAllChildren();
@@ -1446,7 +1451,6 @@ function handleMouseOverSelectable(event) {
     obj.alpha = 0.7;
     _invalidateCanvas = true;
 }
-
 function handleMouseOutSelectable(event) {
     var obj = event.target;
     obj.scaleX = 1.0;
@@ -1454,7 +1458,6 @@ function handleMouseOutSelectable(event) {
     obj.alpha = 0.5;
     _invalidateCanvas = true;
 }
-
 function handleClickRoad(event) {
     if (event.nativeEvent.button !== 0)
         return;
@@ -1469,7 +1472,6 @@ function handleClickRoad(event) {
         }
     });
 }
-
 function handleClickSettlement(event) {
     if (event.nativeEvent.button !== 0)
         return;
@@ -1484,7 +1486,6 @@ function handleClickSettlement(event) {
         }
     });
 }
-
 function handleClickCity(event) {
     if (event.nativeEvent.button !== 0)
         return;
@@ -1518,6 +1519,7 @@ function populateResourceCards() {
     _invalidateCardCanvas = true;
 
     var myPlayerId = _currentGameManager["MyPlayerId"];
+    var playerTurnState = _currentGameManager["PlayerTurnState"];
     var player = getPlayerFromId(myPlayerId);
     if (player == null)
         return;
@@ -1525,6 +1527,7 @@ function populateResourceCards() {
     var cards = player["ResourceCards"];
     var cardBitmaps = [];
     var resNames = ["Wood", "Brick", "Sheep", "Wheat", "Ore"];
+    _selectedCards = [];
     for (var i = 0; i < resNames.length; i++) {
         var strRes = resNames[i];
         var resCount = cards[strRes];
@@ -1532,6 +1535,18 @@ function populateResourceCards() {
             var asset = _assetMap["imgCard" + strRes];
             for (var j = 0; j < resCount; j++) {
                 var bitmap = new createjs.Bitmap(asset.data);
+                bitmap.name = strRes + j.toString();
+                // If we have to select cards to lose, hook up the handlers
+                if (playerTurnState === PlayerTurnState.AnyPlayerSelectingCardsToLose && player["CardsToLose"]> 0) {
+                    bitmap.mouseEnabled = true;
+                    bitmap.addEventListener("click", handleClickResCard);
+                    bitmap.addEventListener("mouseover", handleMouseOverResCard);
+                    bitmap.addEventListener("mouseout", handleMouseOutResCard);
+                    _cardStage.enableMouseOver(20);
+                } else {
+                    bitmap.mouseEnabled = false;
+                    _cardStage.enableMouseOver(0);
+                }
                 cardBitmaps.push(bitmap);
             }
         }
@@ -1569,6 +1584,47 @@ function populateResourceCards() {
     var cb = _cardContainer.getBounds();
     _cardContainer.regX = cb.width / 2;
     _cardContainer.x = canvasWidth / 2;
+}
+
+function handleClickResCard(event) {
+    if (event.nativeEvent.button !== 0)
+        return;
+
+    var obj = event.target;
+    var name = obj.name;
+    var itemIndex = _selectedCards.indexOf(name);
+    if (itemIndex > -1) {
+        // Already selected. Deselect.
+        obj.y -= 30;
+        _selectedCards.splice(itemIndex, 1);
+    } else {
+        // Not yet selected.
+        obj.y += 30;
+        _selectedCards.push(name);
+    }
+    _invalidateCardCanvas = true;
+}
+function handleMouseOverResCard(event) {
+    var obj = event.target;
+    obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
+    obj.cache(0, 0, 500, 500);
+    _invalidateCardCanvas = true;
+}
+function handleMouseOutResCard(event) {
+    var obj = event.target;
+    obj.filters = [];
+    obj.updateCache();
+    _invalidateCardCanvas = true;
+}
+function removeSelectedCards() {
+    if (_serverGameHub == null)
+        return;
+
+    _serverGameHub.selectCardsToRemove(_selectedCards).done(function (result) {
+        if (!result["Succeeded"]) { // failed. display error message.
+            displayToastMessage(result["Message"]);
+        }
+    });
 }
 
 function populateBuyButtons() {

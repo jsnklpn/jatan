@@ -20,6 +20,9 @@ namespace JatanWebApp.SignalR.DTO
         public int VictoryPointsFromCards { get; set; }
         public int ArmySize { get; set; }
 
+        public bool AvailableToRob { get; set; } // Used when players are getting robbed
+        public int CardsToLose { get; set; } // Used when a 7 is rolled and player has too many cards
+
         // Private data
         public ResourceCollection ResourceCards { get; set; }
         public List<DevelopmentCards> DevelopmentCards { get; set; }

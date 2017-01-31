@@ -420,6 +420,42 @@ namespace JatanWebApp.SignalR
             return result;
         }
 
+        /// <summary>
+        /// Selects cards to lose. Called when a 7 is rolled and player has too many cards.
+        /// </summary>
+        public ActionResult SelectCardsToRemove(string[] cards)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            var collection = new ResourceCollection();
+            foreach (ResourceTypes resType in Enum.GetValues(typeof(ResourceTypes)))
+            {
+                var resName = Enum.GetName(typeof(ResourceTypes), resType);
+                if (resName != null)
+                    collection.SetResourceCount(resType, cards.Count(c => c.ToLower().Contains(resName.ToLower())));
+            }
+
+            ActionResult result = lobby.GameManager.PlayerDiscardResources(playerId, collection);
+
+            if (result.Succeeded)
+            {
+                if (lobby.GameManager.PlayerTurnState == PlayerTurnState.AnyPlayerSelectingCardsToLose)
+                {
+                    // some players are still selecting cards to lose. Don't send a global update.
+                    UpdateClientGameManager();
+                }
+                else
+                {
+                    // No longer in the selecting cards state. Send a global update.
+                    UpdateAllClientGameManagers();
+                }
+            }
+            return result;
+        }
+
         private void UpdateAllClientGameManagers(bool fullUpdate = false)
         {
             var lobby = GetGameLobby();
@@ -429,6 +465,19 @@ namespace JatanWebApp.SignalR
                 var managerDto = lobby.ToGameManagerDTO(userName, fullUpdate, fullUpdate);
                 var ids = HubUsers[userName].ConnectionIds.ToList();
                 Clients.Clients(ids).updateGameManager(managerDto);
+            }
+        }
+
+        private void UpdateClientGameManager(bool fullUpdate = false)
+        {
+            var lobby = GetGameLobby();
+            var userName = GetUserName();
+            if (lobby == null || userName == null) return;
+            if (HubUsers.ContainsKey(userName))
+            {
+                var ids = HubUsers[userName].ConnectionIds.ToList();
+                var managerDto = lobby.ToGameManagerDTO(userName, fullUpdate, fullUpdate);
+                Clients.Clients(ids).updateGameManager(managerDto);    
             }
         }
     }
