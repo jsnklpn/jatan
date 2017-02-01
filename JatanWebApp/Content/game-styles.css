@@ -133,8 +133,8 @@
     right: 0;
     left: 0;
     bottom: 0;
-    height: 80px;
-    background-color: gray;
+    height: 100px;
+    background-image: url('Images/site/hud_tile.png');
     border-top: 1px solid black;
     z-index: 1;
 }
@@ -146,17 +146,17 @@
     margin-left: auto;
     right: 0;
     left: 0;
-    background-color: lightsteelblue;
 }
 
 #cardCanvas {
     margin-top: -20px;
     width: 320px;
-    height: 100px;
+    height: 120px;
 }
 
 .hud-button {
     margin: 10px;
+    margin-top: 30px;
     width: 50px;
     height: 50px;
     background-color: salmon;
@@ -344,13 +344,13 @@
 }
 
 #playerBox3 {
-    bottom: 79px;
+    bottom: 99px;
     left: -1px;
     border-right-width: 10px;
 }
 
 #playerBox4 {
-    bottom: 79px;
+    bottom: 99px;
     right: -1px;
     border-left-width: 10px;
 }
