@@ -181,7 +181,7 @@ function initHtmlUI() {
     $("#playerBox4").click(function () { playerBoxClicked(4); });
 
     // Show chat input box when the enter key is pressed.
-    $(document).keyup(function (event) {
+    $(document).keydown(function (event) {
         var keycode = (event.keyCode ? event.keyCode : event.which);
         if (keycode === 13) { // Enter key pressed
             var $inputBox = $("#chatInputBox");
@@ -198,6 +198,8 @@ function initHtmlUI() {
                 $inputBox.addClass("hidden");
                 $("#gameCanvas").focus();
             }
+            // suppress the enter key from affecting anything else.
+            return false;
         }
         else if (keycode === 27) { // escape key pressed. Close the chat window if its showing.
             var $inputBox = $("#chatInputBox");
@@ -206,8 +208,10 @@ function initHtmlUI() {
                 $inputText.val("");
                 $inputBox.addClass("hidden");
                 $("#gameCanvas").focus();
+                return false;
             }
         }
+        return true;
     });
 }
 
