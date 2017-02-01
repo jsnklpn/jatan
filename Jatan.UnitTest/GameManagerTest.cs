@@ -268,6 +268,19 @@ namespace Jatan.UnitTest
             Assert.IsTrue(tradeResult.Failed, "The bank trade should fail.");
             Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(toGive));
             Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
+
+            // Trade 4 ore for 1 brick, when player does not have enough ore.
+            var playerCards = new ResourceCollection(ore: 3);
+            toGive = new ResourceCollection(ore: 4);
+            toGet = new ResourceCollection(brick: 1);
+            player.RemoveAllResources();
+            player.AddResources(playerCards);
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(playerCards));
+            offer = new TradeOffer(player.Id, toGive, toGet);
+            tradeResult = manager.PlayerTradeWithBank(player.Id, offer);
+            Assert.IsTrue(tradeResult.Failed, "The bank trade should fail.");
+            Assert.IsTrue(player.ResourceCards.IsSingleResourceType && player.ResourceCards.Equals(playerCards));
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should be in the 'TakeAction' state.");
         }
 
         [TestMethod]

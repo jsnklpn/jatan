@@ -325,8 +325,8 @@ namespace Jatan.Models
             if (toGive.Type == toReceive.Type)
                 return ActionResult.CreateFailed("Invalid trade. Both resource types are identical.");
 
-            bool threeToOnePort = portsAvailable.Any(p => p.Resource == toGive.Type);
-            bool twoToOnePort = portsAvailable.Any(p => p.Resource == ResourceTypes.None);
+            bool threeToOnePort = portsAvailable.Any(p => p.Resource == ResourceTypes.None);
+            bool twoToOnePort = portsAvailable.Any(p => p.Resource == toGive.Type);
             bool doTrade = false;
 
             doTrade = ((toReceive.Count*4) == toGive.Count) ||
@@ -336,7 +336,9 @@ namespace Jatan.Models
             if (!doTrade)
                 return ActionResult.CreateFailed("Invalid trade. Resource counts are invalid.");
 
-            this.RemoveResources(offer.ToGive);
+            if (!this.RemoveResources(offer.ToGive))
+                return ActionResult.CreateFailed("Invalid trade. Cannot afford to give these resources.");
+
             this.AddResources(offer.ToReceive);
             return ActionResult.CreateSuccess();
         }
