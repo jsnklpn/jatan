@@ -1040,23 +1040,29 @@ function populatePorts() {
         ratioText.x = boxShape.x;
         ratioText.y = boxShape.y - boxHeight / 4;
 
-        // TODO: Replace resource text with an icon
         var strResource = (resource === ResourceTypes.Brick) ? "Brick"
             : (resource === ResourceTypes.Ore) ? "Ore"
             : (resource === ResourceTypes.Sheep) ? "Sheep"
             : (resource === ResourceTypes.Wheat) ? "Wheat"
             : (resource === ResourceTypes.Wood) ? "Wood"
-            : (resource === ResourceTypes.None) ? "?" : "";
-        var resourceText = new createjs.Text(strResource, "bold 20px Serif", "#000000");
-        resourceText.mouseEnabled = false;
-        tr = resourceText.getBounds();
-        if (tr != null) {
-            resourceText.regX = tr.width / 2;
-            resourceText.regY = tr.height / 2;
-        }
-        resourceText.x = boxShape.x;
-        resourceText.y = boxShape.y + boxHeight / 4;
+            : (resource === ResourceTypes.None) ? "Question" : "";
 
+        if (strResource === "")
+            continue;
+
+        // show an icon for the resource
+        var iconAsset = _assetMap["imgIcon" + strResource];
+        var resIcon = new createjs.Bitmap(iconAsset.data);
+        resIcon.mouseEnabled = false;
+        resIcon.regX = iconAsset.hitbox.centerX;
+        resIcon.regY = iconAsset.hitbox.centerY;
+        resIcon.x = boxShape.x;
+        resIcon.y = boxShape.y + boxHeight / 4;
+        if (resource !== ResourceTypes.None) {
+            // The resource icons are a little small. Scale up a bit.
+            resIcon.scaleX = 1.3;
+            resIcon.scaleY = 1.3;
+        }
 
         _boardTileContainer.addChild(dock1);
         _boardTileContainer.addChild(dock2);
@@ -1064,7 +1070,7 @@ function populatePorts() {
 
         _boardTileContainer.addChild(boxShape);
         _boardTileContainer.addChild(ratioText);
-        _boardTileContainer.addChild(resourceText);
+        _boardTileContainer.addChild(resIcon);
     }
 
     _portsPopulated = true;

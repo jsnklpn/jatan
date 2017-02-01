@@ -24,6 +24,12 @@ var boatHitbox = { width: 65, height: 71, centerX: 32, centerY: 44 };
 var theifHitbox = { width: 86, height: 123, centerX: 53, centerY: 97 };
 var diceHitbox = { width: 128, height: 128, centerX: 64, centerY: 64 };
 var resourceCardHitbox = { width: 132, height: 186, centerX: 66, centerY: 93 };
+var woodIconHitbox = { width: 36, height: 23, centerX: 18, centerY: 11.5 };
+var brickIconHitbox = { width: 35, height: 19, centerX: 17.5, centerY: 9.5 };
+var wheatIconHitbox = { width: 27, height: 33, centerX: 13.5, centerY: 16.5 };
+var sheepIconHitbox = { width: 39, height: 26, centerX: 19.5, centerY: 13 };
+var oreIconHitbox = { width: 37, height: 25, centerX: 18.5, centerY: 12.5 };
+var questionIconHitbox = { width: 32, height: 32, centerX: 16, centerY: 16 };
 
 // Map to hold all game assets to be preloaded
 var _assetMap = {
@@ -100,7 +106,14 @@ var _assetMap = {
     "imgCardWheat": { src: "/Content/Images/board/cardWheat.png", data: null, hitbox: resourceCardHitbox },
     "imgCardSheep": { src: "/Content/Images/board/cardSheep.png", data: null, hitbox: resourceCardHitbox },
     "imgCardOre": { src: "/Content/Images/board/cardOre.png", data: null, hitbox: resourceCardHitbox },
-    "imgCardBrick": { src: "/Content/Images/board/cardBrick.png", data: null, hitbox: resourceCardHitbox }
+    "imgCardBrick": { src: "/Content/Images/board/cardBrick.png", data: null, hitbox: resourceCardHitbox },
+    // Small resource icons
+    "imgIconWood": { src: "/Content/Images/site/icon_wood.png", data: null, hitbox: woodIconHitbox },
+    "imgIconBrick": { src: "/Content/Images/site/icon_brick.png", data: null, hitbox: brickIconHitbox },
+    "imgIconWheat": { src: "/Content/Images/site/icon_wheat.png", data: null, hitbox: wheatIconHitbox },
+    "imgIconSheep": { src: "/Content/Images/site/icon_sheep.png", data: null, hitbox: sheepIconHitbox },
+    "imgIconOre": { src: "/Content/Images/site/icon_ore.png", data: null, hitbox: oreIconHitbox },
+    "imgIconQuestion": { src: "/Content/Images/site/icon_question.png", data: null, hitbox: questionIconHitbox }
 };
 
 // Resource types enum

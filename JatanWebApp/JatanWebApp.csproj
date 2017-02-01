@@ -283,6 +283,7 @@
     <Content Include="Content\Images\site\hud_tile.png" />
     <Content Include="Content\Images\site\icon_brick.png" />
     <Content Include="Content\Images\site\icon_ore.png" />
+    <Content Include="Content\Images\site\icon_question.png" />
     <Content Include="Content\Images\site\icon_sheep.png" />
     <Content Include="Content\Images\site\icon_wheat.png" />
     <Content Include="Content\Images\site\icon_wood.png" />
