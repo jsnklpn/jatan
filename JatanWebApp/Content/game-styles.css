@@ -302,11 +302,11 @@
     -webkit-animation: none;
     -moz-animation: none;
     animation: none;
-    background-color: rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, 0.5);
 }
-@-moz-keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.2); } }
-@-webkit-keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.2); } }
-@keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.2); } }
+@-moz-keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.4); } }
+@-webkit-keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.4); } }
+@keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.4); } }
 
 .player-avatar {
     width: 48px;

@@ -1601,6 +1601,13 @@ function handleClickResCard(event) {
         // Not yet selected.
         obj.y += 30;
         _selectedCards.push(name);
+
+        if (_currentGameManager != null) {
+            // if we've selected the correct number of cards, submit.
+            if (_selectedCards.length === getPlayerFromId(_currentGameManager["MyPlayerId"])["CardsToLose"]) {
+                removeSelectedCards();
+            }
+        }
     }
     _invalidateCardCanvas = true;
 }
