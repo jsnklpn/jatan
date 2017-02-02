@@ -445,6 +445,14 @@ namespace Jatan.Models
         }
 
         /// <summary>
+        /// Gets the building locations for a player.
+        /// </summary>
+        public List<HexPoint> GetBuildingLocationsForPlayer(int playerId)
+        {
+            return _buildings.Where(b => b.Value.PlayerId == playerId).Select(p => p.Key).ToList();
+        }
+
+        /// <summary>
         /// Gets the number of roads on the board for a player. This does not find the road length.
         /// </summary>
         public int GetRoadCountForPlayer(int playerId)

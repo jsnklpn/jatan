@@ -38,8 +38,8 @@ var _tradeGiveStage = null;
 var _tradeRecvStage = null;
 var _tradeGiveCardContainer = null;
 var _tradeRecvCardContainer = null;
-var _tradeGiveSelectedCards = [];
-var _tradeRecvSelectedCards = [];
+var _tradeGiveSelectedCards = []; // list of ResourceType
+var _tradeRecvSelectedCards = []; // list of ResourceType
 var _invalidateTradeGiveCanvas = true;
 var _invalidateTradeRecvCanvas = true;
 
@@ -71,11 +71,7 @@ $(function () {
     _cardCanvas.width = _cardCanvas.clientWidth;
     _cardCanvas.height = _cardCanvas.clientHeight;
     _tradeGiveCanvas = $("#tradeGiveCanvas")[0];
-    _tradeGiveCanvas.width = _tradeGiveCanvas.clientWidth;
-    _tradeGiveCanvas.height = _tradeGiveCanvas.clientHeight;
     _tradeRecvCanvas = $("#tradeRecvCanvas")[0];
-    _tradeRecvCanvas.width = _tradeRecvCanvas.clientWidth;
-    _tradeRecvCanvas.height = _tradeRecvCanvas.clientHeight;
 
     initSignalR();
     initHtmlUI();
@@ -277,8 +273,34 @@ function tradeBankClicked() {
         // dialog is not showing yet.
         $("#tradeDialog").removeClass("hidden");
         
-        // Init the trade controls.
-        
+        // Clear the trade controls.
+        _tradeGiveCardContainer.removeAllChildren();
+        _tradeRecvCardContainer.removeAllChildren();
+        _tradeGiveSelectedCards = [];
+        _tradeRecvSelectedCards = [];
+        _invalidateTradeGiveCanvas = true;
+        _invalidateTradeRecvCanvas = true;
+
+        // Set canvas sizes here, because we can't set them while the dialog is hidden.
+        _tradeGiveCanvas.width = _tradeGiveCanvas.clientWidth;
+        _tradeGiveCanvas.height = _tradeGiveCanvas.clientHeight;
+        _tradeRecvCanvas.width = _tradeRecvCanvas.clientWidth;
+        _tradeRecvCanvas.height = _tradeRecvCanvas.clientHeight;
+
+        // find available ports.
+        $("#portsOwnedSpan > span").addClass("hidden");
+        $("#portsOwnedText").removeClass("hidden");
+        if (_currentGameManager != null) {
+            var myId = _currentGameManager["MyPlayerId"];
+            var player = getPlayerFromId(myId);
+            var ports = player["PortsOwned"]; // list of ResourceType
+            for (var i = 0; i < ports.length; i++) {
+                var portResType = ports[i];
+                var className = (portResType === ResourceTypes.None) ? "question" : ResourceTypeToNameMap[portResType].toLowerCase();
+                $("#portsOwnedSpan > .res-icon-" + className).removeClass("hidden");
+                $("#portsOwnedText").addClass("hidden");
+            }
+        }
 
     } else {
         // dialog is already showing.
@@ -291,22 +313,106 @@ function tradePlayerClicked() {
 }
 
 function tradeCanvasButtonClicked(event) {
+    // Add the specified resource to the canvas.
     var obj = event.target;
     var objId = obj.id;
     var toGive = (objId.indexOf("Give") > -1);
     var resType = null;
-    var resNames = Object.keys(NameToResourceTypeMap);
+    var resName = null;
+    var resNames = Object.keys(ResourceNameToTypeMap);
     for (var i = 0; i < resNames.length; i++) {
-        var resName = resNames[i];
+        resName = resNames[i];
         if (objId.indexOf(resName) > 0) {
-            resType = NameToResourceTypeMap[resName];
+            resType = ResourceNameToTypeMap[resName];
             break;
         }
     }
     if (resType == null)
         return;
 
-    // TODO
+    if (toGive) {
+        _tradeGiveSelectedCards.push(resType);
+        populateTradeCanvas(_tradeGiveCanvas, _tradeGiveCardContainer, _tradeGiveSelectedCards);
+    } else {
+        _tradeRecvSelectedCards.push(resType);
+        populateTradeCanvas(_tradeRecvCanvas, _tradeRecvCardContainer, _tradeRecvSelectedCards);
+    }
+}
+
+function tradeCardClicked(event) {
+    // remove the clicked card from the list.
+    if (event.nativeEvent.button !== 0) return;
+    var obj = event.target;
+    var resName = removeNumbersFromString(obj.name);
+    var resType = ResourceNameToTypeMap[resName];
+    var toGive = (obj.parent === _tradeGiveCardContainer);
+    var selectedList = toGive ? _tradeGiveSelectedCards : _tradeRecvSelectedCards;
+    var itemIndex = selectedList.indexOf(resType);
+    if (itemIndex < 0) return;
+    selectedList.splice(itemIndex, 1);
+    // repopulate canvas
+    if (toGive) populateTradeCanvas(_tradeGiveCanvas, _tradeGiveCardContainer, _tradeGiveSelectedCards);
+    else populateTradeCanvas(_tradeRecvCanvas, _tradeRecvCardContainer, _tradeRecvSelectedCards);
+}
+
+function populateTradeCanvas(canvas, container, selectedList) {
+
+    // clear card container
+    container.removeAllChildren();
+
+    // just draw both
+    _invalidateTradeGiveCanvas = true;
+    _invalidateTradeRecvCanvas = true;
+
+    var cardBitmaps = [];
+    var resNames = ["Wood", "Brick", "Sheep", "Wheat", "Ore"];
+    for (var i = 0; i < resNames.length; i++) {
+        var strRes = resNames[i];
+        var resCount = getItemCountInArray(selectedList, ResourceNameToTypeMap[strRes]);
+        if (resCount > 0) {
+            var asset = _assetMap["imgCard" + strRes];
+            for (var j = 0; j < resCount; j++) {
+                var bitmap = new createjs.Bitmap(asset.data);
+                bitmap.name = strRes + j.toString();
+                bitmap.mouseEnabled = true;
+                bitmap.addEventListener("click", tradeCardClicked);
+                cardBitmaps.push(bitmap);
+            }
+        }
+    }
+
+    if (cardBitmaps.length === 0) {
+        return;
+    }
+
+    // Add the cards to the stage. Center the cards and evenly space them.
+    // Start to overlap when there are too many cards to fit in the canvas.
+    var cardWidth = resourceCardHitbox.width;
+    var cardHeight = resourceCardHitbox.height;
+    var canvasWidth = canvas.width;
+    var canvasHeight = canvas.height;
+    var scale = canvasHeight / cardHeight;
+    cardWidth *= scale;
+    var spacing = cardWidth;
+    if (cardBitmaps.length * cardWidth > canvasWidth) {
+        // Too many cards. Start to overlap.
+        spacing = (canvasWidth - cardWidth) / (cardBitmaps.length - 1);
+    }
+    for (var i = 0; i < cardBitmaps.length; i++) {
+        var card = cardBitmaps[i];
+        card.x = i * spacing;
+        card.y = 0;
+        card.scaleX = scale;
+        card.scaleY = scale;
+        if (spacing < cardWidth)
+            card.shadow = new createjs.Shadow("#000000", -2, 3, 7);
+        container.addChild(card);
+    }
+
+    // Center the container in the stage
+    var cb = container.getBounds();
+    container.regX = cb.width / 2;
+    container.x = canvasWidth / 2;
 }
 
 function tradeOkClicked() {
@@ -1986,4 +2092,18 @@ function getProbabilityFromRoll(roll) {
         default:
             return 0;
     }
+}
+
+function getItemCountInArray(array, item) {
+    var result = 0;
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] === item) {
+            result++;
+        }
+    }
+    return result;
+}
+
+function removeNumbersFromString(str) {
+    return str.replace(/[0-9]+/g, "");
 }

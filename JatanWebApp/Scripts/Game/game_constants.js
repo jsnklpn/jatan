@@ -126,13 +126,22 @@ var ResourceTypes = {
     Ore: 5
 };
 
-var NameToResourceTypeMap = {
+var ResourceNameToTypeMap = {
     "None": 0,
     "Brick": 1,
     "Wood": 2,
     "Wheat": 3,
     "Sheep": 4,
     "Ore": 5
+}
+
+var ResourceTypeToNameMap = {
+    0: "None",
+    1: "Brick",
+    2: "Wood",
+    3: "Wheat",
+    4: "Sheep",
+    5: "Ore"
 }
 
 // The side of a hexagon that is pointed on the top and bottom.

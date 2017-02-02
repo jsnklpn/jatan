@@ -51,6 +51,14 @@ namespace JatanWebApp.SignalR.DTO
                     var toLose = (int) Math.Floor(count/2d);
                     playerDto.CardsToLose = toLose;
                 }
+                // Find the ports owned by this player.
+                var buildingLocations = manager.GameBoard.GetBuildingLocationsForPlayer(p.Id);
+                playerDto.PortsOwned =
+                    manager.GameBoard.Ports.Where(
+                        t => buildingLocations.Contains(t.Key.GetPoints()[0]) ||
+                             buildingLocations.Contains(t.Key.GetPoints()[1]))
+                        .Select(t => t.Value.Resource).Distinct().ToList();
+
                 this.Players.Add(playerDto);
             }
 
