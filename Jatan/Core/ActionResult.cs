@@ -83,7 +83,7 @@ namespace Jatan.Core
         /// <summary>
         /// Creates a new success result.
         /// </summary>
-        public static new ActionResult<T> CreateSuccess(T data)
+        public new static ActionResult<T> CreateSuccess(T data)
         {
             return new ActionResult<T>(data, true, "");
         }
@@ -91,7 +91,7 @@ namespace Jatan.Core
         /// <summary>
         /// Creates a new failed result.
         /// </summary>
-        public static new ActionResult<T> CreateFailed(string message)
+        public new static ActionResult<T> CreateFailed(string message)
         {
             return new ActionResult<T>(default(T), false, message);
         }
@@ -99,7 +99,7 @@ namespace Jatan.Core
         /// <summary>
         /// Creates a new result.
         /// </summary>
-        public static new ActionResult<T> Create(ActionResult result)
+        public new static ActionResult<T> Create(ActionResult result)
         {
             return new ActionResult<T>(default(T), result.Succeeded, result.Message);
         }
