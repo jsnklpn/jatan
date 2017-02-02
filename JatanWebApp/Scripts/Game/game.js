@@ -31,6 +31,18 @@ var _cardContainer = null;
 var _selectedCards = [];
 var _invalidateCardCanvas = true; // set to true to redraw the card canvas on next animation frame
 
+// Canvas' to display cards to trade
+var _tradeGiveCanvas = null;
+var _tradeRecvCanvas = null;
+var _tradeGiveStage = null;
+var _tradeRecvStage = null;
+var _tradeGiveCardContainer = null;
+var _tradeRecvCardContainer = null;
+var _tradeGiveSelectedCards = [];
+var _tradeRecvSelectedCards = [];
+var _invalidateTradeGiveCanvas = true;
+var _invalidateTradeRecvCanvas = true;
+
 // change this to allow the user to select various things on the UI
 var _selectionMode = SelectionMode.None;
 
@@ -49,15 +61,21 @@ var _resourceTilesPopulated = false;
 
 $(function () {
 
-    // disable right click on canvas
-    $("body").on("contextmenu", "#gameCanvas", function (e) { return false; });
+    // disable contextmenu on all canvas
+    $("body").on("contextmenu", "canvas", function (e) { return false; });
 
     _canvas = $("#gameCanvas")[0];
     
-    // Set the card canvas size
+    // Set canvas sizes
     _cardCanvas = $("#cardCanvas")[0];
     _cardCanvas.width = _cardCanvas.clientWidth;
     _cardCanvas.height = _cardCanvas.clientHeight;
+    _tradeGiveCanvas = $("#tradeGiveCanvas")[0];
+    _tradeGiveCanvas.width = _tradeGiveCanvas.clientWidth;
+    _tradeGiveCanvas.height = _tradeGiveCanvas.clientHeight;
+    _tradeRecvCanvas = $("#tradeRecvCanvas")[0];
+    _tradeRecvCanvas.width = _tradeRecvCanvas.clientWidth;
+    _tradeRecvCanvas.height = _tradeRecvCanvas.clientHeight;
 
     initSignalR();
     initHtmlUI();
@@ -180,6 +198,14 @@ function initHtmlUI() {
     $("#playerBox3").click(function () { playerBoxClicked(3); });
     $("#playerBox4").click(function () { playerBoxClicked(4); });
 
+    $("#btnTradeWithBank").click(tradeBankClicked);
+    $("#btnTradeWithPlayer").click(tradePlayerClicked);
+    $(".trade-button-cancel").mouseup(function (event) {
+        $(this).closest(".trade-dialog").addClass("hidden");
+    });
+    $(".trade-button-ok").click(tradeOkClicked);
+    $(".trade-canvas-button").click(tradeCanvasButtonClicked);
+
     // Show chat input box when the enter key is pressed.
     $(document).keydown(function (event) {
         var keycode = (event.keyCode ? event.keyCode : event.which);
@@ -210,6 +236,8 @@ function initHtmlUI() {
                 $("#gameCanvas").focus();
                 return false;
             }
+            // Hide trade dialogs if they are showing.
+            $("#tradeDialog").addClass("hidden");
         }
         return true;
     });
@@ -240,6 +268,49 @@ function playerBoxClicked(boxId) {
             }
         }
     }
+}
+
+function tradeBankClicked() {
+    if (_currentGameManager == null) return;
+    
+    if ($("#tradeDialog").hasClass("hidden")) {
+        // dialog is not showing yet.
+        $("#tradeDialog").removeClass("hidden");
+        
+        // Init the trade controls.
+        
+
+    } else {
+        // dialog is already showing.
+        $("#tradeDialog").addClass("hidden");
+    }
+}
+
+function tradePlayerClicked() {
+    // TODO
+}
+
+function tradeCanvasButtonClicked(event) {
+    var obj = event.target;
+    var objId = obj.id;
+    var toGive = (objId.indexOf("Give") > -1);
+    var resType = null;
+    var resNames = Object.keys(NameToResourceTypeMap);
+    for (var i = 0; i < resNames.length; i++) {
+        var resName = resNames[i];
+        if (objId.indexOf(resName) > 0) {
+            resType = NameToResourceTypeMap[resName];
+            break;
+        }
+    }
+    if (resType == null)
+        return;
+
+    // TODO
+}
+
+function tradeOkClicked() {
+    // TODO
 }
 
 function loadGameResources() {
@@ -286,6 +357,14 @@ function completedLoading() {
 }
 
 function initCanvasStage() {
+
+    // Create stages for trading
+    _tradeGiveStage = new createjs.Stage("tradeGiveCanvas");
+    _tradeRecvStage = new createjs.Stage("tradeRecvCanvas");
+    _tradeGiveCardContainer = new createjs.Container();
+    _tradeRecvCardContainer = new createjs.Container();
+    _tradeGiveStage.addChild(_tradeGiveCardContainer);
+    _tradeRecvStage.addChild(_tradeRecvCardContainer);
 
     // Create stage for resource cards
     _cardStage = new createjs.Stage("cardCanvas");
@@ -412,6 +491,14 @@ function checkRender() {
     if (_invalidateCardCanvas) {
         _invalidateCardCanvas = false;
         _cardStage.update();
+    }
+    if (_invalidateTradeGiveCanvas) {
+        _invalidateTradeGiveCanvas = false;
+        _tradeGiveStage.update();
+    }
+    if (_invalidateTradeRecvCanvas) {
+        _invalidateTradeRecvCanvas = false;
+        _tradeRecvStage.update();
     }
     requestAnimationFrame(checkRender);
 }

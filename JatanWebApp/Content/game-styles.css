@@ -74,6 +74,11 @@
     height: 25px;*/
     background-image: url('Images/site/icon_ore.png');
 }
+.res-icon-question {
+    /*width: 32px;
+    height: 32px;*/
+    background-image: url('Images/site/icon_question.png');
+}
 
 /* ============= */
 /* Game info box */
@@ -188,6 +193,10 @@
 }
 
 #btnBuyDiv > ul > li > a.btn {
+    text-align: left;
+}
+
+#btnTradeDiv > ul > li > a.btn {
     text-align: left;
 }
 
@@ -478,4 +487,131 @@ input[type="text"]:focus {
 }
 .chat-text-danger {
     color: #ff4500;
+}
+
+/* ============ */
+/*   Trade UI   */
+/* ============ */
+
+.trade-dialog {
+    position: fixed;
+    width: 500px;
+    height: 400px;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding: 10px;
+    /*background-image: url("Images/site/wood_tile.png");*/
+    background-color: #eeee92;
+    background-repeat: repeat;
+    border: 1px solid black;
+}
+
+#tradeDialog {
+    
+}
+
+.trade-dialog-title {
+    text-align: center;
+    font-family: serif;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.trade-dialog .res-icon {
+    /* make the resource icons center-align with text */
+    margin-bottom: -10px;
+}
+.trade-button {
+    width: 100px;
+    height: 26px;
+    padding: 2px;
+    text-align: center;
+    font-family: serif;
+    font-size: 16px;
+    cursor: pointer;
+    color: black;
+    border: 1px solid black;
+    box-shadow: 1px 1px 1px #000;
+    background-color: rgba(255, 255, 255, 0.3);
+}
+.trade-button:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+.trade-button:active {
+    /* simulate a 'down' state */
+    margin: -1px;
+}
+
+.trade-button-ok {
+    position: absolute;
+    right: 120px;
+    bottom: 10px;
+}
+.trade-button-cancel {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+
+.trade-label {
+    position: absolute;
+    left: 0px;
+    margin-left: 25px;
+    margin-top: 15px;
+    font-family: sans-serif;
+    font-size: 18px;
+}
+
+#toGiveLabel {
+    top: 100px;
+}
+#toRecvLabel {
+    top: 230px;
+}
+
+.trade-canvas-div {
+    position: absolute;
+    font-size: 0;
+    left: 150px;
+    width: 320px;
+    height: 120px;
+}
+
+.trade-canvas {
+    width: 100%;
+    height: 80px;
+    box-shadow:inset 0px 0px 0px 2px green;
+}
+
+#tradeGiveCanvasDiv {
+    top: 100px;
+    box-shadow:inset 0px 0px 0px 1px brown;
+}
+
+#tradeRecvCanvasDiv {
+    top: 230px;
+    box-shadow:inset 0px 0px 0px 1px red;
+}
+
+.trade-canvas-button {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    width: 64px;
+    height: 40px;
+    cursor: pointer;
+    background-repeat: no-repeat;
+    background-position: center;
+    box-shadow:inset 0px 0px 0px 1px black;
+}
+.trade-canvas-button:hover {
+    box-shadow:inset 0px 0px 0px 3px black;
+}
+.trade-canvas-button:active {
+    background-color: rgba(255, 255, 255, 0.5);
 }

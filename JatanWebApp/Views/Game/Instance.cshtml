@@ -77,7 +77,7 @@
                 </a></li>
             </ul>
         </div>
-        <a id="btnTrade" class="hud-button" href="#">Trade</a>
+        <a id="btnTradeWithBank" class="hud-button" href="#">Trade</a>
         <a id="btnEndTurn" class="hud-button" href="#">End Turn</a>
         <canvas id="cardCanvas"></canvas>
     </div>
@@ -90,6 +90,53 @@
         <li class="chat-text-user">(Press Enter to chat.)</li>
         <li class="chat-text-info">* * * * * * * * * * * * * * * * * * * * *</li>
     </ul>
+</div>
+
+<div id="tradeDialog" class="trade-dialog box-shadow hidden">
+    <div class="trade-dialog-title">Trade with Bank</div>
+    <p>
+        <strong>Ports owned:</strong>
+        <span id="portsOwnedText">None.</span>
+        <span>
+            <span class="res-icon res-icon-wood"></span>
+            <span class="res-icon res-icon-brick"></span>
+            <span class="res-icon res-icon-wheat"></span>
+            <span class="res-icon res-icon-sheep"></span>
+            <span class="res-icon res-icon-ore"></span>
+            <span class="res-icon res-icon-question"></span>
+        </span>
+    </p>
+    <div id="toGiveLabel" class="trade-label">
+        <div>To Give:</div>
+        <div>-----&gt;</div>
+    </div>
+    <div id="toRecvLabel" class="trade-label">
+        <div>To Receive:</div>
+        <div>&lt;-----</div>
+    </div>
+
+    <div id="tradeGiveCanvasDiv" class="trade-canvas-div">
+        <canvas id="tradeGiveCanvas" class="trade-canvas"></canvas>
+        <div>
+            <span id="btnGiveWood" class="trade-canvas-button res-icon-wood"></span>
+            <span id="btnGiveBrick" class="trade-canvas-button res-icon-brick"></span>
+            <span id="btnGiveWheat" class="trade-canvas-button res-icon-wheat"></span>
+            <span id="btnGiveSheep" class="trade-canvas-button res-icon-sheep"></span>
+            <span id="btnGiveOre" class="trade-canvas-button res-icon-ore"></span>
+        </div>
+    </div>
+    <div id="tradeRecvCanvasDiv" class="trade-canvas-div">
+        <canvas id="tradeRecvCanvas" class="trade-canvas"></canvas>
+        <div>
+            <span id="btnRecvWood" class="trade-canvas-button res-icon-wood"></span>
+            <span id="btnRecvBrick" class="trade-canvas-button res-icon-brick"></span>
+            <span id="btnRecvWheat" class="trade-canvas-button res-icon-wheat"></span>
+            <span id="btnRecvSheep" class="trade-canvas-button res-icon-sheep"></span>
+            <span id="btnRecvOre" class="trade-canvas-button res-icon-ore"></span>
+        </div>
+    </div>
+    <div class="trade-button trade-button-ok">OK</div>
+    <div class="trade-button trade-button-cancel">Cancel</div>
 </div>
 
 <div id="turnInfoBox" class="box-shadow hidden">
