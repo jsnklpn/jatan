@@ -246,14 +246,6 @@ var _hexKeys = [
     "(0,-2)"
 ];
 
-var SelectionMode = {
-    None: 0,
-    Hex: 1,
-    Edge: 2,
-    Point: 3,
-    Card: 4
-};
-
 var ChatTextType = {
     User: "chat-text-user",
     Info: "chat-text-info",

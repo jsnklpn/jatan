@@ -43,9 +43,6 @@ var _tradeRecvSelectedCards = []; // list of ResourceType
 var _invalidateTradeGiveCanvas = true;
 var _invalidateTradeRecvCanvas = true;
 
-// change this to allow the user to select various things on the UI
-var _selectionMode = SelectionMode.None;
-
 var _activeMouseButton = null;
 var _boardDragMouseOffsetX = null;
 var _boardDragMouseOffsetY = null;
@@ -302,6 +299,8 @@ function tradeBankClicked() {
             }
         }
 
+        updateTradeCanvasButtons();
+
     } else {
         // dialog is already showing.
         $("#tradeDialog").addClass("hidden");
@@ -310,6 +309,29 @@ function tradeBankClicked() {
 
 function tradePlayerClicked() {
     // TODO
+}
+
+function updateTradeCanvasButtons() {
+    // Makes some canvas resource buttons disabled, when the user doesn't have the resource
+    if (_currentGameManager == null)
+        return;
+
+    var player = getPlayerFromId(_currentGameManager["MyPlayerId"]);
+    var cards = player["ResourceCards"];
+    var resNames = ["Wood", "Brick", "Wheat", "Sheep", "Ore"];
+
+    for (var i = 0; i < resNames.length; i++) {
+        var resName = resNames[i];
+        var resType = ResourceNameToTypeMap[resName];
+        var resSelectedCount = getItemCountInArray(_tradeGiveSelectedCards, resType);
+        var playerResCount = cards[resName];
+        var btnSelector = "#tradeGiveCanvasDiv .res-icon-" + resName.toLowerCase();
+        if (resSelectedCount >= playerResCount) {
+            $(btnSelector).addClass("trade-canvas-button-disabled");
+        } else {
+            $(btnSelector).removeClass("trade-canvas-button-disabled");
+        }
+    }
 }
 
 function tradeCanvasButtonClicked(event) {
@@ -333,6 +355,7 @@ function tradeCanvasButtonClicked(event) {
     if (toGive) {
         _tradeGiveSelectedCards.push(resType);
         populateTradeCanvas(_tradeGiveCanvas, _tradeGiveCardContainer, _tradeGiveSelectedCards);
+        updateTradeCanvasButtons();
     } else {
         _tradeRecvSelectedCards.push(resType);
         populateTradeCanvas(_tradeRecvCanvas, _tradeRecvCardContainer, _tradeRecvSelectedCards);
@@ -351,8 +374,12 @@ function tradeCardClicked(event) {
     if (itemIndex < 0) return;
     selectedList.splice(itemIndex, 1);
     // repopulate canvas
-    if (toGive) populateTradeCanvas(_tradeGiveCanvas, _tradeGiveCardContainer, _tradeGiveSelectedCards);
-    else populateTradeCanvas(_tradeRecvCanvas, _tradeRecvCardContainer, _tradeRecvSelectedCards);
+    if (toGive) {
+        populateTradeCanvas(_tradeGiveCanvas, _tradeGiveCardContainer, _tradeGiveSelectedCards);
+        updateTradeCanvasButtons();
+    } else {
+        populateTradeCanvas(_tradeRecvCanvas, _tradeRecvCardContainer, _tradeRecvSelectedCards);
+    }
 }
 
 function populateTradeCanvas(canvas, container, selectedList) {
@@ -416,7 +443,26 @@ function populateTradeCanvas(canvas, container, selectedList) {
 }
 
 function tradeOkClicked() {
-    // TODO
+    if (_serverGameHub == null) return;
+
+    if (_tradeGiveSelectedCards.length === 0) {
+        $("#tradeErrorMsg").text("No cards are selected to give.");
+        return;
+    }
+    if (_tradeRecvSelectedCards.length === 0) {
+        $("#tradeErrorMsg").text("No cards are selected to receive.");
+        return;
+    }
+
+    // send trade request to server
+    _serverGameHub.tradeWithBank(_tradeGiveSelectedCards, _tradeRecvSelectedCards).done(function (result) {
+        if (!result["Succeeded"]) { // failed. display error message.
+            $("#tradeErrorMsg").text(result["Message"]);
+        } else {
+            // Success. Hide the trade dialog.
+            $("#tradeDialog").addClass("hidden");
+        }
+    });
 }
 
 function loadGameResources() {

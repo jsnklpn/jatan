@@ -456,6 +456,28 @@ namespace JatanWebApp.SignalR
             return result;
         }
 
+        /// <summary>
+        /// Simple action to trade with the bank.
+        /// </summary>
+        public ActionResult TradeWithBank(ResourceTypes[] toGive, ResourceTypes[] toRecv)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            var collectionToGive = new ResourceCollection();
+            var collectionToRecv = new ResourceCollection();
+            foreach (var res in toGive) collectionToGive[res]++;
+            foreach (var res in toRecv) collectionToRecv[res]++;
+            var tradeOffer = new TradeOffer(playerId, collectionToGive, collectionToRecv);
+            ActionResult result = lobby.GameManager.PlayerTradeWithBank(playerId, tradeOffer);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
         private void UpdateAllClientGameManagers(bool fullUpdate = false)
         {
             var lobby = GetGameLobby();
