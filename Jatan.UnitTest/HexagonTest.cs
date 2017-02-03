@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Jatan.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -113,6 +114,23 @@ namespace Jatan.UnitTest
                 actual.FromString(str);
                 Assert.AreEqual(hex, actual, "The FromString method must produce the exact object that called the ToString method.");
             }
+        }
+
+        [TestMethod]
+        public void TestHashcodeCollisions()
+        {
+            int axisSize = 100;
+            var allHexagons = new HashSet<Hexagon>();
+            var count = 0;
+            for (int x = -axisSize; x < axisSize; x++)
+            {
+                for (int y = -axisSize; y < axisSize; y++)
+                {
+                    allHexagons.Add(new Hexagon(x, y));
+                    count++;
+                }
+            }
+            Assert.AreEqual(count, allHexagons.Count, "Hexagon hashcode collision detected");
         }
     }
 }

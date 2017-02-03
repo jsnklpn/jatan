@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Jatan.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -63,6 +65,28 @@ namespace Jatan.UnitTest
                 actual.FromString(str);
                 Assert.AreEqual(edge, actual, "The FromString method must produce the exact object that called the ToString method.");
             }
+        }
+
+        [TestMethod]
+        public void TestNeighboringHexagonsY0_ShareHexEdge()
+        {
+            var hexagon1 = new Hexagon(0, 0);
+            var neighbor = new Hexagon(1, 0);
+            var hexEdges = new HashSet<HexEdge>();
+            hexagon1.GetEdges().ToList().ForEach(he => hexEdges.Add(he));
+            neighbor.GetEdges().ToList().ForEach(he => hexEdges.Add(he));
+            Assert.AreEqual(11, hexEdges.Count, "Expect neighboring Hexagons on even Y axis to share an edge");
+        }
+
+        [TestMethod]
+        public void TestNeighboringHexagonsY1_ShareHexEdge()
+        {
+            var hexagon1 = new Hexagon(0, 1);
+            var neighbor = new Hexagon(1, 1);
+            var hexEdges = new HashSet<HexEdge>();
+            hexagon1.GetEdges().ToList().ForEach(he => hexEdges.Add(he));
+            neighbor.GetEdges().ToList().ForEach(he => hexEdges.Add(he));
+            Assert.AreEqual(11, hexEdges.Count, "Expect neighboring Hexagons on uneven Y axis to share an edge");
         }
     }
 }
