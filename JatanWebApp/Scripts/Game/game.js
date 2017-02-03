@@ -277,6 +277,7 @@ function tradeBankClicked() {
         _tradeRecvSelectedCards = [];
         _invalidateTradeGiveCanvas = true;
         _invalidateTradeRecvCanvas = true;
+        $("#tradeErrorMsg").text("");
 
         // Set canvas sizes here, because we can't set them while the dialog is hidden.
         _tradeGiveCanvas.width = _tradeGiveCanvas.clientWidth;
@@ -327,9 +328,9 @@ function updateTradeCanvasButtons() {
         var playerResCount = cards[resName];
         var btnSelector = "#tradeGiveCanvasDiv .res-icon-" + resName.toLowerCase();
         if (resSelectedCount >= playerResCount) {
-            $(btnSelector).addClass("trade-canvas-button-disabled");
+            $(btnSelector).addClass("disabled");
         } else {
-            $(btnSelector).removeClass("trade-canvas-button-disabled");
+            $(btnSelector).removeClass("disabled");
         }
     }
 }

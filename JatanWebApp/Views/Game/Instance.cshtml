@@ -32,56 +32,64 @@
 </div>
 
 <div id="lowerHud">
-    <a id="btnStartGame" class="hud-button" href="#">Start Game</a>
+    <div id="btnStartGame" class="aoe-btn hud-button">Start Game</div>
     <div id="hudCenteredDiv">
-        <a id="btnRollDice" class="hud-button" href="#">Roll Dice</a>
-        <div id="btnBuyDiv" class="hud-button dropup">
-            <a id="btnBuy" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="False">Buy <span class="caret"></span></a>
+        <div id="btnRollDice" class="aoe-btn hud-button">Roll Dice</div>
+        <div id="btnBuyDiv" class="aoe-btn hud-button dropup">
+            <div id="btnBuy" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="False">Buy</div>
             <ul class="dropdown-menu">
-                <li><a id="btnBuyRoad" href="#" class="btn">
-                    <div class="buy-item-text">Road</div>
-                    <div>
-                        <span class="res-icon res-icon-brick"></span>
-                        <span class="res-icon res-icon-wood"></span>
-                    </div>
-                </a></li>
+                <li>
+                    <a id="btnBuyRoad" href="#" class="btn">
+                        <div class="buy-item-text">Road</div>
+                        <div>
+                            <span class="res-icon res-icon-brick"></span>
+                            <span class="res-icon res-icon-wood"></span>
+                        </div>
+                    </a>
+                </li>
                 <li role="separator" class="divider"></li>
-                <li><a id="btnBuySettlement" href="#" class="btn">
-                    <div class="buy-item-text">Settlement</div>
-                    <div>
-                        <span class="res-icon res-icon-brick"></span>
-                        <span class="res-icon res-icon-wood"></span>
-                        <span class="res-icon res-icon-wheat"></span>
-                        <span class="res-icon res-icon-sheep"></span>
-                    </div>
-                </a></li>
+                <li>
+                    <a id="btnBuySettlement" href="#" class="btn">
+                        <div class="buy-item-text">Settlement</div>
+                        <div>
+                            <span class="res-icon res-icon-brick"></span>
+                            <span class="res-icon res-icon-wood"></span>
+                            <span class="res-icon res-icon-wheat"></span>
+                            <span class="res-icon res-icon-sheep"></span>
+                        </div>
+                    </a>
+                </li>
                 <li role="separator" class="divider"></li>
-                <li><a id="btnBuyCity" href="#" class="btn">
-                    <div class="buy-item-text">City</div>
-                    <div>
-                        <span class="res-icon res-icon-wheat"></span>
-                        <span class="res-icon res-icon-wheat"></span>
-                        <span class="res-icon res-icon-ore"></span>
-                        <span class="res-icon res-icon-ore"></span>
-                        <span class="res-icon res-icon-ore"></span>
-                    </div>
-                </a></li>
+                <li>
+                    <a id="btnBuyCity" href="#" class="btn">
+                        <div class="buy-item-text">City</div>
+                        <div>
+                            <span class="res-icon res-icon-wheat"></span>
+                            <span class="res-icon res-icon-wheat"></span>
+                            <span class="res-icon res-icon-ore"></span>
+                            <span class="res-icon res-icon-ore"></span>
+                            <span class="res-icon res-icon-ore"></span>
+                        </div>
+                    </a>
+                </li>
                 <li role="separator" class="divider"></li>
-                <li><a id="btnBuyDevelopmentCard" href="#" class="btn">
-                    <div class="buy-item-text">Development Card</div>
-                    <div>
-                        <span class="res-icon res-icon-sheep"></span>
-                        <span class="res-icon res-icon-wheat"></span>
-                        <span class="res-icon res-icon-ore"></span>
-                    </div>
-                </a></li>
+                <li>
+                    <a id="btnBuyDevelopmentCard" href="#" class="btn">
+                        <div class="buy-item-text">Development Card</div>
+                        <div>
+                            <span class="res-icon res-icon-sheep"></span>
+                            <span class="res-icon res-icon-wheat"></span>
+                            <span class="res-icon res-icon-ore"></span>
+                        </div>
+                    </a>
+                </li>
             </ul>
         </div>
-        <a id="btnTradeWithBank" class="hud-button" href="#">Trade</a>
-        <a id="btnEndTurn" class="hud-button" href="#">End Turn</a>
+        <div id="btnTradeWithBank" class="aoe-btn hud-button">Trade</div>
         <canvas id="cardCanvas"></canvas>
+        <div id="btnEndTurn" class="aoe-btn hud-button">End Turn</div>
     </div>
-    <a id="btnLeaveGame" href="@Url.Action("Index", "Home")" class="hud-button text-danger">Leave Game</a>
+    <a id="btnLeaveGame" href="@Url.Action("Index", "Home")" class="aoe-btn hud-button">Leave Game</a>
 </div>
 
 <div id="chatMessagesBox" class="hidden">
@@ -92,9 +100,9 @@
     </ul>
 </div>
 
-<div id="tradeDialog" class="trade-dialog box-shadow hidden">
+<div id="tradeDialog" class="trade-dialog hidden">
     <div class="trade-dialog-title">Trade with Bank</div>
-    <p>
+    <p class="trade-label">
         <strong>Ports owned:</strong>
         <span id="portsOwnedText">None.</span>
         <span id="portsOwnedSpan">
@@ -108,36 +116,34 @@
     </p>
     <div id="toGiveLabel" class="trade-label">
         <div>To Give:</div>
-        <div>-----&gt;</div>
     </div>
     <div id="toRecvLabel" class="trade-label">
         <div>To Receive:</div>
-        <div>&lt;-----</div>
     </div>
 
     <div id="tradeGiveCanvasDiv" class="trade-canvas-div">
         <canvas id="tradeGiveCanvas" class="trade-canvas"></canvas>
         <div>
-            <span id="btnGiveWood" class="trade-canvas-button res-icon-wood"></span>
-            <span id="btnGiveBrick" class="trade-canvas-button res-icon-brick"></span>
-            <span id="btnGiveWheat" class="trade-canvas-button res-icon-wheat"></span>
-            <span id="btnGiveSheep" class="trade-canvas-button res-icon-sheep"></span>
-            <span id="btnGiveOre" class="trade-canvas-button res-icon-ore"></span>
+            <span id="btnGiveWood" class="aoe-btn trade-canvas-button res-icon-wood"></span>
+            <span id="btnGiveBrick" class="aoe-btn trade-canvas-button res-icon-brick"></span>
+            <span id="btnGiveWheat" class="aoe-btn trade-canvas-button res-icon-wheat"></span>
+            <span id="btnGiveSheep" class="aoe-btn trade-canvas-button res-icon-sheep"></span>
+            <span id="btnGiveOre" class="aoe-btn trade-canvas-button res-icon-ore"></span>
         </div>
     </div>
     <div id="tradeRecvCanvasDiv" class="trade-canvas-div">
         <canvas id="tradeRecvCanvas" class="trade-canvas"></canvas>
         <div>
-            <span id="btnRecvWood" class="trade-canvas-button res-icon-wood"></span>
-            <span id="btnRecvBrick" class="trade-canvas-button res-icon-brick"></span>
-            <span id="btnRecvWheat" class="trade-canvas-button res-icon-wheat"></span>
-            <span id="btnRecvSheep" class="trade-canvas-button res-icon-sheep"></span>
-            <span id="btnRecvOre" class="trade-canvas-button res-icon-ore"></span>
+            <span id="btnRecvWood" class="aoe-btn trade-canvas-button res-icon-wood"></span>
+            <span id="btnRecvBrick" class="aoe-btn trade-canvas-button res-icon-brick"></span>
+            <span id="btnRecvWheat" class="aoe-btn trade-canvas-button res-icon-wheat"></span>
+            <span id="btnRecvSheep" class="aoe-btn trade-canvas-button res-icon-sheep"></span>
+            <span id="btnRecvOre" class="aoe-btn trade-canvas-button res-icon-ore"></span>
         </div>
     </div>
     <div id="tradeErrorMsg" class="trade-label"></div>
-    <div class="trade-button trade-button-ok">OK</div>
-    <div class="trade-button trade-button-cancel">Cancel</div>
+    <div class="aoe-btn trade-button-ok">OK</div>
+    <div class="aoe-btn trade-button-cancel">Cancel</div>
 </div>
 
 <div id="turnInfoBox" class="box-shadow hidden">

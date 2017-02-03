@@ -5,6 +5,17 @@
     padding: 0px;
 }
 
+canvas {
+    /* Disable selection for canvas elements */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    outline: none;
+}
+
 #gameCanvas {
  /* The CSS will set the canvas display size, but 
     the actual pixel buffer size is set in javascript */
@@ -36,6 +47,54 @@
     -webkit-transform: translateY(-50%);
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
+}
+
+.aoe-btn {
+    padding: 0px;
+    text-align: center;
+    font-family: serif;
+    font-size: 18px;
+    font-weight: normal;
+    text-shadow: 2px 1px 0px #000;
+
+    /* disable select */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    outline: none;
+
+    cursor: pointer;
+    color: #dccb70;
+    border-style: solid;
+    border-width: 3px;
+    box-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    background-color: rgba(0, 0, 0, 0.65);
+    -moz-border-image: url('Images/site/button_border.png') 3 repeat;
+    -webkit-border-image: url('Images/site/button_border.png') 3 repeat;
+    -o-border-image: url('Images/site/button_border.png') 3 repeat;
+    border-image: url('Images/site/button_border.png') 3 repeat;
+}
+.aoe-btn:hover {
+    background-color: rgba(0, 0, 0, 0.55);
+}
+.aoe-btn:active {
+    /* simulate a 'down' state */
+    -moz-border-image: url('Images/site/button_border_down.png') 3 repeat;
+    -webkit-border-image: url('Images/site/button_border_down.png') 3 repeat;
+    -o-border-image: url('Images/site/button_border_down.png') 3 repeat;
+    border-image: url('Images/site/button_border_down.png') 3 repeat;
+}
+.aoe-btn.disabled {
+    background-color: rgba(0, 0, 0, 0.65) !important;
+    pointer-events: none !important;
+    opacity: 0.65 !important;
+    -moz-border-image: url('Images/site/button_border.png') 3 repeat !important;
+    -webkit-border-image: url('Images/site/button_border.png') 3 repeat !important;
+    -o-border-image: url('Images/site/button_border.png') 3 repeat !important;
+    border-image: url('Images/site/button_border.png') 3 repeat !important;
 }
 
 /* =========== */
@@ -146,7 +205,7 @@
 
 #hudCenteredDiv {
     position: absolute;
-    width: 600px;
+    width: 700px;
     margin-right: auto;
     margin-left: auto;
     right: 0;
@@ -155,16 +214,16 @@
 
 #cardCanvas {
     margin-top: -20px;
-    width: 320px;
+    width: 375px;
     height: 120px;
 }
 
 .hud-button {
+    display: inline-block;
     margin: 10px;
-    margin-top: 30px;
-    width: 50px;
-    height: 50px;
-    background-color: salmon;
+    margin-top: 25px;
+    width: 60px;
+    height: 60px;
 }
 
 #btnStartGame {
@@ -174,13 +233,17 @@
     float: left;
 }
 #btnBuyDiv {
+    display: flex;
     float: left;
 }
-#btnTrade {
+#btnBuy {
+    width: 100%;
+}
+#btnTradeWithBank {
     float: left;
 }
 #btnEndTurn {
-    float: right;
+    float: left;
 }
 #btnLeaveGame {
     float: right;
@@ -190,13 +253,10 @@
     font-size: 18px;
     font-weight: bold;
     font-family: serif;
+    text-shadow: none;
 }
 
 #btnBuyDiv > ul > li > a.btn {
-    text-align: left;
-}
-
-#btnTradeDiv > ul > li > a.btn {
     text-align: left;
 }
 
@@ -495,18 +555,21 @@ input[type="text"]:focus {
 
 .trade-dialog {
     position: fixed;
-    width: 500px;
-    height: 400px;
+    width: 675px;
+    height: 441px;
     margin: auto;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
     padding: 10px;
-    /*background-image: url("Images/site/wood_tile.png");*/
-    background-color: #eeee92;
-    background-repeat: repeat;
-    border: 1px solid black;
+    font-family: serif;
+    font-weight: bold;
+    color: black;
+    font-size: 16px;
+    background-image: url('Images/site/dialog_675x441.png');
+    background-size: cover;
+    background-repeat: no-repeat;
 }
 
 #tradeDialog {
@@ -516,92 +579,77 @@ input[type="text"]:focus {
 .trade-dialog-title {
     text-align: center;
     font-family: serif;
+
+    color: #eee;
     font-weight: bold;
-    font-size: 18px;
-    margin-top: 5px;
-    margin-bottom: 10px;
+    font-size: 22px;
+    text-shadow: 2px 2px 0px #000;
+    
+    margin-top: 14px;
+    margin-bottom: 15px;
 }
 
 .trade-dialog .res-icon {
     /* make the resource icons center-align with text */
     margin-bottom: -10px;
 }
-.trade-button {
-    width: 100px;
-    height: 26px;
-    padding: 2px;
-    text-align: center;
-    font-family: serif;
-    font-size: 16px;
-    cursor: pointer;
-    color: black;
-    border: 1px solid black;
-    box-shadow: 1px 1px 1px #000;
-    background-color: rgba(255, 255, 255, 0.3);
-}
-.trade-button:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-}
-.trade-button:active {
-    /* simulate a 'down' state */
-    margin: -1px;
-}
-
-#tradeErrorMsg {
-    top: 350px;
-    color: red;
-    font-size: 12px;
-    font-weight: bold;
-}
 
 .trade-button-ok {
     position: absolute;
-    right: 120px;
+    width: 140px;
+    height: 30px;
+    right: 175px;
     bottom: 10px;
 }
 .trade-button-cancel {
     position: absolute;
-    right: 10px;
+    width: 140px;
+    height: 30px;
+    right: 20px;
     bottom: 10px;
+}
+
+#tradeErrorMsg {
+    top: 370px;
+    color: #f00;
+    margin-left: 50px;
+    text-shadow: 0px 0px 10px #fff;
 }
 
 .trade-label {
     position: absolute;
     left: 0px;
-    margin-left: 25px;
-    margin-top: 15px;
-    font-family: sans-serif;
-    font-size: 18px;
-}
-
-#toGiveLabel {
-    top: 100px;
-}
-#toRecvLabel {
-    top: 230px;
+    margin-left: 35px;
 }
 
 .trade-canvas-div {
     position: absolute;
     font-size: 0;
-    left: 150px;
+    left: 200px;
     width: 320px;
     height: 120px;
+
 }
 
 .trade-canvas {
     width: 100%;
     height: 80px;
-    box-shadow:inset 0px 0px 15px rgba(0,0,0,1.0);
-    background-color: rgba(255,255,255,0.5);
+    box-shadow:inset 0px 3px 10px rgba(0,0,0,0.5);
+    background-color: rgba(0,0,0,0.4);
+}
+
+#toGiveLabel {
+    top: 120px;
+}
+#toRecvLabel {
+    top: 250px;
 }
 
 #tradeGiveCanvasDiv {
-    top: 100px;
+    top: 110px;
 }
-
 #tradeRecvCanvasDiv {
-    top: 230px;
+    top: 240px;
 }
 
 .trade-canvas-button {
@@ -613,17 +661,4 @@ input[type="text"]:focus {
     cursor: pointer;
     background-repeat: no-repeat;
     background-position: center;
-    box-shadow:inset 0px 0px 0px 1px black;
-}
-.trade-canvas-button:hover {
-    box-shadow:inset 0px 0px 0px 3px black;
-}
-.trade-canvas-button:active {
-    background-color: rgba(255, 255, 255, 0.5);
-}
-.trade-canvas-button-disabled {
-    pointer-events: none !important;
-    opacity: 0.65;
-    box-shadow:inset 0px 0px 0px 1px black !important;
-    background-color: rgba(255, 255, 255, 0.5) !important;
 }

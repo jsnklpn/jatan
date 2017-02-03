@@ -317,7 +317,7 @@ namespace Jatan.Models
         /// </summary>
         public ActionResult DoTradeWithBank(TradeOffer offer, IList<Port> portsAvailable)
         {
-            if (!offer.IsValidBankOffer) return ActionResult.CreateFailed("Invalid trade. One or more resources are empty.");
+            if (!offer.IsValidBankOffer) return ActionResult.CreateFailed("Invalid trade. You can only trade a single resource type.");
 
             var toReceive = offer.ToReceive.GetLargestStack();
             var toGive = offer.ToGive.GetLargestStack();
