@@ -181,11 +181,7 @@ function initHubButtons() {
             } else {
                 // succeeded
                 var devCard = result["Data"];
-                $("#cardReceivedName").text(DevelopmentCardsToNameMap[devCard]);
-                $("#cardReceivedImage").attr("src", _assetMap["imgCardBrick"].src); // TODO: change to actual image
-                $("#cardReceivedBox").removeClass("hidden");
-                $("#cardReceivedBox").animateCss("bounceInDown");
-                $("#cardReceivedImage").addClass("animated infinite tada");
+                showCardReceivedBox(CardType.Development, devCard);
             }
         });
     });
@@ -207,10 +203,7 @@ function initHtmlUI() {
     $(".trade-button-ok").click(tradeOkClicked);
     $(".trade-canvas-button").click(tradeCanvasButtonClicked);
 
-    $("#cardReceivedBox").click(function (e) {
-        $("#cardReceivedImage").removeClass("animated infinite tada");
-        $(this).addClass("hidden");
-    });
+    $("#cardReceivedBox").click(hideCardReceivedBox);
 
     // Show chat input box when the enter key is pressed.
     $(document).keydown(function (event) {
@@ -242,11 +235,35 @@ function initHtmlUI() {
                 $("#gameCanvas").focus();
                 return false;
             }
-            // Hide trade dialogs if they are showing.
+            // Hide dialogs if they are showing.
             $("#tradeDialog").addClass("hidden");
+            hideCardReceivedBox();
         }
         return true;
     });
+}
+
+function showCardReceivedBox(type, card) {
+    if (type === CardType.Resource) {
+        var resName = ResourceTypeToNameMap[card];
+        $("#cardReceivedName").text(resName);
+        $("#cardReceivedImage").attr("src", _assetMap["imgCard" + resName].src);
+    } else if (type === CardType.Development) {
+        var cardName = DevelopmentCardsToNameMap[card];
+        var displayName = DevelopmentCardsToDisplayNameMap[card];
+        $("#cardReceivedName").text(displayName);
+        // TODO: add dev card images
+        $("#cardReceivedImage").attr("src", _assetMap["imgCardBrick"].src);
+        //$("#cardReceivedImage").attr("src", _assetMap["imgCard" + cardName].src);
+    }
+    $("#cardReceivedBox").removeClass("hidden");
+    $("#cardReceivedBox").animateCss("bounceInDown");
+    $("#cardReceivedImage").addClass("animated infinite tada");
+}
+
+function hideCardReceivedBox() {
+    $("#cardReceivedImage").removeClass("animated infinite tada");
+    $("#cardReceivedBox").addClass("hidden");
 }
 
 function playerBoxClicked(boxId) {
@@ -269,6 +286,9 @@ function playerBoxClicked(boxId) {
                 _serverGameHub.stealResourceCard(robbedId).done(function (result) {
                     if (!result["Succeeded"]) { // failed. display error message.
                         displayToastMessage(result["Message"]);
+                    } else { // succeeded
+                        var resCard = result["Data"];
+                        showCardReceivedBox(CardType.Resource, resCard);
                     }
                 });
             }

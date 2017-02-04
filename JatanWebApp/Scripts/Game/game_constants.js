@@ -271,7 +271,7 @@ var DevelopmentCards =
     YearOfPlenty: 8
 };
 
-var DevelopmentCardsToNameMap = {
+var DevelopmentCardsToDisplayNameMap = {
     0: "Knight",
     1: "Library",
     2: "Market",
@@ -281,4 +281,21 @@ var DevelopmentCardsToNameMap = {
     6: "Monopoly",
     7: "Road Building",
     8: "Year of Plenty"
+};
+
+var DevelopmentCardsToNameMap = {
+    0: "Knight",
+    1: "Library",
+    2: "Market",
+    3: "GreatHall",
+    4: "Chapel",
+    5: "University",
+    6: "Monopoly",
+    7: "RoadBuilding",
+    8: "YearOfPlenty"
+};
+
+var CardType = {
+    Resource: 0,
+    Development: 1
 };
