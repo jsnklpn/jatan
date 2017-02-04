@@ -549,6 +549,41 @@ input[type="text"]:focus {
     color: #ff4500;
 }
 
+/* ============= */
+/*   Card Recv   */
+/* ============= */
+
+#cardReceivedBox {
+    position: fixed;
+    width:300px;
+    height: 300px;
+    margin: auto;
+    padding: 20px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+    background-color: #ffb; /* TODO: change to background image */
+    font-size: 18px;
+    font-family: serif;
+    text-align:center;
+    box-shadow: 0px 0px 30px white;
+}
+
+#cardReceivedImage {
+    width: 132px;
+    height: 186px;
+    display: block;
+    margin: 10px auto 10px auto;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+}
+
+#cardReceivedName{
+    font-weight: bold;
+    font-size: 24px;
+}
+
 /* ============ */
 /*   Trade UI   */
 /* ============ */
@@ -562,6 +597,7 @@ input[type="text"]:focus {
     right: 0;
     top: 0;
     bottom: 0;
+    z-index: 2;
     padding: 10px;
     font-family: serif;
     font-weight: bold;
@@ -662,3 +698,4 @@ input[type="text"]:focus {
     background-repeat: no-repeat;
     background-position: center;
 }
+

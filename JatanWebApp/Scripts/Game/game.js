@@ -28,7 +28,7 @@ var _invalidateCanvas = true; // set to true to redraw canvas on next animation 
 var _cardCanvas = null;
 var _cardStage = null;
 var _cardContainer = null;
-var _selectedCards = [];
+var _selectedCards = []; // This is a list of stage card obj names. (e.g. [ "Wood0", "Wheat2", "Ore2", "Ore3" ])
 var _invalidateCardCanvas = true; // set to true to redraw the card canvas on next animation frame
 
 // Canvas' to display cards to trade
@@ -178,6 +178,14 @@ function initHubButtons() {
         _serverGameHub.buyDevelopmentCard().done(function (result) {
             if (!result["Succeeded"]) { // failed. display error message.
                 displayToastMessage(result["Message"]);
+            } else {
+                // succeeded
+                var devCard = result["Data"];
+                $("#cardReceivedName").text(DevelopmentCardsToNameMap[devCard]);
+                $("#cardReceivedImage").attr("src", _assetMap["imgCardBrick"].src); // TODO: change to actual image
+                $("#cardReceivedBox").removeClass("hidden");
+                $("#cardReceivedBox").animateCss("bounceInDown");
+                $("#cardReceivedImage").addClass("animated infinite tada");
             }
         });
     });
@@ -198,6 +206,11 @@ function initHtmlUI() {
     });
     $(".trade-button-ok").click(tradeOkClicked);
     $(".trade-canvas-button").click(tradeCanvasButtonClicked);
+
+    $("#cardReceivedBox").click(function (e) {
+        $("#cardReceivedImage").removeClass("animated infinite tada");
+        $(this).addClass("hidden");
+    });
 
     // Show chat input box when the enter key is pressed.
     $(document).keydown(function (event) {

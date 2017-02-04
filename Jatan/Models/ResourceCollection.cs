@@ -109,6 +109,17 @@ namespace Jatan.Models
         }
 
         /// <summary>
+        /// Creates a new resource collection from a list of resources.
+        /// </summary>
+        public static ResourceCollection FromResourceTypeList(ResourceTypes[] list)
+        {
+            var collection = new ResourceCollection();
+            foreach (var res in list)
+                collection[res]++;
+            return collection;
+        }
+
+        /// <summary>
         /// Sets all resources to zero.
         /// </summary>
         public void Clear()

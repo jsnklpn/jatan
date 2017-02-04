@@ -252,3 +252,33 @@ var ChatTextType = {
     Warning: "chat-text-warning",
     Danger: "chat-text-danger"
 };
+
+// Types of development cards
+var DevelopmentCards =
+{
+    Knight: 0, // Allows a player to move the robber. 14 in deck.
+    Library: 1, // 1 victory point.
+    Market: 2, // 1 victory point.
+    GreatHall: 3, // 1 vistory point.
+    Chapel: 4, // 1 victory point.
+    University: 5, // 1 victory point.
+    // Progress card: If you play this card, you must name 1 type of resource. All the other players
+    // must give you all of the resource cards of this type that they have in their hands.
+    Monopoly: 6,
+    // Progress card: If you play this card, you may immediately place 2 free roads on the board.
+    RoadBuilding: 7,
+    // Progress card: If you play this card you may immediately take any 2 resource cards from the supply stacks.
+    YearOfPlenty: 8
+};
+
+var DevelopmentCardsToNameMap = {
+    0: "Knight",
+    1: "Library",
+    2: "Market",
+    3: "Great Hall",
+    4: "Chapel",
+    5: "University",
+    6: "Monopoly",
+    7: "Road Building",
+    8: "Year of Plenty"
+};

@@ -323,14 +323,14 @@ namespace JatanWebApp.SignalR
         /// <summary>
         /// The client selected to buy a development card.
         /// </summary>
-        public ActionResult BuyDevelopmentCard()
+        public ActionResult<DevelopmentCards> BuyDevelopmentCard()
         {
             var playerId = GetJatanPlayerId();
-            if (playerId == -1) return ActionResult.CreateFailed();
+            if (playerId == -1) return ActionResult.CreateFailed().ToGeneric<DevelopmentCards>();
             var lobby = GetGameLobby();
-            if (lobby == null) return ActionResult.CreateFailed();
+            if (lobby == null) return ActionResult.CreateFailed().ToGeneric<DevelopmentCards>();
 
-            ActionResult result = lobby.GameManager.PlayerBuyDevelopmentCard(playerId);
+            var result = lobby.GameManager.PlayerBuyDevelopmentCard(playerId);
             if (result.Succeeded) UpdateAllClientGameManagers();
 
             return result;
@@ -406,14 +406,14 @@ namespace JatanWebApp.SignalR
         /// <summary>
         /// Selects a player to steal from.
         /// </summary>
-        public ActionResult StealResourceCard(int robbedPlayerId)
+        public ActionResult<ResourceTypes> StealResourceCard(int robbedPlayerId)
         {
             var playerId = GetJatanPlayerId();
-            if (playerId == -1) return ActionResult.CreateFailed();
+            if (playerId == -1) return ActionResult.CreateFailed().ToGeneric<ResourceTypes>();
             var lobby = GetGameLobby();
-            if (lobby == null) return ActionResult.CreateFailed();
+            if (lobby == null) return ActionResult.CreateFailed().ToGeneric<ResourceTypes>();
 
-            ActionResult result = lobby.GameManager.PlayerStealResourceCard(playerId, robbedPlayerId);
+            var result = lobby.GameManager.PlayerStealResourceCard(playerId, robbedPlayerId);
 
             // If action succeeded, then something has changed and everyone needs an update.
             if (result.Succeeded) UpdateAllClientGameManagers();
@@ -422,6 +422,8 @@ namespace JatanWebApp.SignalR
 
         /// <summary>
         /// Selects cards to lose. Called when a 7 is rolled and player has too many cards.
+        /// The "cards" array is a list of resource names (e.g. [ "Wood0", "Wheat2", "Ore2", "Ore3" ])
+        /// It's done this way to simplify the card selecting UI code.
         /// </summary>
         public ActionResult SelectCardsToRemove(string[] cards)
         {
@@ -466,12 +468,84 @@ namespace JatanWebApp.SignalR
             var lobby = GetGameLobby();
             if (lobby == null) return ActionResult.CreateFailed();
 
-            var collectionToGive = new ResourceCollection();
-            var collectionToRecv = new ResourceCollection();
-            foreach (var res in toGive) collectionToGive[res]++;
-            foreach (var res in toRecv) collectionToRecv[res]++;
+            var collectionToGive = ResourceCollection.FromResourceTypeList(toGive);
+            var collectionToRecv = ResourceCollection.FromResourceTypeList(toRecv);
             var tradeOffer = new TradeOffer(playerId, collectionToGive, collectionToRecv);
             ActionResult result = lobby.GameManager.PlayerTradeWithBank(playerId, tradeOffer);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
+        /// Proposes a trade for all to consider. Called by the active player.
+        /// </summary>
+        public ActionResult CreateTradeOffer(ResourceTypes[] toGive, ResourceTypes[] toRecv)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            var collectionToGive = ResourceCollection.FromResourceTypeList(toGive);
+            var collectionToRecv = ResourceCollection.FromResourceTypeList(toRecv);
+            var tradeOffer = new TradeOffer(playerId, collectionToGive, collectionToRecv);
+            ActionResult result = lobby.GameManager.PlayerOfferTrade(playerId, tradeOffer);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
+        /// Proposes a trade for the active player to consider. Can only be called by a non-active player.
+        /// </summary>
+        public ActionResult CreateCounterTradeOffer(ResourceTypes[] toGive, ResourceTypes[] toRecv)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            var collectionToGive = ResourceCollection.FromResourceTypeList(toGive);
+            var collectionToRecv = ResourceCollection.FromResourceTypeList(toRecv);
+            var tradeOffer = new TradeOffer(playerId, collectionToGive, collectionToRecv);
+            ActionResult result = lobby.GameManager.SendCounterTradeOffer(playerId, tradeOffer);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
+        /// Accepts the current trade. Can only be called by a non-active player.
+        /// </summary>
+        public ActionResult AcceptActiveTradeOffer()
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.AcceptTradeFromActivePlayer(playerId);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
+        /// Accepts a trade counter-offer. Can only be called by the active player.
+        /// </summary>
+        public ActionResult AcceptCounterTradeOffer(int counterOfferOwnerId)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.PlayerAcceptCounterTradeOffer(playerId, counterOfferOwnerId);
 
             // If action succeeded, then something has changed and everyone needs an update.
             if (result.Succeeded) UpdateAllClientGameManagers();
