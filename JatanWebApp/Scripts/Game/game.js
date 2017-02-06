@@ -30,6 +30,11 @@ var _cardStage = null;
 var _cardContainer = null;
 var _selectedCards = []; // This is a list of stage card obj names. (e.g. [ "Wood0", "Wheat2", "Ore2", "Ore3" ])
 var _invalidateCardCanvas = true; // set to true to redraw the card canvas on next animation frame
+// Dev card canvas/stage
+var _devCardCanvas = null;
+var _devCardStage = null;
+var _devCardContainer = null;
+var _invalidateDevCardCanvas = null;
 
 // Canvas' to display cards to trade
 var _tradeMode = TradeMode.Bank;
@@ -68,6 +73,9 @@ $(function () {
     _cardCanvas = $("#cardCanvas")[0];
     _cardCanvas.width = _cardCanvas.clientWidth;
     _cardCanvas.height = _cardCanvas.clientHeight;
+    _devCardCanvas = $("#devCardCanvas")[0];
+    _devCardCanvas.width = _devCardCanvas.clientWidth;
+    _devCardCanvas.height = _devCardCanvas.clientHeight;
     _tradeGiveCanvas = $("#tradeGiveCanvas")[0];
     _tradeRecvCanvas = $("#tradeRecvCanvas")[0];
 
@@ -651,6 +659,11 @@ function initCanvasStage() {
     _cardContainer = new createjs.Container();
     _cardStage.addChild(_cardContainer);
 
+    // Create stage for dev cards
+    _devCardStage = new createjs.Stage("devCardCanvas");
+    _devCardContainer = new createjs.Container();
+    _devCardStage.addChild(_devCardContainer);
+
     // Init the main stage.
     _stage = new createjs.Stage("gameCanvas");
     _boardContainer = new createjs.Container();
@@ -771,6 +784,10 @@ function checkRender() {
     if (_invalidateCardCanvas) {
         _invalidateCardCanvas = false;
         _cardStage.update();
+    }
+    if (_invalidateDevCardCanvas) {
+        _invalidateDevCardCanvas = false;
+        _devCardStage.update();
     }
     if (_invalidateTradeGiveCanvas) {
         _invalidateTradeGiveCanvas = false;
@@ -947,6 +964,7 @@ function updateGameModel(gameManager) {
     populateDice();
     populateTurnInfoBox();
     populateResourceCards();
+    populateDevelopmentCards();
     populatePlayers();
     populateBuildings();
     populateRoads();
@@ -2036,6 +2054,128 @@ function removeSelectedCards() {
             displayToastMessage(result["Message"]);
         }
     });
+}
+
+function populateDevelopmentCards() {
+    if (_currentGameManager == null)
+        return;
+
+    _devCardContainer.removeAllChildren();
+    _invalidateDevCardCanvas = true;
+
+    var myPlayerId = _currentGameManager["MyPlayerId"];
+    var playerTurnState = _currentGameManager["PlayerTurnState"];
+    var player = getPlayerFromId(myPlayerId);
+    if (player == null)
+        return;
+
+    var cards = player["DevelopmentCards"];
+    var cardBitmaps = [];
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var cardName = DevelopmentCardsToNameMap[card];
+        var asset = _assetMap["imgCard" + cardName];
+        var bitmap = new createjs.Bitmap(asset.data);
+        bitmap.name = cardName + i.toString();
+        var bitmapSelected = null;
+        // Allow clicking on dev cards when it's your turn
+        if (myPlayerId === _currentGameManager["ActivePlayerId"] && playerTurnState === PlayerTurnState.TakeAction) {
+
+            // create bitmap for the mouseover selected state.
+            bitmapSelected = new createjs.Bitmap(_assetMap["imgCardWhiteBig"].data);
+            bitmapSelected.alpha = 0.2;
+            bitmapSelected.name = bitmap.name + "_s";
+            bitmapSelected.mouseEnabled = false;
+            bitmapSelected.visible = false;
+
+            bitmap.mouseEnabled = true;
+            bitmap.addEventListener("click", handleClickDevCard);
+            bitmap.addEventListener("mouseover", handleMouseOverDevCard);
+            bitmap.addEventListener("mouseout", handleMouseOutDevCard);
+            _devCardStage.enableMouseOver(20);
+        } else {
+            bitmap.mouseEnabled = false;
+            _devCardStage.enableMouseOver(0);
+        }
+        cardBitmaps.push([bitmap, bitmapSelected]);
+    }
+
+    if (cardBitmaps.length === 0) {
+        return;
+    }
+
+    // Add the cards to the stage. Center the cards and evenly space them.
+    // Start to overlap when there are too many cards to fit in the canvas.
+    var cardWidth = devCardHitbox.width;
+    var cardHeight = devCardHitbox.height;
+    var canvasWidth = _devCardCanvas.width;
+    var canvasHeight = _devCardCanvas.height;
+    var scale = canvasHeight / cardHeight;
+    cardWidth *= scale;
+    var spacing = cardWidth;
+    if (cardBitmaps.length * cardWidth > canvasWidth) {
+        // Too many cards. Start to overlap.
+        spacing = (canvasWidth - cardWidth) / (cardBitmaps.length - 1);
+    }
+    for (var i = 0; i < cardBitmaps.length; i++) {
+        var card = cardBitmaps[i][0];
+        card.x = i * spacing;
+        card.y = 0;
+        card.scaleX = scale;
+        card.scaleY = scale;
+        if (spacing < cardWidth)
+            card.shadow = new createjs.Shadow("#000000", -2, 3, 7);
+        _devCardContainer.addChild(card);
+
+        var selected = cardBitmaps[i][1];
+        if (selected != null) {
+            selected.x = card.x;
+            selected.y = card.y;
+            selected.scaleX = card.scaleX;
+            selected.scaleY = card.scaleY;
+            _devCardContainer.addChild(selected);
+        }
+    }
+
+    // Center the container in the stage
+    var cb = _devCardContainer.getBounds();
+    _devCardContainer.regX = cb.width / 2;
+    _devCardContainer.x = canvasWidth / 2;
+}
+
+function handleClickDevCard(event) {
+    if ((event.nativeEvent.button !== 0) ||
+        (_serverGameHub == null) ||
+        (_currentGameManager["MyPlayerId"] !== _currentGameManager["ActivePlayerId"])) {
+        return;
+    }
+
+    var obj = event.target;
+    var name = obj.name;
+    var cardName = removeNumbersFromString(name);
+    var cardType = DevelopmentCardNameToTypeMap[cardName];
+
+    _serverGameHub.playDevelopmentCard(cardType).done(function (result) {
+        if (!result["Succeeded"]) { // failed. display error message.
+            displayToastMessage(result["Message"]);
+        }
+    });
+
+    _invalidateDevCardCanvas = true;
+}
+function handleMouseOverDevCard(event) {
+    var obj = event.target;
+    var selected = _devCardContainer.getChildByName(obj.name + "_s");
+    if (selected != null)
+        selected.visible = true;
+    _invalidateDevCardCanvas = true;
+}
+function handleMouseOutDevCard(event) {
+    var obj = event.target;
+    var selected = _devCardContainer.getChildByName(obj.name + "_s");
+    if (selected != null)
+        selected.visible = false;
+    _invalidateDevCardCanvas = true;
 }
 
 function populateBuyButtons() {

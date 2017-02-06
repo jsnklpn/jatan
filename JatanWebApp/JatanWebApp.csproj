@@ -236,6 +236,7 @@
     <Content Include="Content\Images\board\devCardMonopoly.png" />
     <Content Include="Content\Images\board\devCardRoadBuilding.png" />
     <Content Include="Content\Images\board\devCardUniversity.png" />
+    <Content Include="Content\Images\board\devCardWhite.png" />
     <Content Include="Content\Images\board\devCardYearOfPlenty.png" />
     <Content Include="Content\Images\board\dice1.png" />
     <Content Include="Content\Images\board\dice2.png" />

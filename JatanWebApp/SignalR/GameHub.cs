@@ -337,6 +337,22 @@ namespace JatanWebApp.SignalR
         }
 
         /// <summary>
+        /// Plays a development card. Can only be called by the active player.
+        /// </summary>
+        public ActionResult PlayDevelopmentCard(DevelopmentCards card)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed().ToGeneric<DevelopmentCards>();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed().ToGeneric<DevelopmentCards>();
+
+            var result = lobby.GameManager.PlayerPlayDevelopmentCard(playerId, card);
+            if (result.Succeeded) UpdateAllClientGameManagers();
+
+            return result;
+        }
+
+        /// <summary>
         /// The client selected a road location.
         /// </summary>
         public ActionResult SelectRoad(string strHexEdge)

@@ -110,6 +110,7 @@ var _assetMap = {
     "imgCardOre": { src: "/Content/Images/board/cardOre.png", data: null, hitbox: resourceCardHitbox },
     "imgCardBrick": { src: "/Content/Images/board/cardBrick.png", data: null, hitbox: resourceCardHitbox },
     // Dev cards
+    "imgCardWhiteBig": { src: "/Content/Images/board/devCardWhite.png", data: null, hitbox: devCardHitbox },
     "imgCardKnight": { src: "/Content/Images/board/devCardKnight.png", data: null, hitbox: devCardHitbox },
     "imgCardLibrary": { src: "/Content/Images/board/devCardLibrary.png", data: null, hitbox: devCardHitbox },
     "imgCardMarket": { src: "/Content/Images/board/devCardMarket.png", data: null, hitbox: devCardHitbox },
@@ -281,6 +282,18 @@ var DevelopmentCards =
     RoadBuilding: 7,
     // Progress card: If you play this card you may immediately take any 2 resource cards from the supply stacks.
     YearOfPlenty: 8
+};
+
+var DevelopmentCardNameToTypeMap = {
+    "Knight": 0,
+    "Library": 1,
+    "Market": 2,
+    "GreatHall": 3,
+    "Chapel": 4,
+    "University": 5,
+    "Monopoly": 6,
+    "RoadBuilding": 7,
+    "YearOfPlenty": 8
 };
 
 var DevelopmentCardsToDisplayNameMap = {
