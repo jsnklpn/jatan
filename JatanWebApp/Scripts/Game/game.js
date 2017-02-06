@@ -32,6 +32,7 @@ var _selectedCards = []; // This is a list of stage card obj names. (e.g. [ "Woo
 var _invalidateCardCanvas = true; // set to true to redraw the card canvas on next animation frame
 
 // Canvas' to display cards to trade
+var _tradeMode = TradeMode.Bank;
 var _tradeGiveCanvas = null;
 var _tradeRecvCanvas = null;
 var _tradeGiveStage = null;
@@ -197,7 +198,7 @@ function initHtmlUI() {
 
     $("#btnTradeWithBank").click(tradeBankClicked);
     $("#btnTradeWithPlayer").click(tradePlayerClicked);
-    $(".trade-button-cancel").mouseup(function (event) {
+    $(".trade-button-cancel").click(function (event) {
         $(this).closest(".trade-dialog").addClass("hidden");
     });
     $(".trade-button-ok").click(tradeOkClicked);
@@ -300,25 +301,16 @@ function tradeBankClicked() {
     if ($("#tradeDialog").hasClass("hidden")) {
         // dialog is not showing yet.
         $("#tradeDialog").removeClass("hidden");
-        
+        _tradeMode = TradeMode.Bank;
+
         // Clear the trade controls.
-        _tradeGiveCardContainer.removeAllChildren();
-        _tradeRecvCardContainer.removeAllChildren();
-        _tradeGiveSelectedCards = [];
-        _tradeRecvSelectedCards = [];
-        _invalidateTradeGiveCanvas = true;
-        _invalidateTradeRecvCanvas = true;
-        $("#tradeErrorMsg").text("");
+        initTradeControls();
 
-        // Set canvas sizes here, because we can't set them while the dialog is hidden.
-        _tradeGiveCanvas.width = _tradeGiveCanvas.clientWidth;
-        _tradeGiveCanvas.height = _tradeGiveCanvas.clientHeight;
-        _tradeRecvCanvas.width = _tradeRecvCanvas.clientWidth;
-        _tradeRecvCanvas.height = _tradeRecvCanvas.clientHeight;
-
-        // find available ports.
+        $(".trade-dialog-title").text("Trade with Bank");
+        $("#tradeHeaderLabel").text("Ports owned:");
+        $("#portsOwnedText").text("None.");
         $("#portsOwnedSpan > span").addClass("hidden");
-        $("#portsOwnedText").removeClass("hidden");
+        // find available ports.
         if (_currentGameManager != null) {
             var myId = _currentGameManager["MyPlayerId"];
             var player = getPlayerFromId(myId);
@@ -327,7 +319,7 @@ function tradeBankClicked() {
                 var portResType = ports[i];
                 var className = (portResType === ResourceTypes.None) ? "question" : ResourceTypeToNameMap[portResType].toLowerCase();
                 $("#portsOwnedSpan > .res-icon-" + className).removeClass("hidden");
-                $("#portsOwnedText").addClass("hidden");
+                $("#portsOwnedText").text("");
             }
         }
 
@@ -340,7 +332,90 @@ function tradeBankClicked() {
 }
 
 function tradePlayerClicked() {
-    // TODO
+    if (_currentGameManager == null) return;
+
+    if ($("#tradeDialog").hasClass("hidden")) {
+        // dialog is not showing yet.
+        $("#tradeDialog").removeClass("hidden");
+
+        // Clear the trade controls.
+        initTradeControls();
+
+        $("#portsOwnedSpan > span").addClass("hidden");
+        $("#portsOwnedText").text("");
+        var currentTradeOffer = null;
+
+        if (_currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]) {
+            // We're the active player.
+            _tradeMode = TradeMode.Player;
+            $(".trade-dialog-title").text("Trade with Players");
+            $("#tradeHeaderLabel").text("Select resources to trade with another player.");
+
+            // Check if there is an active trade offer
+            if (_currentGameManager["PlayerTurnState"] === PlayerTurnState.RequestingPlayerTrade &&
+                _currentGameManager["ActiveTradeOffer"] != null) {
+                currentTradeOffer = _currentGameManager["ActiveTradeOffer"];
+            }
+
+        } else {
+            // We're not the active player. This dialog will be for creating a counter offer.
+            _tradeMode = TradeMode.CounterOffer;
+            $(".trade-dialog-title").text("Create Counter-Offer");
+            $("#tradeHeaderLabel").text("Create a counter-offer for the active player.");
+
+            // Check if there is an active counter-offer
+            if (_currentGameManager["PlayerTurnState"] === PlayerTurnState.RequestingPlayerTrade &&
+                _currentGameManager["CounterTradeOffers"] != null) {
+                var counterOffers = _currentGameManager["CounterTradeOffers"];
+                for (var i = 0; i < counterOffers.length; i++) {
+                    if (counterOffers[i]["CreatorPlayerId"] === _currentGameManager["MyPlayerId"]) {
+                        currentTradeOffer = counterOffers[i];
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (currentTradeOffer != null) {
+            var resNames = ["Wood", "Brick", "Wheat", "Sheep", "Ore"];
+            for (var i = 0; i < resNames.length; i++) {
+                var resName = resNames[i];
+                var giveCount = currentTradeOffer["ToGive"][resNames[i]];
+                var recvCount = currentTradeOffer["ToReceive"][resNames[i]];
+                for (var j = 0; j < giveCount; j++) {
+                    _tradeGiveSelectedCards.push(ResourceNameToTypeMap[resName]);
+                }
+                for (var j = 0; j < recvCount; j++) {
+                    _tradeRecvSelectedCards.push(ResourceNameToTypeMap[resName]);
+                }
+            }
+            // Populate canvas controls
+            populateTradeCanvas(_tradeGiveCanvas, _tradeGiveCardContainer, _tradeGiveSelectedCards);
+            populateTradeCanvas(_tradeRecvCanvas, _tradeRecvCardContainer, _tradeRecvSelectedCards);
+        }
+
+        // Set the canvas resource button disabled states
+        updateTradeCanvasButtons();
+
+    } else {
+        // dialog is already showing.
+        $("#tradeDialog").addClass("hidden");
+    }
+}
+
+function initTradeControls() {
+    _tradeGiveCardContainer.removeAllChildren();
+    _tradeRecvCardContainer.removeAllChildren();
+    _tradeGiveSelectedCards = [];
+    _tradeRecvSelectedCards = [];
+    _invalidateTradeGiveCanvas = true;
+    _invalidateTradeRecvCanvas = true;
+    $("#tradeErrorMsg").text("");
+
+    _tradeGiveCanvas.width = _tradeGiveCanvas.clientWidth;
+    _tradeGiveCanvas.height = _tradeGiveCanvas.clientHeight;
+    _tradeRecvCanvas.width = _tradeRecvCanvas.clientWidth;
+    _tradeRecvCanvas.height = _tradeRecvCanvas.clientHeight;
 }
 
 function updateTradeCanvasButtons() {
@@ -396,7 +471,7 @@ function tradeCanvasButtonClicked(event) {
 
 function tradeCardClicked(event) {
     // remove the clicked card from the list.
-    if (event.nativeEvent.button !== 0) return;
+    // Allow right-click as well.
     var obj = event.target;
     var resName = removeNumbersFromString(obj.name);
     var resType = ResourceNameToTypeMap[resName];
@@ -486,15 +561,36 @@ function tradeOkClicked() {
         return;
     }
 
-    // send trade request to server
-    _serverGameHub.tradeWithBank(_tradeGiveSelectedCards, _tradeRecvSelectedCards).done(function (result) {
-        if (!result["Succeeded"]) { // failed. display error message.
-            $("#tradeErrorMsg").text(result["Message"]);
-        } else {
-            // Success. Hide the trade dialog.
-            $("#tradeDialog").addClass("hidden");
-        }
-    });
+    if (_tradeMode === TradeMode.Bank) {
+        // send trade request to server
+        _serverGameHub.tradeWithBank(_tradeGiveSelectedCards, _tradeRecvSelectedCards).done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                $("#tradeErrorMsg").text(result["Message"]);
+            } else { // Success. Hide the trade dialog.
+                $("#tradeDialog").addClass("hidden");
+            }
+        });
+    }
+    else if (_tradeMode === TradeMode.Player) {
+        // send trade request to server
+        _serverGameHub.createTradeOffer(_tradeGiveSelectedCards, _tradeRecvSelectedCards).done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                $("#tradeErrorMsg").text(result["Message"]);
+            } else { // Success. Hide the trade dialog.
+                $("#tradeDialog").addClass("hidden");
+            }
+        });
+    }
+    else if (_tradeMode === TradeMode.CounterOffer) {
+        // send trade request to server
+        _serverGameHub.createCounterTradeOffer(_tradeGiveSelectedCards, _tradeRecvSelectedCards).done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                $("#tradeErrorMsg").text(result["Message"]);
+            } else { // Success. Hide the trade dialog.
+                $("#tradeDialog").addClass("hidden");
+            }
+        });
+    }
 }
 
 function loadGameResources() {
@@ -827,6 +923,9 @@ function updateGameModel(gameManager) {
     var currentDiceRoll = gameManager["CurrentDiceRoll"];
     var players = gameManager["Players"];
     var cardsToLose = player["CardsToLose"];
+
+    var activeTradeOffer = gameManager["ActiveTradeOffer"];
+    var counterTradeOffers = gameManager["CounterTradeOffers"];
 
     // valid placement lists are only populated if needed.
     var validRoadPlacements = gameManager["ValidRoadPlacements"];
@@ -1976,6 +2075,7 @@ function populateBuyButtons() {
         $("#btnBuyDevelopmentCard").addClass("disabled");
     }
 }
+
 
 //===========================
 // Toast messages

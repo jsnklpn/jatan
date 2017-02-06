@@ -205,7 +205,7 @@ canvas {
 
 #hudCenteredDiv {
     position: absolute;
-    width: 700px;
+    width: 800px;
     margin-right: auto;
     margin-left: auto;
     right: 0;
@@ -240,6 +240,9 @@ canvas {
     width: 100%;
 }
 #btnTradeWithBank {
+    float: left;
+}
+#btnTradeWithPlayer {
     float: left;
 }
 #btnEndTurn {

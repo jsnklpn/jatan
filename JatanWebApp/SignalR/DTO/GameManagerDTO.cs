@@ -20,6 +20,8 @@ namespace JatanWebApp.SignalR.DTO
         public int ActivePlayerId { get; set; }
         public RollResult CurrentDiceRoll { get; set; }
         public List<PlayerDTO> Players { get; set; }
+        public TradeOffer ActiveTradeOffer { get; set; }
+        public List<TradeOffer> CounterTradeOffers { get; set; }
 
         // These properties are populated only when needed.
         public List<HexEdge> ValidRoadPlacements { get; set; }
@@ -61,6 +63,9 @@ namespace JatanWebApp.SignalR.DTO
 
                 this.Players.Add(playerDto);
             }
+
+            this.ActiveTradeOffer = manager.ActivePlayerTradeOffer;
+            this.CounterTradeOffers = manager.CounterTradeOffers;
 
             // Check if we need to send valid item placements
             if (requestingPlayerId == this.ActivePlayerId)

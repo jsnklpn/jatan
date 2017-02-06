@@ -311,3 +311,10 @@ var CardType = {
     Resource: 0,
     Development: 1
 };
+
+// Used to control the state of the singleton trade dialog window.
+var TradeMode = {
+    Bank: 0,
+    Player: 1,
+    CounterOffer: 2
+};

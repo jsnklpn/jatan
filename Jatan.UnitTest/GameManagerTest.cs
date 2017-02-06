@@ -193,6 +193,39 @@ namespace Jatan.UnitTest
         }
 
         [TestMethod]
+        public void TestOverwriteTradeOffer()
+        {
+            var manager = DoInitialPlacementsAndRoll(false);
+            var activePlayer = manager.ActivePlayer;
+            var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
+            var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
+            Assert.IsNotNull(player1);
+            Assert.IsNotNull(player2);
+
+            // Active player offer trade of 1 ore and 2 wheat for 3 wood and 4 sheep.
+            activePlayer.RemoveAllResources();
+            player1.RemoveAllResources();
+            player2.RemoveAllResources();
+            var toGive = new ResourceCollection(ore: 1, wheat: 2);
+            var toGet = new ResourceCollection(wood: 3, sheep: 4);
+            activePlayer.AddResources(toGive);
+            player1.AddResources(toGet);
+            // First, make a ridiculous offer.
+            manager.PlayerOfferTrade(activePlayer.Id, new TradeOffer(activePlayer.Id, toGive, new ResourceCollection(ore: 1000, wheat: 2000, brick: 3000)));
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should be in the 'RequestingTrade' state.");
+            // Next, overwrite the offer.
+            manager.PlayerOfferTrade(activePlayer.Id, new TradeOffer(activePlayer.Id, toGive, toGet));
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should still be in the 'RequestingTrade' state.");
+
+            // Player 1 will accept the trade and it should work.
+            var r = manager.AcceptTradeFromActivePlayer(player1.Id);
+            Assert.IsTrue(r.Succeeded, "The trade should be successful.");
+            Assert.IsTrue(activePlayer.ResourceCards.Equals(toGet), "Active player did not get his resources from the trade.");
+            Assert.IsTrue(player1.ResourceCards.Equals(toGive), "Player 1 did not get his resources from the trade.");
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The trade is complete. Player should be in the 'TakeAction' state.");
+        }
+
+        [TestMethod]
         public void TestAcceptTradeCounterOffer()
         {
             var manager = DoInitialPlacementsAndRoll(false);

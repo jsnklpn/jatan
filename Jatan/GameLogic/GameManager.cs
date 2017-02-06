@@ -156,6 +156,27 @@ namespace Jatan.GameLogic
             get { return _currentDiceRoll; }
         }
 
+        /// <summary>
+        /// Gets the current active trade offer. Returns null if there is none.
+        /// </summary>
+        public TradeOffer ActivePlayerTradeOffer
+        {
+            get { return _tradeHelper != null ? _tradeHelper.ActivePlayerTradeOffer : null; }
+        }
+
+        /// <summary>
+        /// Gets a copy of the current counter-offers list.
+        /// </summary>
+        public List<TradeOffer> CounterTradeOffers
+        {
+            get
+            {
+                return (_tradeHelper != null && _tradeHelper.CounterOffers != null)
+                    ? new List<TradeOffer>(_tradeHelper.CounterOffers)
+                    : new List<TradeOffer>();
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -443,10 +464,11 @@ namespace Jatan.GameLogic
         /// <summary>
         /// Offer a player-to-player trade with anyone. This can be immediately accepted or
         /// players can send counter-offers. Can only be called by the active player.
+        /// If called while an active trade offer is still up, cancel it and create a new one.
         /// </summary>
         public ActionResult PlayerOfferTrade(int playerId, TradeOffer tradeOffer)
         {
-            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            var validation = ValidatePlayerAction(new [] { PlayerTurnState.TakeAction, PlayerTurnState.RequestingPlayerTrade }, playerId);
             if (validation.Failed) return validation;
 
             if (tradeOffer == null || !tradeOffer.IsValid)
@@ -1045,6 +1067,20 @@ namespace Jatan.GameLogic
         #endregion
 
         #region private helper methods
+
+        private ActionResult ValidatePlayerAction(PlayerTurnState[] requiredStates, int activePlayerId)
+        {
+            if (ActivePlayer == null || ActivePlayer.Id != activePlayerId)
+                return ActionResult.CreateFailed("Not allowed to play out of turn.");
+
+            ActionResult result = null;
+            foreach (var state in requiredStates)
+            {
+                result = ValidatePlayerAction(state);
+                if (result.Succeeded) return result;
+            }
+            return result;
+        }
 
         private ActionResult ValidatePlayerAction(PlayerTurnState requiredState, int activePlayerId)
         {

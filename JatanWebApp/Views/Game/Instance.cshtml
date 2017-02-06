@@ -85,7 +85,8 @@
                 </li>
             </ul>
         </div>
-        <div id="btnTradeWithBank" class="aoe-btn hud-button">Trade</div>
+        <div id="btnTradeWithBank" class="aoe-btn hud-button">Bank Trade</div>
+        <div id="btnTradeWithPlayer" class="aoe-btn hud-button">Player Trade</div>
         <canvas id="cardCanvas"></canvas>
         <div id="btnEndTurn" class="aoe-btn hud-button">End Turn</div>
     </div>
@@ -103,7 +104,7 @@
 <div id="tradeDialog" class="trade-dialog hidden">
     <div class="trade-dialog-title">Trade with Bank</div>
     <p class="trade-label">
-        <strong>Ports owned:</strong>
+        <strong id="tradeHeaderLabel">Ports owned:</strong>
         <span id="portsOwnedText">None.</span>
         <span id="portsOwnedSpan">
             <span class="res-icon res-icon-wood"></span>
