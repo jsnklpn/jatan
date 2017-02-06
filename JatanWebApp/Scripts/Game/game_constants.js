@@ -24,6 +24,7 @@ var boatHitbox = { width: 65, height: 71, centerX: 32, centerY: 44 };
 var theifHitbox = { width: 86, height: 123, centerX: 53, centerY: 97 };
 var diceHitbox = { width: 128, height: 128, centerX: 64, centerY: 64 };
 var resourceCardHitbox = { width: 132, height: 186, centerX: 66, centerY: 93 };
+var devCardHitbox = { width: 262, height: 371, centerX: 131, centerY: 185.5 };
 var woodIconHitbox = { width: 36, height: 23, centerX: 18, centerY: 11.5 };
 var brickIconHitbox = { width: 35, height: 19, centerX: 17.5, centerY: 9.5 };
 var wheatIconHitbox = { width: 27, height: 33, centerX: 13.5, centerY: 16.5 };
@@ -107,6 +108,16 @@ var _assetMap = {
     "imgCardSheep": { src: "/Content/Images/board/cardSheep.png", data: null, hitbox: resourceCardHitbox },
     "imgCardOre": { src: "/Content/Images/board/cardOre.png", data: null, hitbox: resourceCardHitbox },
     "imgCardBrick": { src: "/Content/Images/board/cardBrick.png", data: null, hitbox: resourceCardHitbox },
+    // Dev cards
+    "imgCardKnight": { src: "/Content/Images/board/devCardKnight.png", data: null, hitbox: devCardHitbox },
+    "imgCardLibrary": { src: "/Content/Images/board/devCardLibrary.png", data: null, hitbox: devCardHitbox },
+    "imgCardMarket": { src: "/Content/Images/board/devCardMarket.png", data: null, hitbox: devCardHitbox },
+    "imgCardGreatHall": { src: "/Content/Images/board/devCardGreatHall.png", data: null, hitbox: devCardHitbox },
+    "imgCardChapel": { src: "/Content/Images/board/devCardChapel.png", data: null, hitbox: devCardHitbox },
+    "imgCardUniversity": { src: "/Content/Images/board/devCardUniversity.png", data: null, hitbox: devCardHitbox },
+    "imgCardMonopoly": { src: "/Content/Images/board/devCardMonopoly.png", data: null, hitbox: devCardHitbox },
+    "imgCardRoadBuilding": { src: "/Content/Images/board/devCardRoadBuilding.png", data: null, hitbox: devCardHitbox },
+    "imgCardYearOfPlenty": { src: "/Content/Images/board/devCardYearOfPlenty.png", data: null, hitbox: devCardHitbox },
     // Small resource icons
     "imgIconWood": { src: "/Content/Images/site/icon_wood.png", data: null, hitbox: woodIconHitbox },
     "imgIconBrick": { src: "/Content/Images/site/icon_brick.png", data: null, hitbox: brickIconHitbox },

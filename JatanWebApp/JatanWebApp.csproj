@@ -227,6 +227,15 @@
     <Content Include="Content\Images\board\city_pink.png" />
     <Content Include="Content\Images\board\city_red.png" />
     <Content Include="Content\Images\board\city_yellow.png" />
+    <Content Include="Content\Images\board\devCardChapel.png" />
+    <Content Include="Content\Images\board\devCardGreatHall.png" />
+    <Content Include="Content\Images\board\devCardKnight.png" />
+    <Content Include="Content\Images\board\devCardLibrary.png" />
+    <Content Include="Content\Images\board\devCardMarket.png" />
+    <Content Include="Content\Images\board\devCardMonopoly.png" />
+    <Content Include="Content\Images\board\devCardRoadBuilding.png" />
+    <Content Include="Content\Images\board\devCardUniversity.png" />
+    <Content Include="Content\Images\board\devCardYearOfPlenty.png" />
     <Content Include="Content\Images\board\dice1.png" />
     <Content Include="Content\Images\board\dice2.png" />
     <Content Include="Content\Images\board\dice3.png" />
@@ -283,6 +292,7 @@
     <Content Include="Content\Images\board\water.jpg" />
     <Content Include="Content\Images\site\button_border.png" />
     <Content Include="Content\Images\site\button_border_down.png" />
+    <Content Include="Content\Images\site\dialog_293x299.png" />
     <Content Include="Content\Images\site\dialog_675x441.png" />
     <Content Include="Content\Images\site\dice_photo2.png" />
     <Content Include="Content\Images\site\hud_tile.png" />

@@ -252,9 +252,7 @@ function showCardReceivedBox(type, card) {
         var cardName = DevelopmentCardsToNameMap[card];
         var displayName = DevelopmentCardsToDisplayNameMap[card];
         $("#cardReceivedName").text(displayName);
-        // TODO: add dev card images
-        $("#cardReceivedImage").attr("src", _assetMap["imgCardBrick"].src);
-        //$("#cardReceivedImage").attr("src", _assetMap["imgCard" + cardName].src);
+        $("#cardReceivedImage").attr("src", _assetMap["imgCard" + cardName].src);
     }
     $("#cardReceivedBox").removeClass("hidden");
     $("#cardReceivedBox").animateCss("bounceInDown");

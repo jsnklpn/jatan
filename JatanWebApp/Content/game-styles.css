@@ -555,8 +555,8 @@ input[type="text"]:focus {
 
 #cardReceivedBox {
     position: fixed;
-    width:300px;
-    height: 300px;
+    width: 293px;
+    height: 299px;
     margin: auto;
     padding: 20px;
     left: 0;
@@ -564,10 +564,12 @@ input[type="text"]:focus {
     top: 0;
     bottom: 0;
     z-index: 3;
-    background-color: #ffb; /* TODO: change to background image */
+    background-image: url('Images/site/dialog_293x299.png');
     font-size: 18px;
     font-family: serif;
-    text-align:center;
+    text-align: center;
+    color: black;
+    font-weight: bold;
     box-shadow: 0px 0px 30px white;
 }
 
@@ -576,7 +578,7 @@ input[type="text"]:focus {
     height: 186px;
     display: block;
     margin: 10px auto 10px auto;
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.3);
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.5);
 }
 
 #cardReceivedName{
