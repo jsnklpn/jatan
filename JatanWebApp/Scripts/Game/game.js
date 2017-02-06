@@ -1118,19 +1118,17 @@ function setNumberTileGlow(glow, number) {
 
 function handleResTileMouseOver(event) {
     var obj = event.target;
-    obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
-    obj.cache(-500, -500, 1000, 1000);
-
+    obj.scaleX = 1.03;
+    obj.scaleY = 1.03;
     _boardRobberMoving.visible = true;
     _boardRobberMoving.x = obj.x;
     _boardRobberMoving.y = obj.y;
-
     _invalidateCanvas = true;
 }
 function handleResTileMouseOut(event) {
     var obj = event.target;
-    obj.filters = [];
-    obj.updateCache();
+    obj.scaleX = 1.0;
+    obj.scaleY = 1.0;
 
     _boardRobberMoving.visible = false;
 
@@ -1140,8 +1138,8 @@ function handleResTileClick(event) {
     if (event.nativeEvent.button !== 0)
         return;
     var obj = event.target;
-    obj.filters = [];
-    obj.updateCache();
+    obj.scaleX = 1.0;
+    obj.scaleY = 1.0;
     _invalidateCanvas = true;
 
     var hex = getHexFromResourceTileBitmap(obj);
@@ -1817,8 +1815,17 @@ function populateResourceCards() {
             for (var j = 0; j < resCount; j++) {
                 var bitmap = new createjs.Bitmap(asset.data);
                 bitmap.name = strRes + j.toString();
+                var bitmapSelected = null;
                 // If we have to select cards to lose, hook up the handlers
-                if (playerTurnState === PlayerTurnState.AnyPlayerSelectingCardsToLose && player["CardsToLose"]> 0) {
+                if (playerTurnState === PlayerTurnState.AnyPlayerSelectingCardsToLose && player["CardsToLose"] > 0) {
+
+                    // create bitmap for the mouseover selected state.
+                    bitmapSelected = new createjs.Bitmap(_assetMap["imgCardWhite"].data);
+                    bitmapSelected.alpha = 0.3;
+                    bitmapSelected.name = bitmap.name + "_s";
+                    bitmapSelected.mouseEnabled = false;
+                    bitmapSelected.visible = false;
+
                     bitmap.mouseEnabled = true;
                     bitmap.addEventListener("click", handleClickResCard);
                     bitmap.addEventListener("mouseover", handleMouseOverResCard);
@@ -1828,7 +1835,7 @@ function populateResourceCards() {
                     bitmap.mouseEnabled = false;
                     _cardStage.enableMouseOver(0);
                 }
-                cardBitmaps.push(bitmap);
+                cardBitmaps.push([bitmap, bitmapSelected]);
             }
         }
     }
@@ -1851,14 +1858,24 @@ function populateResourceCards() {
         spacing = (canvasWidth - cardWidth) / (cardBitmaps.length - 1);
     }
     for (var i = 0; i < cardBitmaps.length; i++) {
-        var card = cardBitmaps[i];
+        var card = cardBitmaps[i][0];
         card.x = i * spacing;
         card.y = 0;
         card.scaleX = scale;
         card.scaleY = scale;
+        var cardSelected = cardBitmaps[i][1];
+        if (cardSelected != null) {
+            cardSelected.x = card.x;
+            cardSelected.y = card.y;
+            cardSelected.scaleX = card.scaleX;
+            cardSelected.scaleY = card.scaleY;
+        }
         if (spacing < cardWidth)
             card.shadow = new createjs.Shadow("#000000", -2, 3, 7);
         _cardContainer.addChild(card);
+        // add 'selected' layer if needed
+        if (cardSelected != null)
+            _cardContainer.addChild(cardSelected);
     }
 
     // Center the container in the stage
@@ -1872,15 +1889,20 @@ function handleClickResCard(event) {
         return;
 
     var obj = event.target;
+    var selectedObj = _cardContainer.getChildByName(obj.name + "_s");
     var name = obj.name;
     var itemIndex = _selectedCards.indexOf(name);
     if (itemIndex > -1) {
         // Already selected. Deselect.
         obj.y -= 30;
+        if (selectedObj != null)
+            selectedObj.y -= 30;
         _selectedCards.splice(itemIndex, 1);
     } else {
         // Not yet selected.
         obj.y += 30;
+        if (selectedObj != null)
+            selectedObj.y += 30;
         _selectedCards.push(name);
 
         if (_currentGameManager != null) {
@@ -1894,14 +1916,16 @@ function handleClickResCard(event) {
 }
 function handleMouseOverResCard(event) {
     var obj = event.target;
-    obj.filters = [new createjs.ColorFilter(1.2, 1.2, 1.2, 1, 0, 0, 0, 0)];
-    obj.cache(0, 0, 500, 500);
+    var selected = _cardContainer.getChildByName(obj.name + "_s");
+    if (selected != null)
+        selected.visible = true;
     _invalidateCardCanvas = true;
 }
 function handleMouseOutResCard(event) {
     var obj = event.target;
-    obj.filters = [];
-    obj.updateCache();
+    var selected = _cardContainer.getChildByName(obj.name + "_s");
+    if (selected != null)
+        selected.visible = false;
     _invalidateCardCanvas = true;
 }
 function removeSelectedCards() {

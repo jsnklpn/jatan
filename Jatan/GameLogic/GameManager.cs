@@ -635,6 +635,9 @@ namespace Jatan.GameLogic
             if (pr.Failed) return pr;
             var player = pr.Data;
 
+            if (player.RoadsAvailable <= 0)
+                return ActionResult.CreateFailed("No more roads available.");
+
             if (!player.CanAfford(PurchasableItems.Road))
                 return ActionResult.CreateFailed("Cannot afford a road.");
 
@@ -721,6 +724,9 @@ namespace Jatan.GameLogic
 
             if (type == BuildingTypes.Settlement)
             {
+                if (player.SettlementsAvailable <= 0)
+                    return ActionResult.CreateFailed("No more settlements available.");
+
                 if (!player.CanAfford(PurchasableItems.Settlement))
                     return ActionResult.CreateFailed("Cannot afford a settlement.");
 
@@ -733,6 +739,9 @@ namespace Jatan.GameLogic
             }
             else if (type == BuildingTypes.City)
             {
+                if (player.CitiesAvailable <= 0)
+                    return ActionResult.CreateFailed("No more cities available.");
+
                 if (!player.CanAfford(PurchasableItems.City))
                     return ActionResult.CreateFailed("Cannot afford a city.");
 

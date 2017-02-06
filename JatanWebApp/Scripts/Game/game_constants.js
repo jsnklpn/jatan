@@ -103,6 +103,7 @@ var _assetMap = {
     "imgDice5": { src: "/Content/Images/board/dice5.png", data: null, hitbox: diceHitbox },
     "imgDice6": { src: "/Content/Images/board/dice6.png", data: null, hitbox: diceHitbox },
     // Cards
+    "imgCardWhite": { src: "/Content/Images/board/cardWhite.png", data: null, hitbox: resourceCardHitbox },
     "imgCardWood": { src: "/Content/Images/board/cardWood.png", data: null, hitbox: resourceCardHitbox },
     "imgCardWheat": { src: "/Content/Images/board/cardWheat.png", data: null, hitbox: resourceCardHitbox },
     "imgCardSheep": { src: "/Content/Images/board/cardSheep.png", data: null, hitbox: resourceCardHitbox },

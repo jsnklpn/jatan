@@ -220,6 +220,7 @@
     <Content Include="Content\Images\board\cardOre.png" />
     <Content Include="Content\Images\board\cardSheep.png" />
     <Content Include="Content\Images\board\cardWheat.png" />
+    <Content Include="Content\Images\board\cardWhite.png" />
     <Content Include="Content\Images\board\cardWood.png" />
     <Content Include="Content\Images\board\city.png" />
     <Content Include="Content\Images\board\city_blue.png" />
