@@ -152,10 +152,22 @@
 </div>
 
 <!-- Box to show a card that the play just received -- from stealing or purchasing. -->
-<div id="cardReceivedBox" class="hidden">
+<div id="cardReceivedBox" class="worn-paper-dialog hidden">
     <div>You just recieved a</div>
     <img id="cardReceivedImage" class="" src=""/>
     <div id="cardReceivedName">[CARD_NAME]</div>
+</div>
+
+<div id="selectResourceBox" class="worn-paper-dialog hidden">
+    <h1>[TITLE]</h1>
+    <div>
+        <span id="btnSelectWood" class="aoe-btn select-resource-btn res-icon-wood"></span>
+        <span id="btnSelectBrick" class="aoe-btn select-resource-btn res-icon-brick"></span>
+        <span id="btnSelectWheat" class="aoe-btn select-resource-btn res-icon-wheat"></span>
+        <span id="btnSelectSheep" class="aoe-btn select-resource-btn res-icon-sheep"></span>
+        <span id="btnSelectOre" class="aoe-btn select-resource-btn res-icon-ore"></span>
+    </div>
+    <p>[DESCRIPTION]</p>
 </div>
 
 <div id="turnInfoBox" class="box-shadow hidden">

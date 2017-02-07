@@ -97,6 +97,25 @@ canvas {
     border-image: url('Images/site/button_border.png') 3 repeat !important;
 }
 
+.worn-paper-dialog {
+    position: fixed;
+    width: 293px;
+    height: 299px;
+    margin: auto;
+    padding: 20px;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+    background-image: url('Images/site/dialog_293x299.png');
+    font-size: 16px;
+    font-family: serif;
+    font-weight: bold;
+    text-align: center;
+    color: black;
+}
+
 /* =========== */
 /*    Icons    */
 /* =========== */
@@ -272,7 +291,7 @@ canvas {
     bottom: -80px;
     height: 200px;
     width: 375px;
-    transition: bottom 300ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.4s;
 }
 #devCardBox:hover {
     bottom: 90px;
@@ -576,22 +595,7 @@ input[type="text"]:focus {
 /* ============= */
 
 #cardReceivedBox {
-    position: fixed;
-    width: 293px;
-    height: 299px;
-    margin: auto;
-    padding: 20px;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 3;
-    background-image: url('Images/site/dialog_293x299.png');
     font-size: 18px;
-    font-family: serif;
-    text-align: center;
-    color: black;
-    font-weight: bold;
     box-shadow: 0px 0px 30px white;
 }
 
@@ -719,6 +723,35 @@ input[type="text"]:focus {
     width: 64px;
     height: 40px;
     cursor: pointer;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* ====================== */
+/*   Select Resource UI   */
+/* ====================== */
+
+#selectResourceBox {
+    z-index: 4;
+    box-shadow: 0px 0px 30px white;
+}
+
+#selectResourceBox > h1 {
+    font-size: 22px;
+    margin: 10px 0 10px 0;
+    padding: 0;
+    font-family: inherit;
+    font-weight: bold;
+}
+
+#selectResourceBox > div {
+    margin: 20px 0 20px 0;
+}
+
+.select-resource-btn {
+    display: inline-block;
+    width: 64px;
+    height: 40px;
     background-repeat: no-repeat;
     background-position: center;
 }

@@ -353,6 +353,38 @@ namespace JatanWebApp.SignalR
         }
 
         /// <summary>
+        /// Selects a resource for the Monopoly development card.
+        /// </summary>
+        public ActionResult SelectResourceForMonopoly(ResourceTypes resource)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed().ToGeneric<DevelopmentCards>();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed().ToGeneric<DevelopmentCards>();
+
+            var result = lobby.GameManager.PlayerSelectResourceForMonopoly(playerId, resource);
+            if (result.Succeeded) UpdateAllClientGameManagers();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Selects resources for the Year of Plenty development card.
+        /// </summary>
+        public ActionResult SelectResourcesForYearOfPlenty(ResourceTypes resource1, ResourceTypes resource2)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed().ToGeneric<DevelopmentCards>();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed().ToGeneric<DevelopmentCards>();
+
+            var result = lobby.GameManager.PlayerSelectResourcesForYearOfPlenty(playerId, resource1, resource2);
+            if (result.Succeeded) UpdateAllClientGameManagers();
+
+            return result;
+        }
+
+        /// <summary>
         /// The client selected a road location.
         /// </summary>
         public ActionResult SelectRoad(string strHexEdge)

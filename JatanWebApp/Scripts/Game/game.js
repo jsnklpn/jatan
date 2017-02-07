@@ -35,6 +35,7 @@ var _devCardCanvas = null;
 var _devCardStage = null;
 var _devCardContainer = null;
 var _invalidateDevCardCanvas = null;
+var _yearOfPlentyRes1 = null; // Used to store the first resource the user clicks when selecting 2 resources
 
 // Canvas' to display cards to trade
 var _tradeMode = TradeMode.Bank;
@@ -214,6 +215,8 @@ function initHtmlUI() {
 
     $("#cardReceivedBox").click(hideCardReceivedBox);
 
+    $(".select-resource-btn").click(selectResourceButtonClicked);
+
     // Show chat input box when the enter key is pressed.
     $(document).keydown(function (event) {
         var keycode = (event.keyCode ? event.keyCode : event.which);
@@ -263,14 +266,13 @@ function showCardReceivedBox(type, card) {
         $("#cardReceivedName").text(displayName);
         $("#cardReceivedImage").attr("src", _assetMap["imgCard" + cardName].src);
     }
-    $("#cardReceivedBox").removeClass("hidden");
-    $("#cardReceivedBox").animateCss("bounceInDown");
+    $("#cardReceivedBox").showWithAnimation("bounceInDown");
     $("#cardReceivedImage").addClass("animated infinite tada");
 }
 
 function hideCardReceivedBox() {
     $("#cardReceivedImage").removeClass("animated infinite tada");
-    $("#cardReceivedBox").addClass("hidden");
+    $("#cardReceivedBox").hideWithAnimation("bounceOut");
 }
 
 function playerBoxClicked(boxId) {
@@ -973,6 +975,7 @@ function updateGameModel(gameManager) {
     setResourceTileSelectionMode();
     setGlowForDiceRoll();
     populateBuyButtons();
+    populateSelectResourceForDevCard();
 
     // By default, don't generate stage mouseover events. They are expensive.
     var enableMouseOverEvents = false;
@@ -2216,6 +2219,62 @@ function populateBuyButtons() {
     }
 }
 
+function populateSelectResourceForDevCard() {
+    if (_currentGameManager == null)
+        return;
+
+    var isActivePlayer = (_currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]);
+    var turnState = _currentGameManager["PlayerTurnState"];
+    if (isActivePlayer && turnState === PlayerTurnState.MonopolySelectingResource) {
+        $("#selectResourceBox > h1").text("Monopoly");
+        $("#selectResourceBox > p").html("Select a resource.<br/>Other players must give you all cards of this type.");
+        $("#selectResourceBox").showWithAnimation("fadeInUp");
+    }
+    else if (isActivePlayer && turnState === PlayerTurnState.YearOfPlentySelectingResources) {
+        _yearOfPlentyRes1 = null;
+        $("#selectResourceBox > h1").text("Year of Plenty");
+        $("#selectResourceBox > p").text("Select two resources to immediately collect.");
+        $("#selectResourceBox").showWithAnimation("fadeInUp");
+    } else {
+        $("#selectResourceBox").hideWithAnimation("fadeOutDown");
+    }
+}
+
+function selectResourceButtonClicked(event) {
+    // The user selected a resource for the Monopoly card.
+    if (_currentGameManager == null || _serverGameHub == null)
+        return;
+
+    var obj = event.target;
+    var objId = obj.id;
+    if (objId == null || objId === "") return;
+    var resName = objId.replace("btnSelect", "");
+    if (resName in ResourceNameToTypeMap) {
+        var resType = ResourceNameToTypeMap[resName];
+        var turnState = _currentGameManager["PlayerTurnState"];
+        if (turnState === PlayerTurnState.MonopolySelectingResource) {
+            _serverGameHub.selectResourceForMonopoly(resType).done(function (result) {
+                if (!result["Succeeded"]) { // failed. display error message.
+                    displayToastMessage(result["Message"]);
+                }
+            });
+        }
+        else if (turnState === PlayerTurnState.YearOfPlentySelectingResources) {
+            if (_yearOfPlentyRes1 == null) {
+                // This is the first resource selected. Store it.
+                _yearOfPlentyRes1 = resType;
+                $(this).animateCss("flash");
+            } else {
+                // User has selected 2 resources.
+                _serverGameHub.selectResourcesForYearOfPlenty(_yearOfPlentyRes1, resType).done(function (result) {
+                    if (!result["Succeeded"]) { // failed. display error message.
+                        displayToastMessage(result["Message"]);
+                    }
+                });
+            }
+        }
+    }
+}
 
 //===========================
 // Toast messages
