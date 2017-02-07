@@ -983,7 +983,8 @@ namespace Jatan.GameLogic
         /// </summary>
         public ActionResult PlayerEndTurn(int playerId)
         {
-            var validation = ValidatePlayerAction(PlayerTurnState.TakeAction, playerId);
+            // Allow the player to end his turn even if there is an active trade offer.
+            var validation = ValidatePlayerAction(new [] { PlayerTurnState.TakeAction, PlayerTurnState.RequestingPlayerTrade }, playerId);
             if (validation.Failed) return validation;
 
             // Clear any trade offers, just in case.
