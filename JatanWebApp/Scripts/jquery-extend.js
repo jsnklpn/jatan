@@ -1,14 +1,20 @@
 ﻿// Taken from https://github.com/daneden/animate.css
 // Usage:
-//   $("#yourElement").animateCss("bounce");
+//   $("#yourElement").animateOnce("bounce");
 //
 $.fn.extend({
-    animateCss: function (animationName) {
+    animateOnce: function (animationName) {
         var animationEnd = "webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend";
         this.addClass("animated " + animationName).one(animationEnd, function () {
             $(this).removeClass("animated " + animationName);
         });
         return this;
+    },
+    animateInfinite: function (animationName) {
+        return this.addClass("animated infinite " + animationName);
+    },
+    animateStop: function (animationName) {
+        return this.removeClass("animated infinite " + animationName);
     },
     showWithAnimation: function (animationName) {
         if (!this.hasClass("hidden")) {

@@ -533,7 +533,7 @@ canvas {
     right: 0;
     top: 0;
     bottom: 0;
-
+    z-index: 100;
     padding: 10px;
 
     background-image: url("Images/site/wood_tile.png");

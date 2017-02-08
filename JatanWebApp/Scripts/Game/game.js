@@ -267,11 +267,11 @@ function showCardReceivedBox(type, card) {
         $("#cardReceivedImage").attr("src", _assetMap["imgCard" + cardName].src);
     }
     $("#cardReceivedBox").showWithAnimation("bounceInDown");
-    $("#cardReceivedImage").addClass("animated infinite tada");
+    $("#cardReceivedImage").animateInfinite("tada");
 }
 
 function hideCardReceivedBox() {
-    $("#cardReceivedImage").removeClass("animated infinite tada");
+    $("#cardReceivedImage").animateStop("tada");
     $("#cardReceivedBox").hideWithAnimation("bounceOut");
 }
 
@@ -986,8 +986,12 @@ function updateGameModel(gameManager) {
             case PlayerTurnState.None:
                 break;
             case PlayerTurnState.TakeAction:
+                // stop shake reminder animation if it's still happening.
+                $("#btnRollDice").animateStop("shake");
                 break;
             case PlayerTurnState.NeedToRoll:
+                // Shake the roll dice button to draw the user's attention.
+                rollDiceReminder();
                 break;
             case PlayerTurnState.PlacingSettlement:
                 enableMouseOverEvents = true;
@@ -1046,6 +1050,18 @@ function updateGameModel(gameManager) {
 
     // Draw when everything has been populated
     _invalidateCanvas = true;
+}
+
+function rollDiceReminder() {
+    if (_currentGameManager == null)
+        return;
+
+    if (_currentGameManager["PlayerTurnState"] === PlayerTurnState.NeedToRoll &&
+        _currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]) {
+        $("#btnRollDice").animateOnce("shake");
+        // Continually remind the player to roll the dice.
+        setTimeout(rollDiceReminder, 2000);
+    }
 }
 
 function populateResourceTiles() {
@@ -2263,7 +2279,7 @@ function selectResourceButtonClicked(event) {
             if (_yearOfPlentyRes1 == null) {
                 // This is the first resource selected. Store it.
                 _yearOfPlentyRes1 = resType;
-                $(this).animateCss("flash");
+                $(this).animateOnce("flash");
             } else {
                 // User has selected 2 resources.
                 _serverGameHub.selectResourcesForYearOfPlenty(_yearOfPlentyRes1, resType).done(function (result) {
