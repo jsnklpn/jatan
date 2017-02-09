@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using Jatan.Core;
 using Jatan.GameLogic;
 using Jatan.Models;
@@ -14,6 +15,8 @@ namespace Jatan.UnitTest
         const int PLAYER_0 = 0;
         const int PLAYER_1 = 1;
         const int PLAYER_2 = 2;
+
+        private AutoResetEvent _timeLimitExpired;
 
         [TestMethod]
         public void TestInitialPlacementPhase()
@@ -420,6 +423,33 @@ namespace Jatan.UnitTest
             Assert.AreEqual(1, activePlayer.ResourceCards[ResourceTypes.Brick]);
         }
 
+        [TestMethod]
+        public void TestPlayerTurnTimeLimit()
+        {
+            _timeLimitExpired = new AutoResetEvent(false);
+
+            // 1-second turn time limit.
+            var manager = DoInitialPlacements(true, 1);
+            manager.PlayerTurnTimeLimitExpired += (sender, i) => { _timeLimitExpired.Set(); };
+            var activePlayer = manager.ActivePlayer;
+            Assert.IsNotNull(activePlayer);
+
+            // The time-limit is 1 second. Wait for 1.2 seconds and see if it expires.
+            bool turnExpired = _timeLimitExpired.WaitOne(1200);
+            Assert.IsTrue(turnExpired, "The turn expiration event is supposed to expire.");
+
+            Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "The player's turn should not be skipped automatically.");
+            // Skip the active player's turn.
+            var result = manager.SkipPlayerTurn(PLAYER_0);
+            Assert.IsTrue(result.Succeeded, "The turn skip should succeed.");
+
+            Assert.AreEqual(PLAYER_1, manager.ActivePlayer.Id, "It should now be PLAYER_1's turn.");
+
+            // The time-limit is 1 second. Wait for 1.2 seconds and see if it expires.
+            turnExpired = _timeLimitExpired.WaitOne(1200);
+            Assert.IsTrue(turnExpired, "The turn expiration event is supposed to expire.");
+        }
+
         private GameManager DoInitialPlacementsAndRoll(bool allowSevenRoll)
         {
             var manager = DoInitialPlacements(allowSevenRoll);
@@ -429,7 +459,7 @@ namespace Jatan.UnitTest
             return manager;
         }
 
-        private GameManager DoInitialPlacements(bool allowSevenRoll)
+        private GameManager DoInitialPlacements(bool allowSevenRoll, int turnTimeLimit = 0)
         {
             // This setup method will create a 3-player game with the center and far-right hexagons fully surrounded.
 
@@ -446,6 +476,10 @@ namespace Jatan.UnitTest
                 {
                     dice.ExcludeSet.Add(7);
                 }
+            }
+            if (turnTimeLimit > 0)
+            {
+                manager.Settings.TurnTimeLimit = turnTimeLimit;
             }
 
             manager.StartNewGame();

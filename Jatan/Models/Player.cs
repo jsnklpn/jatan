@@ -199,6 +199,20 @@ namespace Jatan.Models
         }
 
         /// <summary>
+        /// Removes the specified number of random cards from the player.
+        /// </summary>
+        public void RemoveRandomResources(int count)
+        {
+            // Get a copy of the resources list
+            var resourceList = ResourceCards.ToResourceTypeList();
+            for (int i = 0; i < count && resourceList.Any(); i++)
+            {
+                var typeToRemove = resourceList.RemoveRandom();
+                ResourceCards[typeToRemove]--;
+            }
+        }
+
+        /// <summary>
         /// Returns true if the player can afford a certain item.
         /// </summary>
         /// <param name="item"></param>

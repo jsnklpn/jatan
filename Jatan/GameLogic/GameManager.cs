@@ -26,6 +26,7 @@ namespace Jatan.GameLogic
         private Dictionary<Player, int> _playersCardsToLose;
         private List<Player> _playersToStealFrom;
         private int _roadBuildingRoadsRemaining;
+        private TurnTimer _turnTimer;
 
         // <playerId, roadLength>
         private Tuple<int, int> _longestRoad; 
@@ -177,6 +178,21 @@ namespace Jatan.GameLogic
             }
         }
 
+        /// <summary>
+        /// Gets the UTC DateTime of when the current player's turn time-limit expires. Returns DateTime.MinValue if N/A.
+        /// </summary>
+        public DateTime TurnTimerExpiration
+        {
+            get { return _turnTimer.GetExpirationDateTime(); }
+        }
+
+        /// <summary>
+        /// The event which fires when a player's turn time-limit expires.
+        /// The player's turn is NOT skipped automatically. This must be done manually
+        /// with the <see cref="SkipPlayerTurn"/> method.
+        /// </summary>
+        public event EventHandler<int> PlayerTurnTimeLimitExpired;
+
         #endregion
 
         /// <summary>
@@ -198,21 +214,11 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
-        /// Starts a brand new game.
-        /// </summary>
-        public void StartNewGame(IEnumerable<Player> players)
-        {
-            _players.Clear();
-            _players.AddRange(players);
-            StartNewGame();
-        }
-
-        /// <summary>
         /// Starts a brand new game with the current players.
         /// </summary>
         public void StartNewGame()
         {
-            _playerTurnIndex = 0; // The first person in the list goes first.
+            _playerTurnIndex = 0; // The first person in the list goes first. TODO: This should be randomized
             _longestRoad = Tuple.Create(-1, -1);
             _largestArmy = Tuple.Create(-1, -1);
             SetupDevelopmentCards();
@@ -226,8 +232,21 @@ namespace Jatan.GameLogic
             _tradeHelper.ClearAllOffers();
             _gameState = GameState.InitialPlacement;
             _playerTurnState = PlayerTurnState.PlacingSettlement; // TODO: Possibly wait for something to trigger the game start.
+
+            // Init the turn timer
+            if (_turnTimer != null)
+            {
+                _turnTimer.TimeLimitElapsed -= TurnTimer_TimeLimitElapsed;
+                _turnTimer.Dispose();
+            }
+            _turnTimer = new TurnTimer(_gameSettings.TurnTimeLimit);
+            _turnTimer.TimeLimitElapsed += TurnTimer_TimeLimitElapsed;
         }
 
+        /// <summary>
+        /// Adds a players to the game and assigns a unique playerId and a color.
+        /// </summary>
+        /// <param name="name"></param>
         public void AddPlayer(string name)
         {
             _players.Add(new Player(_idCounter++, name, GetAvailableColor()));
@@ -248,6 +267,10 @@ namespace Jatan.GameLogic
 
             if (!_players.Select(p => p.Id).Contains(playerId))
                 return ActionResult.CreateFailed("Player is not currently in this game.");
+
+            var apr = GetPlayerFromId(playerId);
+            if (apr.Failed) return apr;
+            var player = apr.Data;
 
             // First, figure out which player we should select as active after this player leaves.
             Player playerToSetAsActive = null;
@@ -277,14 +300,20 @@ namespace Jatan.GameLogic
                     _tradeHelper.ClearAllOffers();
                     _roadBuildingRoadsRemaining = 0;
                     _currentDiceRoll = null;
+                    _playersToStealFrom.Clear();
 
                     // Go to next player's turn.
                     _playerTurnState = PlayerTurnState.NeedToRoll;
                 }
                 else // The player leaving is a non-active player
                 {
+                    _playersToStealFrom.RemoveAll(p => p.Id == playerId);
+                    _playersCardsToLose.Remove(player);
                     _tradeHelper.CancelCounterOffer(playerId);
                 }
+                
+                // Start the turn timer for the new active player
+                StartPlayerTurnTimer();
             }
             else if (_gameState == GameState.InitialPlacement)
             {
@@ -998,6 +1027,37 @@ namespace Jatan.GameLogic
             return ActionResult.CreateSuccess();
         }
 
+        /// <summary>
+        /// Forces a player's turn to be skipped. The only reason this should fail is
+        /// if the specified player is not currently the active player.
+        /// This should be called when the player's time limit expires.
+        /// </summary>
+        public ActionResult SkipPlayerTurn(int playerId)
+        {
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+            var player = pr.Data;
+            if (ActivePlayer == null || ActivePlayer.Id != player.Id)
+                return ActionResult.CreateFailed("This player is not currently taking a turn.");
+
+            // Clear all turn variables
+            _tradeHelper.ClearAllOffers();
+            _roadBuildingRoadsRemaining = 0;
+            _currentDiceRoll = null;
+            _playersToStealFrom.Clear();
+
+            // If the player was selecting cards to lose, make them lose random cards
+            if (_playerTurnState == PlayerTurnState.AnyPlayerSelectingCardsToLose && _playersCardsToLose.ContainsKey(player))
+            {
+                var numCardsToLose = _playersCardsToLose[player];
+                player.RemoveRandomResources(numCardsToLose);
+            }
+
+            AdvanceToNextPlayerTurn();
+
+            return ActionResult.CreateSuccess();
+        }
+
         #endregion
 
         #region Public client helper methods
@@ -1139,6 +1199,7 @@ namespace Jatan.GameLogic
             {
                 _playerTurnIndex = (_playerTurnIndex + 1) % _players.Count;
                 _playerTurnState = PlayerTurnState.NeedToRoll;
+                StartPlayerTurnTimer();
             }
             else if (_gameState == GameState.InitialPlacement)
             {
@@ -1161,14 +1222,23 @@ namespace Jatan.GameLogic
                         _playerTurnIndex = 0;
                         _gameState = GameState.GameInProgress;
                         _playerTurnState = PlayerTurnState.NeedToRoll;
+                        StartPlayerTurnTimer();
                     }
                     else
                     {
                         _playerTurnState = PlayerTurnState.PlacingSettlement;
                     }
                 }
-                
             }
+        }
+
+        private void StartPlayerTurnTimer()
+        {
+            if (_turnTimer == null) return;
+            if (ActivePlayer != null)
+                _turnTimer.Start(ActivePlayer.Id);
+            else
+                _turnTimer.Stop();
         }
 
         private void ComputePlayersCardsToLose()
@@ -1249,6 +1319,16 @@ namespace Jatan.GameLogic
             if (!usedColors.Contains(PlayerColor.Red)) return PlayerColor.Red;
             if (!usedColors.Contains(PlayerColor.Green)) return PlayerColor.Green;
             return PlayerColor.Yellow;
+        }
+
+        private void TurnTimer_TimeLimitElapsed(object sender, TimeLimitElapsedArgs e)
+        {
+            // Fire the time-limit expired event.
+            var handler = PlayerTurnTimeLimitExpired;
+            if (handler != null)
+            {
+                handler(this, e.PlayerId);
+            }
         }
 
         #endregion

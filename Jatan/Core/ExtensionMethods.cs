@@ -47,6 +47,8 @@ namespace Jatan.Core
         /// </summary>
         public static T RemoveRandom<T>(this IList<T> list)
         {
+            if (list.Count == 0)
+                throw new IndexOutOfRangeException("You cannot remove an item fom an empty list.");
             var itemIndex = _random.Next(list.Count);
             var item = list[itemIndex];
             list.RemoveAt(itemIndex);
@@ -58,6 +60,8 @@ namespace Jatan.Core
         /// </summary>
         public static T GetRandom<T>(this IList<T> list)
         {
+            if (list.Count == 0)
+                throw new IndexOutOfRangeException("You cannot get an item fom an empty list.");
             var itemIndex = _random.Next(list.Count);
             var item = list[itemIndex];
             return item;
