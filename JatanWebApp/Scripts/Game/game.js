@@ -222,6 +222,9 @@ function initHtmlUI() {
     $(".trade-button-ok").click(tradeOkClicked);
     $(".trade-canvas-button").click(tradeCanvasButtonClicked);
 
+    $(".player-trade-box").click(playerTradeBoxClicked);
+    $(".trade-box-cancel").click(playerTradeBoxCancelClicked);
+
     $("#cardReceivedBox").click(hideCardReceivedBox);
 
     $(".select-resource-btn").click(selectResourceButtonClicked);
@@ -1781,9 +1784,11 @@ function populatePlayers() {
     var activePlayerId = _currentGameManager["ActivePlayerId"];
     var gameState = _currentGameManager["GameState"];
     var gameStarted = (gameState === GameState.InitialPlacement || gameState === GameState.GameInProgress);
+    var weAreActivePlayer = (_currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]);
 
     for (var i = 0; i < 4; i++) {
         var boxId = "#playerBox" + (i + 1).toString();
+        var tradeBoxId = "#playerTradeBox" + (i + 1).toString();
         if (players.length > i) {
             var player = players[i];
             var playerId = player["Id"];
@@ -1812,11 +1817,104 @@ function populatePlayers() {
             else if (color === PlayerColor.Green) colorClass = "player-color-green";
             else if (color === PlayerColor.Yellow) colorClass = "player-color-yellow";
             $(boxId).addClass(colorClass);
+
+            // Show any trades this player is proposing
+            var tradeOffer = null;
+            if (_currentGameManager["ActiveTradeOffer"] != null &&
+                _currentGameManager["ActiveTradeOffer"]["CreatorPlayerId"] === playerId) {
+                tradeOffer = _currentGameManager["ActiveTradeOffer"];
+            }
+            else if (_currentGameManager["CounterTradeOffers"] != null && _currentGameManager["CounterTradeOffers"].length > 0) {
+                for (var ti = 0; ti < _currentGameManager["CounterTradeOffers"].length; ti++) {
+                    if (_currentGameManager["CounterTradeOffers"][ti]["CreatorPlayerId"] === playerId) {
+                        tradeOffer = _currentGameManager["CounterTradeOffers"][ti];
+                        break;
+                    }
+                }
+            }
+            if (tradeOffer != null) {
+
+                var toGive = tradeOffer["ToGive"];
+                var resNames = ["Wood", "Brick", "Wheat", "Sheep", "Ore"];
+                for (var ri = 0; ri < resNames.length; ri++) {
+                    var resName = resNames[ri];
+                    var count = toGive[resName];
+                    var $icon = $(tradeBoxId + " > .player-trade-give > .res-icon-" + resName.toLowerCase());
+                    var $count = $(tradeBoxId + " > .player-trade-give > .num-" + resName.toLowerCase());
+                    if (count > 0) {
+                        $icon.removeClass("hidden");
+                        $count.text(count.toString() + "x");
+                    } else {
+                        $icon.addClass("hidden");
+                        $count.text("");
+                    }
+                }
+
+                var toRecv = tradeOffer["ToReceive"];
+                for (var ri = 0; ri < resNames.length; ri++) {
+                    var resName = resNames[ri];
+                    var count = toRecv[resName];
+                    var $icon = $(tradeBoxId + " > .player-trade-recv > .res-icon-" + resName.toLowerCase());
+                    var $count = $(tradeBoxId + " > .player-trade-recv > .num-" + resName.toLowerCase());
+                    if (count > 0) {
+                        $icon.removeClass("hidden");
+                        $count.text(count.toString() + "x");
+                    } else {
+                        $icon.addClass("hidden");
+                        $count.text("");
+                    }
+                }
+
+                // Make other trade offers selectable
+                if (_currentGameManager["MyPlayerId"] !== playerId &&
+                    (weAreActivePlayer || _currentGameManager["ActivePlayerId"] === playerId)) {
+                    // If we're the main player, all other trade offers are selectable.
+                    // If we aren't the main player, only the main player trade offer is selectable.
+                    $(tradeBoxId).addClass("selectable");
+                } else {
+                    $(tradeBoxId).removeClass("selectable");
+                }
+
+                // Show cancel button if this is our offer.
+                if (_currentGameManager["MyPlayerId"] === playerId) {
+                    $(tradeBoxId + " .trade-box-cancel").removeClass("hidden");
+                } else {
+                    $(tradeBoxId + " .trade-box-cancel").addClass("hidden");
+                }
+
+                $(tradeBoxId).removeClass("hidden");
+
+            } else {
+                $(tradeBoxId).addClass("hidden");
+            }
+
         }
         else {
             $(boxId).addClass("hidden");
+            $(tradeBoxId).addClass("hidden");
         }
     }
+}
+
+function playerTradeBoxClicked(event) {
+    if (_currentGameManager == null)
+        return;
+
+    if (!$(this).hasClass("selectable"))
+        return;
+
+    // TODO
+}
+
+function playerTradeBoxCancelClicked(event) {
+    if (_serverGameHub == null) return;
+
+    // Cancel the player's current trade offer.
+    _serverGameHub.cancelMyTradeOffer().done(function (result) {
+        if (!result["Succeeded"]) { // failed. display error message.
+            displayToastMessage(result["Message"]);
+        }
+    });
 }
 
 function populateRobber() {

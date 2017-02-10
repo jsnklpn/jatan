@@ -192,12 +192,36 @@
 @for (int i = 0; i < 4; i++)
 {
     {
+        <!-- Trade boxes -->
+        string tradeBoxId = "playerTradeBox" + (i + 1).ToString();
+        <div id="@tradeBoxId" class="player-trade-box hidden">
+            <div class="player-trade-give">
+                <span>--&gt;</span>
+                <span class="num-wood"></span><span class="res-icon-small res-icon-wood"></span>
+                <span class="num-brick"></span><span class="res-icon-small res-icon-brick"></span>
+                <span class="num-wheat"></span><span class="res-icon-small res-icon-wheat"></span>
+                <span class="num-sheep"></span><span class="res-icon-small res-icon-sheep"></span>
+                <span class="num-ore"></span><span class="res-icon-small res-icon-ore"></span>
+            </div>
+            <div class="player-trade-recv">
+                <span>&lt;--</span>
+                <span class="num-wood"></span><span class="res-icon-small res-icon-wood"></span>
+                <span class="num-brick"></span><span class="res-icon-small res-icon-brick"></span>
+                <span class="num-wheat"></span><span class="res-icon-small res-icon-wheat"></span>
+                <span class="num-sheep"></span><span class="res-icon-small res-icon-sheep"></span>
+                <span class="num-ore"></span><span class="res-icon-small res-icon-ore"></span>
+            </div>
+            <div class="hover-layer"></div>
+            <div class="aoe-btn trade-box-cancel" title="Cancel trade offer">x</div>
+        </div>
+
         string boxId = "playerBox" + (i + 1).ToString();
         <div id="@boxId" class="player-float-box box-shadow hidden">
-            <img class="player-avatar box-shadow" src="" />
+            <img class="player-avatar box-shadow" src=""/>
             <div class="player-name"></div>
             <div class="hover-layer"></div>
         </div>
+
     }
 }
 

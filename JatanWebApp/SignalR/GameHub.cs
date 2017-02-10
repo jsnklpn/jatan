@@ -547,6 +547,23 @@ namespace JatanWebApp.SignalR
         }
 
         /// <summary>
+        /// Cancels the calling player's trade offer.
+        /// </summary>
+        public ActionResult CancelMyTradeOffer()
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.PlayerCancelTradeOffer(playerId);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
         /// Proposes a trade for the active player to consider. Can only be called by a non-active player.
         /// </summary>
         public ActionResult CreateCounterTradeOffer(ResourceTypes[] toGive, ResourceTypes[] toRecv)
