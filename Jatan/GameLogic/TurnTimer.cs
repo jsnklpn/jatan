@@ -120,7 +120,7 @@ namespace Jatan.GameLogic
         }
     }
 
-    internal class TimeLimitElapsedArgs : EventArgs
+    public class TimeLimitElapsedArgs : EventArgs
     {
         /// <summary>
         /// The Id of the player whose turn time limit expired.

@@ -7,6 +7,7 @@ var _currentGameManager = null;
 // Resource tiles and ports are not sent with every manager update, so we save a separate reference to them
 var _currentResourceTiles = null;
 var _currentPorts = null;
+var _turnTimerTimeoutId = null;
 
 var _allResourcesLoaded = false;
 var _loadQueue = null;
@@ -108,10 +109,18 @@ function initSignalR() {
         _serverGameHub.getGameManagerUpdate(true); // A new player joined, so lets get a full game update.
     };
 
-    gameHub.client.playerLeft = function (playerName) {
+    gameHub.client.playerLeft = function(playerName) {
         writeTextToChat(playerName + " has left the game.", ChatTextType.Danger);
         _serverGameHub.getGameManagerUpdate(true); // A player left, so lets get a full game update.
-    }
+    };
+
+    gameHub.client.turnTimeLimitExpired = function (playerId) {
+        var skippedPlayer = getPlayerFromId(playerId);
+        if (skippedPlayer != null) {
+            writeTextToChat(skippedPlayer["Name"] + "'s turn was skipped!", ChatTextType.Warning);
+        }
+        _serverGameHub.getGameManagerUpdate(false); // A player's turn was skipped. Get a minor game update.
+    };
 
     gameHub.client.gameAborted = function () {
         writeTextToChat("*** The game has been shut down by the host ***", ChatTextType.Danger);
@@ -1681,6 +1690,8 @@ function populateTurnInfoBox() {
     var activePlayerId = _currentGameManager["ActivePlayerId"];
     var gameState = _currentGameManager["GameState"];
     var playerTurnState = _currentGameManager["PlayerTurnState"];
+    var turnExpireEpoch = _currentGameManager["TurnExpire"];
+
     var gameStarted = (gameState === GameState.InitialPlacement || gameState === GameState.GameInProgress);
 
     $("#turnInfoBox").removeClass("hidden");
@@ -1719,6 +1730,33 @@ function populateTurnInfoBox() {
     } else {
         $("#turnInfoBox").addClass("hidden");
     }
+
+    // Turn timer
+    if (turnExpireEpoch !== 0) {
+        $("#turnTimer").removeClass("hidden");
+        clearTimeout(_turnTimerTimeoutId);
+        updateTurnTimer();
+    } else {
+        //$("#turnTimer").addClass("hidden");
+    }
+}
+
+function updateTurnTimer() {
+    if (_currentGameManager == null) {
+        $("#turnTimer").addClass("hidden");
+        return;
+    }
+    var turnExpireEpoch = _currentGameManager["TurnExpire"];
+    //if (turnExpireEpoch === 0) {
+        //$("#turnTimer").addClass("hidden");
+        //return;
+    //}
+    var currentTime = new Date().getTime();
+    var secondsLeft = turnExpireEpoch - currentTime;
+    $("#turnTimer").text(Math.floor(secondsLeft).toString());
+
+    // Update again in a second
+    _turnTimerTimeoutId = setTimeout(updateTurnTimer, 1000);
 }
 
 function populatePlayers() {

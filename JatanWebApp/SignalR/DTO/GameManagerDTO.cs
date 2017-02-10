@@ -5,6 +5,7 @@ using System.Web;
 using Jatan.Core;
 using Jatan.GameLogic;
 using Jatan.Models;
+using JatanWebApp.Helpers;
 
 namespace JatanWebApp.SignalR.DTO
 {
@@ -22,6 +23,8 @@ namespace JatanWebApp.SignalR.DTO
         public List<PlayerDTO> Players { get; set; }
         public TradeOffer ActiveTradeOffer { get; set; }
         public List<TradeOffer> CounterTradeOffers { get; set; }
+        // The Unix epoch time when the current player's turn will expire. 0 if none.
+        public long TurnExpire { get; set; } 
 
         // These properties are populated only when needed.
         public List<HexEdge> ValidRoadPlacements { get; set; }
@@ -84,6 +87,9 @@ namespace JatanWebApp.SignalR.DTO
                     ValidCityPlacements = manager.GetLegalBuildingPlacements(requestingPlayerId, BuildingTypes.City);
                 }
             }
+
+            var expiration = manager.TurnTimerExpiration;
+            this.TurnExpire = expiration == DateTime.MinValue ? 0 : expiration.ToUnixTimestamp();
         }
     }
 }

@@ -81,8 +81,16 @@ namespace JatanWebApp.SignalR
             this.GameManager.Settings.RobberMode = model.RobberMode;
             this.GameManager.Settings.TurnTimeLimit = model.TurnTimeLimit;
             this.GameManager.Settings.CardCountLossThreshold = model.CardLossThreshold;
+            this.GameManager.PlayerTurnTimeLimitExpired += GameManager_PlayerTurnTimeLimitExpired;
 
             this.GameManager.AddPlayer(ownerName);
+        }
+
+        private void GameManager_PlayerTurnTimeLimitExpired(object sender, TimeLimitElapsedArgs e)
+        {
+            // The current player's turn just expired and their turn was skipped.
+            // Inform all players that the game state changed.
+            GameHub.GetClientsForGame(Owner).turnTimeLimitExpired(e.PlayerId);
         }
 
         /// <summary>

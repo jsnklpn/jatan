@@ -183,7 +183,7 @@ namespace Jatan.GameLogic
         /// </summary>
         public DateTime TurnTimerExpiration
         {
-            get { return _turnTimer.GetExpirationDateTime(); }
+            get { return _turnTimer != null ? _turnTimer.GetExpirationDateTime() : DateTime.MinValue; }
         }
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace Jatan.GameLogic
         /// The player's turn is NOT skipped automatically. This must be done manually
         /// with the <see cref="SkipPlayerTurn"/> method.
         /// </summary>
-        public event EventHandler<int> PlayerTurnTimeLimitExpired;
+        public event EventHandler<TimeLimitElapsedArgs> PlayerTurnTimeLimitExpired;
 
         #endregion
 
@@ -1030,7 +1030,7 @@ namespace Jatan.GameLogic
         /// <summary>
         /// Forces a player's turn to be skipped. The only reason this should fail is
         /// if the specified player is not currently the active player.
-        /// This should be called when the player's time limit expires.
+        /// This is called automatically when a player's turn time limit expires.
         /// </summary>
         public ActionResult SkipPlayerTurn(int playerId)
         {
@@ -1323,11 +1323,14 @@ namespace Jatan.GameLogic
 
         private void TurnTimer_TimeLimitElapsed(object sender, TimeLimitElapsedArgs e)
         {
+            // Skip the current player's turn.
+            SkipPlayerTurn(e.PlayerId);
+
             // Fire the time-limit expired event.
             var handler = PlayerTurnTimeLimitExpired;
             if (handler != null)
             {
-                handler(this, e.PlayerId);
+                handler(this, e);
             }
         }
 

@@ -20,6 +20,9 @@ namespace JatanWebApp.Helpers
             return manager.Players.FirstOrDefault(p => p.Name == userName);
         }
 
+        /// <summary>
+        /// Gets the avatar path for a user identity.
+        /// </summary>
         public static string GetAvatarPath(this IIdentity identity)
         {
             var userName = identity.Name;
@@ -36,6 +39,17 @@ namespace JatanWebApp.Helpers
                 }
             }
             return @"/Content/Images/avatars/default.jpg";
+        }
+
+        /// <summary>
+        /// Converts a DateTime to a Unix timestamp
+        /// </summary>
+        public static long ToUnixTimestamp(this DateTime date)
+        {
+            var unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0);
+            TimeSpan unixTimeSpan = date - unixEpoch;
+
+            return (long)unixTimeSpan.TotalSeconds;
         }
     }
 }

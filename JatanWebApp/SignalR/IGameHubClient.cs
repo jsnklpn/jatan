@@ -17,5 +17,6 @@ namespace JatanWebApp.SignalR
         void newPlayerJoined(string newPlayerName);
         void playerLeft(string playerName);
         void gameAborted();
+        void turnTimeLimitExpired(int playerId);
     }
 }
