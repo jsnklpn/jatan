@@ -47,8 +47,8 @@ namespace Jatan.GameLogic
 
         private void InternalTimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
         {
-            OnTimeLimitElapsed();
             _lastStarted = DateTime.MinValue;
+            OnTimeLimitElapsed();
         }
 
         protected void OnTimeLimitElapsed()
@@ -120,6 +120,9 @@ namespace Jatan.GameLogic
         }
     }
 
+    /// <summary>
+    /// Event arguments for when a turn time-limit elapses.
+    /// </summary>
     public class TimeLimitElapsedArgs : EventArgs
     {
         /// <summary>

@@ -1737,7 +1737,7 @@ function populateTurnInfoBox() {
         clearTimeout(_turnTimerTimeoutId);
         updateTurnTimer();
     } else {
-        //$("#turnTimer").addClass("hidden");
+        $("#turnTimer").addClass("hidden");
     }
 }
 
@@ -1747,13 +1747,27 @@ function updateTurnTimer() {
         return;
     }
     var turnExpireEpoch = _currentGameManager["TurnExpire"];
-    //if (turnExpireEpoch === 0) {
-        //$("#turnTimer").addClass("hidden");
-        //return;
-    //}
-    var currentTime = new Date().getTime();
-    var secondsLeft = turnExpireEpoch - currentTime;
-    $("#turnTimer").text(Math.floor(secondsLeft).toString());
+    if (turnExpireEpoch === 0) {
+        $("#turnTimer").addClass("hidden");
+        return;
+    }
+    var currentTime = new Date().getTime() / 1000;
+    var secondsLeft = Math.floor(turnExpireEpoch - currentTime);
+    
+    if (secondsLeft <= 10) {
+        if (secondsLeft < 0) {
+            secondsLeft = 0;
+        }
+        else if (secondsLeft === 10 && _currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]) {
+            // Warn the active player that there are 10 seconds left.
+            $("#turnTimer").animateOnce("tada");
+        }
+        $("#turnTimer").addClass("text-color-red");
+    } else {
+        $("#turnTimer").removeClass("text-color-red");
+    }
+
+    $("#turnTimer").text(secondsLeft.toString());
 
     // Update again in a second
     _turnTimerTimeoutId = setTimeout(updateTurnTimer, 1000);
