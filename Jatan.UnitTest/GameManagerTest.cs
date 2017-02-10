@@ -434,20 +434,19 @@ namespace Jatan.UnitTest
             var activePlayer = manager.ActivePlayer;
             Assert.IsNotNull(activePlayer);
 
-            // The time-limit is 1 second. Wait for 1.2 seconds and see if it expires.
-            bool turnExpired = _timeLimitExpired.WaitOne(1200);
-            Assert.IsTrue(turnExpired, "The turn expiration event is supposed to expire.");
+            Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "It should be PLAYER_0's turn.");
 
-            Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "The player's turn should not be skipped automatically.");
-            // Skip the active player's turn.
-            var result = manager.SkipPlayerTurn(PLAYER_0);
-            Assert.IsTrue(result.Succeeded, "The turn skip should succeed.");
+            // The time-limit is 1 second. Wait for 1.1 seconds and see if it expires.
+            bool turnExpired = _timeLimitExpired.WaitOne(1100);
+            Assert.IsTrue(turnExpired, "The turn expiration event is supposed to expire.");
 
             Assert.AreEqual(PLAYER_1, manager.ActivePlayer.Id, "It should now be PLAYER_1's turn.");
-
-            // The time-limit is 1 second. Wait for 1.2 seconds and see if it expires.
-            turnExpired = _timeLimitExpired.WaitOne(1200);
+            
+            // The time-limit is 1 second. Wait for 1.1 seconds and see if it expires.
+            turnExpired = _timeLimitExpired.WaitOne(1100);
             Assert.IsTrue(turnExpired, "The turn expiration event is supposed to expire.");
+
+            Assert.AreEqual(PLAYER_2, manager.ActivePlayer.Id, "It should now be PLAYER_2's turn.");
         }
 
         private GameManager DoInitialPlacementsAndRoll(bool allowSevenRoll)
