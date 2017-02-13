@@ -222,9 +222,12 @@ function initHtmlUI() {
     $(".trade-button-ok").click(tradeOkClicked);
     $(".trade-canvas-button").click(tradeCanvasButtonClicked);
 
-    $(".player-trade-accept").click(playerTradeBoxAcceptClicked);
     $(".player-trade-cancel").click(playerTradeBoxCancelClicked);
     $(".player-trade-counter,.player-trade-edit").click(tradePlayerClicked);
+    $("#btnAcceptTrade1").click(function () { playerTradeBoxAcceptClicked(1) });
+    $("#btnAcceptTrade2").click(function () { playerTradeBoxAcceptClicked(2) });
+    $("#btnAcceptTrade3").click(function () { playerTradeBoxAcceptClicked(3) });
+    $("#btnAcceptTrade4").click(function () { playerTradeBoxAcceptClicked(4) });
 
     $("#cardReceivedBox").click(hideCardReceivedBox);
 
@@ -1913,11 +1916,33 @@ function populatePlayers() {
     }
 }
 
-function playerTradeBoxAcceptClicked(event) {
-    if (_currentGameManager == null)
+function playerTradeBoxAcceptClicked(boxId) {
+    if (_currentGameManager == null || _serverGameHub == null)
         return;
 
-    // TODO
+    var amActivePlayer = (_currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]);
+
+    if (!amActivePlayer) {
+        // Accept the active trade offer.
+        _serverGameHub.acceptActiveTradeOffer().done(function(result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                displayToastMessage(result["Message"]);
+            }
+        });
+    } else {
+        var players = _currentGameManager["Players"];
+        var playerIndex = boxId - 1;
+        if (playerIndex >= 0 && playerIndex < players.length) {
+            var player = players[boxId - 1];
+            var playerId = player["Id"];
+            // Accept the counter trade offer.
+            _serverGameHub.acceptCounterTradeOffer(playerId).done(function (result) {
+                if (!result["Succeeded"]) { // failed. display error message.
+                    displayToastMessage(result["Message"]);
+                }
+            });
+        }
+    }
 }
 
 function playerTradeBoxCancelClicked(event) {

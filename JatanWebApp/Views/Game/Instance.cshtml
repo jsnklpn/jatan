@@ -193,8 +193,7 @@
 {
     {
         <!-- Trade boxes -->
-        string tradeBoxId = "playerTradeBox" + (i + 1).ToString();
-        <div id="@tradeBoxId" class="player-trade-box hidden">
+        <div id="playerTradeBox@(i + 1)" class="player-trade-box hidden">
             <div class="player-trade-give">
                 <span class="trade-arrow arrow-give"></span>
                 <div class="trade-res-div"><div class="res-icon res-icon-wood"></div><div class="trade-res-count num-wood"></div></div>
@@ -215,13 +214,11 @@
             <div class="trade-divider"></div>
             <div class="aoe-btn player-trade-button player-trade-counter" title="Create counter trade offer">Counter-offer</div>
             <div class="aoe-btn player-trade-button player-trade-edit" title="Edit trade offer">Edit</div>
-            <div class="aoe-btn player-trade-button player-trade-accept" title="Accept trade offer">Accept</div>
+            <div class="aoe-btn player-trade-button player-trade-accept" id="btnAcceptTrade@(i + 1)" title="Accept trade offer">Accept</div>
             <div class="aoe-btn player-trade-button player-trade-cancel" title="Cancel trade offer">Cancel</div>
         </div>
-
-        string boxId = "playerBox" + (i + 1).ToString();
-        <div id="@boxId" class="player-float-box box-shadow hidden">
-            <img class="player-avatar box-shadow" src=""/>
+        <div id="playerBox@(i + 1)" class="player-float-box box-shadow hidden">
+            <img class="player-avatar box-shadow" src="" />
             <div class="player-name"></div>
             <div class="hover-layer"></div>
         </div>
