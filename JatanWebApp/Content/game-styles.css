@@ -398,11 +398,10 @@ canvas {
 /* Player boxes */
 /* ============ */
 .player-float-box {
-    width: 250px;
-    height: 140px;
+    width: 248px;
+    height: 118px;
     position: fixed;
-    display: inline;
-    padding: 10px;
+    padding: 0 0 0 10px;
 
     background-image: url("Images/site/wood_tile.png");
     background-repeat: repeat;
@@ -421,6 +420,7 @@ canvas {
     bottom: inherit;
     left: inherit;
     right: inherit;
+    pointer-events: none;
     background-color: rgba(255, 255, 255, 0.0);
 }
 .selectable {
@@ -442,19 +442,13 @@ canvas {
 @keyframes pulse-white { from { background-color: rgba(255, 255, 255, 0.0); } to { background-color: rgba(255, 255, 255, 0.4); } }
 
 .player-avatar {
-    width: 48px;
-    height: 48px;
+    width: 60px;
+    height: 60px;
 }
 
 .active-player > .player-avatar {
-    /* http://easings.net/en */
-    -webkit-animation:1s cubic-bezier(0.445, 0.05, 0.55, 0.95) 0s infinite alternate pulse;
-    -moz-animation:1s cubic-bezier(0.445, 0.05, 0.55, 0.95) 0s infinite alternate pulse;
-    animation:1s cubic-bezier(0.445, 0.05, 0.55, 0.95) 0s infinite alternate pulse;
+    
 }
-@-moz-keyframes pulse { from { -moz-transform: scale(1.0); } to { -moz-transform: scale(1.15); } }
-@-webkit-keyframes pulse { from { -webkit-transform: scale(1.0); } to { -webkit-transform: scale(1.15); } }
-@keyframes pulse { from { -webkit-transform:scale(1.0); transform: scale(1.0); } to { -webkit-transform: scale(1.15); transform: scale(1.15); } }
 
 .player-name {
     font-size: 18px;
@@ -464,6 +458,64 @@ canvas {
     text-shadow: 2px 2px 0px #000;
 }
 
+.player-box-field {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid black;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    padding-top: 3px;
+    text-shadow: 2px 2px 0px #000;
+    box-shadow:inset 3px 3px 5px black;
+}
+
+.player-box-field.top-score {
+    background-color: gold;
+    color: white;
+    border: 1px solid rgba(0, 0, 0, 0.75);
+    box-shadow: 0 0 8px white;
+    text-shadow: 0px 0px 3px #000,
+        -1px -1px 0 #000, 1px -1px 0 #000,
+        -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+.player-box-icon {
+    position: absolute;
+    width: 35px;
+    height: 30px;
+    margin-left: -36px;
+
+    /* TODO: Replace text with icons */
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 0px black;
+    padding-top: 7px;
+    text-align: right;
+}
+
+.field-cards, .icon-cards {
+    top: 23px;
+    left: 119px;
+}
+.field-roads, .icon-roads {
+    top: 23px;
+    left: 198px;
+}
+.field-army, .icon-army {
+    top: 76px;
+    left: 119px;
+}
+.field-points, .icon-points {
+    top: 76px;
+    left: 198px;
+}
+
 #playerBox1 {
     top: -1px;
     left: -1px;
@@ -471,7 +523,7 @@ canvas {
 }
 #playerTradeBox1 {
     top: -1px;
-    left: 249px;
+    left: 247px;
 }
 
 #playerBox2 {
@@ -481,7 +533,7 @@ canvas {
 }
 #playerTradeBox2 {
     top: -1px;
-    right: 249px;
+    right: 247px;
 }
 
 #playerBox3 {
@@ -491,7 +543,7 @@ canvas {
 }
 #playerTradeBox3 {
     bottom: 99px;
-    left: 249px;
+    left: 247px;
 }
 
 #playerBox4 {
@@ -501,7 +553,7 @@ canvas {
 }
 #playerTradeBox4 {
     bottom: 99px;
-    right: 249px;
+    right: 247px;
 }
 
 .player-color-blue {
@@ -521,7 +573,6 @@ canvas {
 /*  Player trade viewer */
 /* ==================== */
 .player-trade-box {
-    /* Player box is 250x140 */
     width: 287px;
     height: 185px;
     position: fixed;
@@ -620,7 +671,7 @@ canvas {
     position: fixed;
     float: left;
     width: 240px;
-    top: 140px;
+    top: 118px;
     bottom: 190px;
     border: 0;
     margin: 5px;

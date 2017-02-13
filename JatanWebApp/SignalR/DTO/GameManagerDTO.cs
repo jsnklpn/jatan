@@ -42,6 +42,10 @@ namespace JatanWebApp.SignalR.DTO
             this.ActivePlayerId = (manager.ActivePlayer != null) ? manager.ActivePlayer.Id : -1;
             this.CurrentDiceRoll = manager.CurrentDiceRoll;
             this.Players = new List<PlayerDTO>();
+
+            var playerScores = manager.PlayerScores;
+            var roadLoengths = manager.PlayerRoadLengths;
+
             foreach (var p in manager.Players.OrderBy(p => p.Id))
             {
                 var playerDto = new PlayerDTO(p, (p.Id == requestingPlayerId));
@@ -63,6 +67,13 @@ namespace JatanWebApp.SignalR.DTO
                         t => buildingLocations.Contains(t.Key.GetPoints()[0]) ||
                              buildingLocations.Contains(t.Key.GetPoints()[1]))
                         .Select(t => t.Value.Resource).Distinct().ToList();
+
+                playerDto.TotalVictoryPoints = playerScores[p.Id];
+                playerDto.RoadLength = roadLoengths[p.Id];
+                playerDto.LongestRoad = (manager.LongestRoadPlayerId == p.Id);
+                playerDto.LargestArmy = (manager.LargestArmyPlayerId == p.Id);
+                // Only check for top score if we have more than 2 points. Everyone starts with 2 points.
+                playerDto.TopScore = (playerDto.TotalVictoryPoints > 2  && playerDto.TotalVictoryPoints == playerScores.Max(s => s.Value));
 
                 this.Players.Add(playerDto);
             }

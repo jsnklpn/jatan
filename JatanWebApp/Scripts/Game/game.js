@@ -1822,6 +1822,17 @@ function populatePlayers() {
             else if (color === PlayerColor.Yellow) colorClass = "player-color-yellow";
             $(boxId).addClass(colorClass);
 
+            // Populate number fields
+            $(boxId + " .field-cards").text(player["NumberOfResourceCards"]);
+            $(boxId + " .field-roads").text(player["RoadLength"]);
+            $(boxId + " .field-army").text(player["ArmySize"]);
+            $(boxId + " .field-points").text(player["TotalVictoryPoints"]);
+            // Highlight the fields where the player is the best
+            $(boxId + " .player-box-field").removeClass("top-score");
+            if (player["LongestRoad"]) $(boxId + " .field-roads").addClass("top-score");
+            if (player["LargestArmy"]) $(boxId + " .field-army").addClass("top-score");
+            if (player["TopScore"]) $(boxId + " .field-points").addClass("top-score");
+
             // Show any trades this player is proposing
             var tradeOffer = null;
             if (_currentGameManager["ActiveTradeOffer"] != null &&

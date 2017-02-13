@@ -29,7 +29,7 @@ namespace Jatan.GameLogic
         private TurnTimer _turnTimer;
 
         // <playerId, roadLength>
-        private Tuple<int, int> _longestRoad; 
+        private Tuple<int, int> _longestRoad;
         // <playerId, armySize>
         private Tuple<int, int> _largestArmy;
 
@@ -138,15 +138,48 @@ namespace Jatan.GameLogic
             get
             {
                 var result = new Dictionary<int, int>();
-                foreach (var p in Players)
+                foreach (var p in _players)
                 {
                     var points = GetTotalPointsForPlayer(p.Id);
-                    if (points.Succeeded)
-                        result.Add(p.Id, points.Data);
+                    result.Add(p.Id, (points.Succeeded ? points.Data : 0));
                 }
                 return result;
             }
             
+        }
+
+        /// <summary>
+        /// Gets the current player road lengths.
+        /// </summary>
+        public Dictionary<int, int> PlayerRoadLengths
+        {
+            get
+            {
+                var result = new Dictionary<int, int>();
+                foreach (var p in _players)
+                {
+                    var roadLength = _gameBoard.GetRoadLengthForPlayer(p.Id);
+                    result.Add(p.Id, roadLength);
+                }
+                return result;
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the id of the player with the longest road.
+        /// </summary>
+        public int LongestRoadPlayerId
+        {
+            get { return _longestRoad.Item1; }
+        }
+
+        /// <summary>
+        /// Gets the id of the player with the largest army.
+        /// </summary>
+        public int LargestArmyPlayerId
+        {
+            get { return _largestArmy.Item1; }
         }
 
         /// <summary>
@@ -206,6 +239,8 @@ namespace Jatan.GameLogic
             _gameBoard = new GameBoard();
             _players = new List<Player>();
             _developmentCardDeck = new CardDeck<DevelopmentCards>();
+            _longestRoad = Tuple.Create(-1, -1);
+            _largestArmy = Tuple.Create(-1, -1);
             _dice = new Dice();
             _tradeHelper = new TradeHelper();
             _playersCardsToLose = new Dictionary<Player, int>();

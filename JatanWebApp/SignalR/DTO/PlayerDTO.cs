@@ -24,6 +24,11 @@ namespace JatanWebApp.SignalR.DTO
         public List<ResourceTypes> PortsOwned { get; set; }
         public bool AvailableToRob { get; set; } // Used when players are getting robbed
         public int CardsToLose { get; set; } // Used when a 7 is rolled and player has too many cards
+        public int TotalVictoryPoints { get; set; }
+        public int RoadLength { get; set; }
+        public bool LongestRoad { get; set; }
+        public bool LargestArmy { get; set; }
+        public bool TopScore { get; set; }
 
         // Private data
         public ResourceCollection ResourceCards { get; set; }
