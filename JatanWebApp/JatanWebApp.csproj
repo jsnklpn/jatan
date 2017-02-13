@@ -292,11 +292,17 @@
     <Content Include="Content\Images\board\tile_wheat.png" />
     <Content Include="Content\Images\board\tile_wood.png" />
     <Content Include="Content\Images\board\water.jpg" />
+    <Content Include="Content\Images\site\arrow_left_green.png" />
+    <Content Include="Content\Images\site\arrow_left_red.png" />
+    <Content Include="Content\Images\site\arrow_right_green.png" />
+    <Content Include="Content\Images\site\arrow_right_red.png" />
     <Content Include="Content\Images\site\button_border.png" />
     <Content Include="Content\Images\site\button_border_down.png" />
+    <Content Include="Content\Images\site\dialog_287x185.png" />
     <Content Include="Content\Images\site\dialog_293x299.png" />
     <Content Include="Content\Images\site\dialog_675x441.png" />
     <Content Include="Content\Images\site\dice_photo2.png" />
+    <Content Include="Content\Images\site\divider.png" />
     <Content Include="Content\Images\site\hud_tile.png" />
     <Content Include="Content\Images\site\icon_brick.png" />
     <Content Include="Content\Images\site\icon_ore.png" />

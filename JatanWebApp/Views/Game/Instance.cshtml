@@ -196,23 +196,27 @@
         string tradeBoxId = "playerTradeBox" + (i + 1).ToString();
         <div id="@tradeBoxId" class="player-trade-box hidden">
             <div class="player-trade-give">
-                <span>--&gt;</span>
-                <span class="num-wood"></span><span class="res-icon-small res-icon-wood"></span>
-                <span class="num-brick"></span><span class="res-icon-small res-icon-brick"></span>
-                <span class="num-wheat"></span><span class="res-icon-small res-icon-wheat"></span>
-                <span class="num-sheep"></span><span class="res-icon-small res-icon-sheep"></span>
-                <span class="num-ore"></span><span class="res-icon-small res-icon-ore"></span>
+                <span class="trade-arrow arrow-give"></span>
+                <div class="trade-res-div"><div class="res-icon res-icon-wood"></div><div class="trade-res-count num-wood"></div></div>
+                <div class="trade-res-div"><div class="res-icon res-icon-brick"></div><div class="trade-res-count num-brick"></div></div>
+                <div class="trade-res-div"><div class="res-icon res-icon-wheat"></div><div class="trade-res-count num-wheat"></div></div>
+                <div class="trade-res-div"><div class="res-icon res-icon-sheep"></div><div class="trade-res-count num-sheep"></div></div>
+                <div class="trade-res-div"><div class="res-icon res-icon-ore"></div><div class="trade-res-count num-ore"></div></div>
             </div>
+            <div class="trade-divider"></div>
             <div class="player-trade-recv">
-                <span>&lt;--</span>
-                <span class="num-wood"></span><span class="res-icon-small res-icon-wood"></span>
-                <span class="num-brick"></span><span class="res-icon-small res-icon-brick"></span>
-                <span class="num-wheat"></span><span class="res-icon-small res-icon-wheat"></span>
-                <span class="num-sheep"></span><span class="res-icon-small res-icon-sheep"></span>
-                <span class="num-ore"></span><span class="res-icon-small res-icon-ore"></span>
+                <span class="trade-arrow arrow-recv"></span>
+                <div class="trade-res-div"><div class="res-icon res-icon-wood"></div><div class="trade-res-count num-wood"></div></div>
+                <div class="trade-res-div"><div class="res-icon res-icon-brick"></div><div class="trade-res-count num-brick"></div></div>
+                <div class="trade-res-div"><div class="res-icon res-icon-wheat"></div><div class="trade-res-count num-wheat"></div></div>
+                <div class="trade-res-div"><div class="res-icon res-icon-sheep"></div><div class="trade-res-count num-sheep"></div></div>
+                <div class="trade-res-div"><div class="res-icon res-icon-ore"></div><div class="trade-res-count num-ore"></div></div>
             </div>
-            <div class="hover-layer"></div>
-            <div class="aoe-btn trade-box-cancel" title="Cancel trade offer">x</div>
+            <div class="trade-divider"></div>
+            <div class="aoe-btn player-trade-button player-trade-counter" title="Create counter trade offer">Counter-offer</div>
+            <div class="aoe-btn player-trade-button player-trade-edit" title="Edit trade offer">Edit</div>
+            <div class="aoe-btn player-trade-button player-trade-accept" title="Accept trade offer">Accept</div>
+            <div class="aoe-btn player-trade-button player-trade-cancel" title="Cancel trade offer">Cancel</div>
         </div>
 
         string boxId = "playerBox" + (i + 1).ToString();

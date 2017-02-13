@@ -222,8 +222,9 @@ function initHtmlUI() {
     $(".trade-button-ok").click(tradeOkClicked);
     $(".trade-canvas-button").click(tradeCanvasButtonClicked);
 
-    $(".player-trade-box").click(playerTradeBoxClicked);
-    $(".trade-box-cancel").click(playerTradeBoxCancelClicked);
+    $(".player-trade-accept").click(playerTradeBoxAcceptClicked);
+    $(".player-trade-cancel").click(playerTradeBoxCancelClicked);
+    $(".player-trade-counter,.player-trade-edit").click(tradePlayerClicked);
 
     $("#cardReceivedBox").click(hideCardReceivedBox);
 
@@ -1839,13 +1840,13 @@ function populatePlayers() {
                 for (var ri = 0; ri < resNames.length; ri++) {
                     var resName = resNames[ri];
                     var count = toGive[resName];
-                    var $icon = $(tradeBoxId + " > .player-trade-give > .res-icon-" + resName.toLowerCase());
-                    var $count = $(tradeBoxId + " > .player-trade-give > .num-" + resName.toLowerCase());
+                    var $icon = $(tradeBoxId + " > .player-trade-give .res-icon-" + resName.toLowerCase());
+                    var $count = $(tradeBoxId + " > .player-trade-give .num-" + resName.toLowerCase());
                     if (count > 0) {
-                        $icon.removeClass("hidden");
-                        $count.text(count.toString() + "x");
+                        $icon.removeClass("disabled");
+                        $count.text(count.toString());
                     } else {
-                        $icon.addClass("hidden");
+                        $icon.addClass("disabled");
                         $count.text("");
                     }
                 }
@@ -1854,32 +1855,48 @@ function populatePlayers() {
                 for (var ri = 0; ri < resNames.length; ri++) {
                     var resName = resNames[ri];
                     var count = toRecv[resName];
-                    var $icon = $(tradeBoxId + " > .player-trade-recv > .res-icon-" + resName.toLowerCase());
-                    var $count = $(tradeBoxId + " > .player-trade-recv > .num-" + resName.toLowerCase());
+                    var $icon = $(tradeBoxId + " > .player-trade-recv .res-icon-" + resName.toLowerCase());
+                    var $count = $(tradeBoxId + " > .player-trade-recv .num-" + resName.toLowerCase());
                     if (count > 0) {
-                        $icon.removeClass("hidden");
-                        $count.text(count.toString() + "x");
+                        $icon.removeClass("disabled");
+                        $count.text(count.toString());
                     } else {
-                        $icon.addClass("hidden");
+                        $icon.addClass("disabled");
                         $count.text("");
                     }
                 }
 
-                // Make other trade offers selectable
-                if (_currentGameManager["MyPlayerId"] !== playerId &&
-                    (weAreActivePlayer || _currentGameManager["ActivePlayerId"] === playerId)) {
-                    // If we're the main player, all other trade offers are selectable.
-                    // If we aren't the main player, only the main player trade offer is selectable.
-                    $(tradeBoxId).addClass("selectable");
-                } else {
-                    $(tradeBoxId).removeClass("selectable");
-                }
+                var $btnAccept = $(tradeBoxId + " .player-trade-accept");
+                var $btnCounter = $(tradeBoxId + " .player-trade-counter");
+                var $btnCancel = $(tradeBoxId + " .player-trade-cancel");
+                var $btnEdit = $(tradeBoxId + " .player-trade-edit");
 
-                // Show cancel button if this is our offer.
-                if (_currentGameManager["MyPlayerId"] === playerId) {
-                    $(tradeBoxId + " .trade-box-cancel").removeClass("hidden");
+                // Logic for other players' trade buttons
+                if (_currentGameManager["MyPlayerId"] !== playerId) {
+                    // This is not our trade. Don't show cancel button.
+                    $btnCancel.addClass("hidden");
+                    $btnEdit.addClass("hidden");
+
+                    if (weAreActivePlayer) {
+                        // We are the active player viewing another player's trade. Show the accept button.
+                        $btnAccept.removeClass("hidden");
+                        $btnCounter.addClass("hidden");
+                    } else if (_currentGameManager["ActivePlayerId"] === playerId) {
+                        // We are viewing the active player's trade. Show accept & counter-offer buttons.
+                        $btnAccept.removeClass("hidden");
+                        $btnCounter.removeClass("hidden");
+                    } else {
+                        // We are not the active player and we're viewing a non-active player's trade. Show no buttons.
+                        $btnAccept.addClass("hidden");
+                        $btnCounter.addClass("hidden");
+                    }
                 } else {
-                    $(tradeBoxId + " .trade-box-cancel").addClass("hidden");
+                    // This is our trade. Show cancel button.
+                    $btnCancel.removeClass("hidden");
+                    $btnEdit.removeClass("hidden");
+
+                    $btnAccept.addClass("hidden");
+                    $btnCounter.addClass("hidden");
                 }
 
                 $(tradeBoxId).removeClass("hidden");
@@ -1896,11 +1913,8 @@ function populatePlayers() {
     }
 }
 
-function playerTradeBoxClicked(event) {
+function playerTradeBoxAcceptClicked(event) {
     if (_currentGameManager == null)
-        return;
-
-    if (!$(this).hasClass("selectable"))
         return;
 
     // TODO

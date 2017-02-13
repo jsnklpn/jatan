@@ -464,46 +464,6 @@ canvas {
     text-shadow: 2px 2px 0px #000;
 }
 
-.player-trade-box {
-    /* Player box is 250x140 */
-    width: 200px;
-    height: 140px;
-    position: fixed;
-    padding: 10px;
-    background: #fafad2;
-    /*background-image: url("Images/site/wood_tile.png");
-    background-repeat: repeat;*/
-    border: 1px solid black;
-
-    
-    font-family: serif;
-
-}
-
-.player-trade-box .res-icon-small {
-    margin-right: 5px;
-}
-
-.trade-box-cancel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    text-align: center;
-    margin: 2px;
-    padding: 0px;
-    width: 25px;
-    height: 25px;
-    font-family: sans-serif;
-    font-size: 13px;
-}
-
-.player-trade-give {
-    margin: 20px 0 0 0;
-}
-.player-trade-recv {
-    margin: 10px 0 0 0;
-}
-
 #playerBox1 {
     top: -1px;
     left: -1px;
@@ -512,7 +472,6 @@ canvas {
 #playerTradeBox1 {
     top: -1px;
     left: 249px;
-    text-align: left;
 }
 
 #playerBox2 {
@@ -523,7 +482,6 @@ canvas {
 #playerTradeBox2 {
     top: -1px;
     right: 249px;
-    text-align: right;
 }
 
 #playerBox3 {
@@ -534,7 +492,6 @@ canvas {
 #playerTradeBox3 {
     bottom: 99px;
     left: 249px;
-    text-align: left;
 }
 
 #playerBox4 {
@@ -545,7 +502,6 @@ canvas {
 #playerTradeBox4 {
     bottom: 99px;
     right: 249px;
-    text-align: right;
 }
 
 .player-color-blue {
@@ -559,6 +515,101 @@ canvas {
 }
 .player-color-yellow {
     border-color: gold;
+}
+
+/* ==================== */
+/*  Player trade viewer */
+/* ==================== */
+.player-trade-box {
+    /* Player box is 250x140 */
+    width: 287px;
+    height: 185px;
+    position: fixed;
+    padding: 10px;
+    background-image: url('Images/site/dialog_287x185.png');
+    background-repeat: no-repeat;
+    font-family: serif;
+}
+
+.player-trade-recv {
+    padding-top: 15px;
+}
+.player-trade-give {
+    padding-top: 5px;
+}
+
+.trade-res-div {
+    display: inline-block;
+    vertical-align: top;
+    width: 42px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.trade-res-div > .res-icon {
+    margin-bottom: -7px;
+}
+
+.trade-divider {
+    background-image: url('Images/site/divider.png');
+    background-repeat: repeat-x;
+    margin: 0 10px 0 10px;
+    height: 2px;
+}
+
+.res-icon.disabled {
+    opacity: 0.25;
+}
+
+.trade-res-count {
+    height: 20px;
+}
+
+.trade-arrow {
+    display: inline-block;
+    width: 29px;
+    height: 25px;
+}
+
+.player-trade-box .trade-arrow {
+    margin-top: 10px;
+}
+
+#playerTradeBox1 .arrow-give,
+#playerTradeBox3 .arrow-give {
+    background-image: url('Images/site/arrow_right_green.png');
+    margin-left: 3px;
+}
+#playerTradeBox2 .arrow-give,
+#playerTradeBox4 .arrow-give {
+    background-image: url('Images/site/arrow_left_green.png');
+    float: right;
+    margin-right: 3px;
+}
+#playerTradeBox1 .arrow-recv,
+#playerTradeBox3 .arrow-recv {
+    background-image: url('Images/site/arrow_left_red.png');
+    margin-left: 3px;
+}
+#playerTradeBox2 .arrow-recv,
+#playerTradeBox4 .arrow-recv {
+    background-image: url('Images/site/arrow_right_red.png');
+    float: right;
+    margin-right: 3px;
+}
+
+.player-trade-button {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 125px;
+    height: 30px;
+}
+
+.player-trade-button.player-trade-counter,
+.player-trade-button.player-trade-edit {
+    right: 137px;
 }
 
 /* ========== */
