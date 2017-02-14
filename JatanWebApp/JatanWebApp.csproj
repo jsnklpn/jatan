@@ -305,9 +305,13 @@
     <Content Include="Content\Images\site\divider.png" />
     <Content Include="Content\Images\site\hud_tile.png" />
     <Content Include="Content\Images\site\icon_brick.png" />
+    <Content Include="Content\Images\site\icon_cards.png" />
+    <Content Include="Content\Images\site\icon_knight.png" />
     <Content Include="Content\Images\site\icon_ore.png" />
     <Content Include="Content\Images\site\icon_question.png" />
+    <Content Include="Content\Images\site\icon_road.png" />
     <Content Include="Content\Images\site\icon_sheep.png" />
+    <Content Include="Content\Images\site\icon_stars.png" />
     <Content Include="Content\Images\site\icon_wheat.png" />
     <Content Include="Content\Images\site\icon_wood.png" />
     <Content Include="Content\Images\site\jatanlogo-full-transparent.png" />
