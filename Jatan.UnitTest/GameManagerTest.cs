@@ -449,16 +449,41 @@ namespace Jatan.UnitTest
             Assert.AreEqual(PLAYER_2, manager.ActivePlayer.Id, "It should now be PLAYER_2's turn.");
         }
 
-        private GameManager DoInitialPlacementsAndRoll(bool allowSevenRoll)
+        [TestMethod]
+        public void TestWinTheGame()
         {
-            var manager = DoInitialPlacements(allowSevenRoll);
+            var manager = DoInitialPlacementsAndRoll(false, 0, 4); // Set the win score to 4.
+            var activePlayer = manager.ActivePlayer;
+            Assert.IsNotNull(activePlayer);
+
+            activePlayer.DevelopmentCards.Add(DevelopmentCards.University);
+            activePlayer.DevelopmentCards.Add(DevelopmentCards.Chapel);
+
+            Assert.AreEqual(GameState.GameInProgress, manager.GameState, "The game should be in progress.");
+
+            var pr = manager.PlayerPlayDevelopmentCard(activePlayer.Id, DevelopmentCards.University);
+            Assert.IsTrue(pr.Succeeded, "Card play should succeed.");
+
+            // No on has won yet.
+            Assert.AreEqual(GameState.GameInProgress, manager.GameState, "The game should be in progress.");
+
+            pr = manager.PlayerPlayDevelopmentCard(activePlayer.Id, DevelopmentCards.Chapel);
+            Assert.IsTrue(pr.Succeeded, "Card play should succeed.");
+
+            Assert.AreEqual(GameState.EndOfGame, manager.GameState, "The game should be over.");
+            Assert.AreEqual(activePlayer.Id, manager.WinnerPlayerId);
+        }
+
+        private GameManager DoInitialPlacementsAndRoll(bool allowSevenRoll, int turnTimeLimit = 0, int winScore = 10)
+        {
+            var manager = DoInitialPlacements(allowSevenRoll, turnTimeLimit, winScore);
             var player = manager.ActivePlayer;
             manager.PlayerRollDice(player.Id);
             Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The player state should 'TakeAction'.");
             return manager;
         }
 
-        private GameManager DoInitialPlacements(bool allowSevenRoll, int turnTimeLimit = 0)
+        private GameManager DoInitialPlacements(bool allowSevenRoll, int turnTimeLimit = 0, int winScore = 10)
         {
             // This setup method will create a 3-player game with the center and far-right hexagons fully surrounded.
 
@@ -480,6 +505,7 @@ namespace Jatan.UnitTest
             {
                 manager.Settings.TurnTimeLimit = turnTimeLimit;
             }
+            manager.Settings.ScoreNeededToWin = winScore;
 
             manager.StartNewGame();
 
