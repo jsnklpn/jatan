@@ -51,6 +51,7 @@
     <Compile Include="Core\Serialization\StringTypeConverter.cs" />
     <Compile Include="GameLogic\GameManager.cs" />
     <Compile Include="GameLogic\GameSettings.cs" />
+    <Compile Include="GameLogic\HistoryLog.cs" />
     <Compile Include="GameLogic\TradeHelper.cs" />
     <Compile Include="GameLogic\TurnTimer.cs" />
     <Compile Include="Models\Building.cs" />

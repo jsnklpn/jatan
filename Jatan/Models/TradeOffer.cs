@@ -61,5 +61,13 @@ namespace Jatan.Models
             this.ToGive = new ResourceCollection(toGive);
             this.ToReceive = new ResourceCollection(toReceive);
         }
+
+        /// <summary>
+        /// Returns a copy of this trade offer.
+        /// </summary>
+        public TradeOffer Copy()
+        {
+            return new TradeOffer(CreatorPlayerId, ToGive, ToReceive);
+        }
     }
 }

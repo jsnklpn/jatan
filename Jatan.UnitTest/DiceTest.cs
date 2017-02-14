@@ -28,25 +28,5 @@ namespace Jatan.UnitTest
             Assert.AreEqual(2, low, "The lowest roll should be a 2.");
             Assert.AreEqual(12, high, "The highest roll should be a 12.");
         }
-
-        [TestMethod]
-        public void TestLog()
-        {
-            var dice = new Dice();
-            int rollCount = 100;
-            var log = new RollResult[rollCount];
-
-            for (int i = 0; i < rollCount; i++)
-            {
-                var roll = dice.Roll();
-                log[i] = roll;
-            }
-
-            Assert.AreEqual(rollCount, dice.RollLog.Count, "The log is not the correct size.");
-            for (int i = 0; i < rollCount; i++)
-            {
-                Assert.AreEqual(log[i], dice.RollLog[i], "The values in the log should be the same.");
-            }
-        }
     }
 }

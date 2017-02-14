@@ -32,6 +32,7 @@ namespace Jatan.GameLogic
         private int _idCounter;
         private Tuple<int, int> _longestRoad; // <playerId, roadLength>
         private Tuple<int, int> _largestArmy; // <playerId, armySize>
+        private HistoryLog _log;
 
         #region Public properties
 
@@ -218,6 +219,14 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
+        /// Returns the game activity log
+        /// </summary>
+        public HistoryLog HistoryLog
+        {
+            get { return _log; }
+        }
+
+        /// <summary>
         /// Gets the UTC DateTime of when the current player's turn time-limit expires. Returns DateTime.MinValue if N/A.
         /// </summary>
         public DateTime TurnTimerExpiration
@@ -241,6 +250,7 @@ namespace Jatan.GameLogic
         /// </summary>
         public GameManager()
         {
+            _log = new HistoryLog(new List<Player>());
             _gameSettings = new GameSettings();
             _gameState = GameState.NotStarted;
             _playerTurnState = PlayerTurnState.None;
@@ -261,6 +271,7 @@ namespace Jatan.GameLogic
         /// </summary>
         public void StartNewGame()
         {
+            _log = new HistoryLog(_players);
             _playerTurnIndex = 0; // The first person in the list goes first. TODO: This should be randomized
             _longestRoad = Tuple.Create(-1, -1);
             _largestArmy = Tuple.Create(-1, -1);
@@ -268,7 +279,6 @@ namespace Jatan.GameLogic
             _gameBoard.Setup();
             _gameBoard.RobberMode = _gameSettings.RobberMode;
             _roadBuildingRoadsRemaining = 0;
-            _dice.ClearLog();
             _currentDiceRoll = null;
             _playersCardsToLose.Clear();
             _playersToStealFrom.Clear();
@@ -361,7 +371,11 @@ namespace Jatan.GameLogic
                     _playersCardsToLose.Remove(player);
                     _tradeHelper.CancelCounterOffer(playerId);
                 }
-                
+
+                // Log actions
+                _log.AbandonGame(playerId);
+                if (ActivePlayer != null) _log.TurnStarted(ActivePlayer.Id);
+
                 // Start the turn timer for the new active player
                 StartPlayerTurnTimer();
             }
@@ -383,6 +397,8 @@ namespace Jatan.GameLogic
             if (validation.Failed) return validation.ToGeneric<RollResult>();
 
             var diceRoll = _dice.Roll();
+
+            _log.DiceRoll(playerId, diceRoll);
 
             // If the roll is a 7, then we do special logic to make players
             // lose cards and we let the active player place the robber.
@@ -414,6 +430,8 @@ namespace Jatan.GameLogic
                         var player = playerResult.Data;
                         var newResourcesForPlayer = resources.Value;
                         player.AddResources(newResourcesForPlayer);
+
+                        _log.ResourceCollection(player.Id, newResourcesForPlayer);
                     }
                 }
 
@@ -459,6 +477,8 @@ namespace Jatan.GameLogic
             {
                 _playerTurnState = _gameSettings.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
             }
+
+            _log.CardsLost(playerId, toDiscard);
 
             return ActionResult.CreateSuccess();
         }
@@ -537,6 +557,8 @@ namespace Jatan.GameLogic
             _playerTurnState = PlayerTurnState.TakeAction;
             _playersToStealFrom.Clear();
 
+            _log.CardStolen(playerId, robbedPlayerId, typeStolen);
+
             return new ActionResult<ResourceTypes>(typeStolen, true);
         }
 
@@ -596,6 +618,8 @@ namespace Jatan.GameLogic
             // Go back to TakeAction player state
             _tradeHelper.ClearAllOffers();
             _playerTurnState = PlayerTurnState.TakeAction;
+
+            _log.PlayerTrade(counterOfferPlayerId, playerId, offer);
 
             return ActionResult.CreateSuccess();
         }
@@ -673,6 +697,8 @@ namespace Jatan.GameLogic
             _tradeHelper.ClearAllOffers();
             _playerTurnState = PlayerTurnState.TakeAction;
 
+            _log.PlayerTrade(ActivePlayer.Id, playerId, activeOffer);
+
             return ActionResult.CreateSuccess();
         }
 
@@ -692,7 +718,12 @@ namespace Jatan.GameLogic
             var player = pr.Data;
             var ports = _gameBoard.GetPortsForPlayer(playerId);
 
-            return player.DoTradeWithBank(tradeOffer, ports);
+            var result = player.DoTradeWithBank(tradeOffer, ports);
+            if (result.Failed) return result;
+
+            _log.BankTrade(playerId, tradeOffer);
+
+            return result;
         }
 
         /// <summary>
@@ -1259,9 +1290,13 @@ namespace Jatan.GameLogic
             // Advances to the next player's turn.
             if (_gameState == GameState.GameInProgress)
             {
+                _log.TurnEnded(ActivePlayer.Id);
+
                 _playerTurnIndex = (_playerTurnIndex + 1) % _players.Count;
                 _playerTurnState = PlayerTurnState.NeedToRoll;
                 StartPlayerTurnTimer();
+
+                _log.TurnStarted(ActivePlayer.Id);
             }
             else if (_gameState == GameState.InitialPlacement)
             {

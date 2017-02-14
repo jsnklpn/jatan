@@ -16,15 +16,6 @@ namespace Jatan.Models
         private const int DiceSides = 6;
 
         private int _diceCount;
-        private List<RollResult> _rollLog;
-
-        /// <summary>
-        /// Returns a copy of the roll log.
-        /// </summary>
-        public List<RollResult> RollLog
-        {
-            get { return new List<RollResult>(_rollLog); }
-        }
 
         /// <summary>
         /// The set of numbers which will not be allowed to roll. Useful for testing.
@@ -38,7 +29,6 @@ namespace Jatan.Models
         public Dice(int diceCount)
         {
             this.ExcludeSet = new HashSet<int>();
-            _rollLog = new List<RollResult>();
             _diceCount = (diceCount < 1) ? 1 : diceCount;
         }
 
@@ -67,29 +57,7 @@ namespace Jatan.Models
                 done = !ExcludeSet.Contains(roll.Sum());
             }
             var result = new RollResult(roll);
-            _rollLog.Add(result);
             return result;
-        }
-
-        /// <summary>
-        /// Clears the roll log.
-        /// </summary>
-        public void ClearLog()
-        {
-            _rollLog.Clear();
-        }
-
-        /// <summary>
-        /// Returns a dictionary containing the roll counts for each possible roll.
-        /// </summary>
-        public Dictionary<int, int> GetRollCounts()
-        {
-            var counts = new Dictionary<int, int>();
-            for (int i = _diceCount; i <= _diceCount * DiceSides; i++)
-            {
-                counts.Add(i, _rollLog.Count(r => r.Total == i));
-            }
-            return counts;
         }
     }
 }

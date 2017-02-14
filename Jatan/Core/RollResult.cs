@@ -30,6 +30,14 @@ namespace Jatan.Core
         }
 
         /// <summary>
+        /// Returns a copy of the roll result.
+        /// </summary>
+        public RollResult Copy()
+        {
+            return new RollResult(this.Dice);
+        }
+
+        /// <summary>
         /// Equals override
         /// </summary>
         public override bool Equals(object obj)
