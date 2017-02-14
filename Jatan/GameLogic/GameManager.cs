@@ -27,15 +27,13 @@ namespace Jatan.GameLogic
         private List<Player> _playersToStealFrom;
         private int _roadBuildingRoadsRemaining;
         private TurnTimer _turnTimer;
-
-        // <playerId, roadLength>
-        private Tuple<int, int> _longestRoad;
-        // <playerId, armySize>
-        private Tuple<int, int> _largestArmy;
-
+        private int _winScore;
+        private int _winnerPlayerId;
         private int _idCounter;
+        private Tuple<int, int> _longestRoad; // <playerId, roadLength>
+        private Tuple<int, int> _largestArmy; // <playerId, armySize>
 
-        #region public properties
+        #region Public properties
 
         /// <summary>
         /// Gets the game board.
@@ -212,6 +210,14 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
+        /// Returns the player Id of the winner. Returns -1 if there is no winner yet.
+        /// </summary>
+        public int WinnerPlayerId
+        {
+            get { return _gameState == GameState.EndOfGame ? _winnerPlayerId : -1; }
+        }
+
+        /// <summary>
         /// Gets the UTC DateTime of when the current player's turn time-limit expires. Returns DateTime.MinValue if N/A.
         /// </summary>
         public DateTime TurnTimerExpiration
@@ -227,6 +233,8 @@ namespace Jatan.GameLogic
         public event EventHandler<TimeLimitElapsedArgs> PlayerTurnTimeLimitExpired;
 
         #endregion
+
+        #region Init/start
 
         /// <summary>
         /// Creates a new game instance.
@@ -266,6 +274,8 @@ namespace Jatan.GameLogic
             _playersToStealFrom.Clear();
             _tradeHelper.ClearAllOffers();
             _gameState = GameState.InitialPlacement;
+            _winScore = _gameSettings.ScoreNeededToWin;
+            _winnerPlayerId = -1;
             _playerTurnState = PlayerTurnState.PlacingSettlement; // TODO: Possibly wait for something to trigger the game start.
 
             // Init the turn timer
@@ -278,16 +288,21 @@ namespace Jatan.GameLogic
             _turnTimer.TimeLimitElapsed += TurnTimer_TimeLimitElapsed;
         }
 
+        #endregion
+
+        #region Public player methods
+
         /// <summary>
         /// Adds a players to the game and assigns a unique playerId and a color.
         /// </summary>
         /// <param name="name"></param>
         public void AddPlayer(string name)
         {
-            _players.Add(new Player(_idCounter++, name, GetAvailableColor()));
+            if (_gameState == GameState.NotStarted)
+            {
+                _players.Add(new Player(_idCounter++, name, GetAvailableColor()));
+            }
         }
-
-        #region public player methods
 
         /// <summary>
         /// Removes the specified player from the game.
@@ -792,6 +807,9 @@ namespace Jatan.GameLogic
                 _playerTurnState = PlayerTurnState.TakeAction;
             }
 
+            // Check if the player won by taking this action.
+            CheckForWinner(playerId);
+
             return ActionResult.CreateSuccess();
         }
 
@@ -901,6 +919,9 @@ namespace Jatan.GameLogic
                 _playerTurnState = PlayerTurnState.TakeAction;
             }
 
+            // Check if the player won by taking this action.
+            CheckForWinner(playerId);
+
             return ActionResult.CreateSuccess();
         }
 
@@ -947,6 +968,9 @@ namespace Jatan.GameLogic
                 _roadBuildingRoadsRemaining = 2;
                 _playerTurnState = PlayerTurnState.RoadBuildingSelectingRoads;
             }
+
+            // Check if the player won by taking this action.
+            CheckForWinner(playerId);
 
             return ActionResult.CreateSuccess();
         }
@@ -1038,6 +1062,9 @@ namespace Jatan.GameLogic
             {
                 _playerTurnState = PlayerTurnState.TakeAction;
             }
+
+            // Check if the player won by taking this action.
+            CheckForWinner(playerId);
 
             return ActionResult.CreateSuccess();
         }
@@ -1367,6 +1394,28 @@ namespace Jatan.GameLogic
             {
                 handler(this, e);
             }
+        }
+
+        private bool CheckForWinner(int playerId)
+        {
+            var result = GetTotalPointsForPlayer(playerId);
+            if (result.Failed || result.Data < _winScore)
+                return false;
+
+            // This player just won the game.
+            _turnTimer.Stop();
+
+            // Clear all turn variables
+            _tradeHelper.ClearAllOffers();
+            _roadBuildingRoadsRemaining = 0;
+            _currentDiceRoll = null;
+            _playersToStealFrom.Clear();
+
+            // Set the winner Id and change the game state.
+            _winnerPlayerId = playerId;
+            _gameState = GameState.EndOfGame;
+            
+            return true;
         }
 
         #endregion

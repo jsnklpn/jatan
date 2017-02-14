@@ -24,7 +24,8 @@ namespace JatanWebApp.SignalR.DTO
         public TradeOffer ActiveTradeOffer { get; set; }
         public List<TradeOffer> CounterTradeOffers { get; set; }
         // The Unix epoch time when the current player's turn will expire. 0 if none.
-        public long TurnExpire { get; set; } 
+        public long TurnExpire { get; set; }
+        public int WinnerPlayerId { get; set; }
 
         // These properties are populated only when needed.
         public List<HexEdge> ValidRoadPlacements { get; set; }
@@ -42,6 +43,7 @@ namespace JatanWebApp.SignalR.DTO
             this.ActivePlayerId = (manager.ActivePlayer != null) ? manager.ActivePlayer.Id : -1;
             this.CurrentDiceRoll = manager.CurrentDiceRoll;
             this.Players = new List<PlayerDTO>();
+            this.WinnerPlayerId = manager.WinnerPlayerId;
 
             var playerScores = manager.PlayerScores;
             var roadLoengths = manager.PlayerRoadLengths;

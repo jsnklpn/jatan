@@ -63,6 +63,7 @@ var _selectableItemsMap = {}; // map of hexpoints and hexedges to their respecti
 var _numberTileMap = {}; // map of retrieve numbers to list of numberTile containers.
 var _portsPopulated = false;
 var _resourceTilesPopulated = false;
+var _idToAvatarPathMap = {}; // map of player id to avatar path.
 
 $(function () {
 
@@ -232,6 +233,8 @@ function initHtmlUI() {
     $("#cardReceivedBox").click(hideCardReceivedBox);
 
     $(".select-resource-btn").click(selectResourceButtonClicked);
+
+    $("#btnViewPostgame").click(btnViewPostgameClicked);
 
     // Show chat input box when the enter key is pressed.
     $(document).keydown(function (event) {
@@ -992,6 +995,7 @@ function updateGameModel(gameManager) {
     setGlowForDiceRoll();
     populateBuyButtons();
     populateSelectResourceForDevCard();
+    populateWinnerBox();
 
     // By default, don't generate stage mouseover events. They are expensive.
     var enableMouseOverEvents = false;
@@ -1802,6 +1806,8 @@ function populatePlayers() {
             $(boxId).removeClass("hidden");
             $(boxId + " > .player-name").text(playerName);
             if (avatarPath) {
+                // save avatar path since we don't get them in normal game model updates.
+                _idToAvatarPathMap[playerId] = avatarPath;
                 $(boxId + " > .player-avatar").attr("src", avatarPath);
             }
 
@@ -2490,6 +2496,46 @@ function selectResourceButtonClicked(event) {
             }
         }
     }
+}
+
+function populateWinnerBox() {
+    if (_currentGameManager == null)
+        return;
+
+    if (_currentGameManager["GameState"] === GameState.EndOfGame) {
+        var winnerId = _currentGameManager["WinnerPlayerId"];
+        var winner = getPlayerFromId(winnerId);
+        if (winner != null) {
+            var avatarPath = _idToAvatarPathMap[winnerId];
+            if (avatarPath != null) {
+                $("#winnerAvatar").attr("src", avatarPath);
+            }
+            $("#winnerName").text(winner["Name"]);
+            $("#winnerBox").showWithAnimation("zoomInDown");
+
+            if ($("#winnerName").hasClass("hidden")) {
+                // The name & avatar are hidden. Show them after a delay... for suspense.
+                setTimeout(function () {
+                    $("#winnerAvatar").showWithAnimation("fadeIn");
+                    setTimeout(function() {
+                        $("#winnerName").showWithAnimation("fadeIn");
+                        setTimeout(function () {
+                            $("#btnViewPostgame").showWithAnimation("fadeIn");
+                        }, 800);
+                    }, 800);
+                }, 1700);
+            }
+        }
+    } else {
+        $("#winnerBox").addClass("hidden");
+        $("#winnerName").addClass("hidden");
+        $("#winnerAvatar").addClass("hidden");
+        $("#btnViewPostgame").addClass("hidden");
+    }
+}
+
+function btnViewPostgameClicked() {
+    // TODO
 }
 
 //===========================

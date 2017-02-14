@@ -951,3 +951,37 @@ input[type="text"]:focus {
     background-position: center;
 }
 
+/* ================ */
+/*    Winner box    */
+/* ================ */
+#winnerBox {
+    font-size: 20px;
+}
+
+#winnerName {
+    font-size: 32px;
+    color: white;
+    text-shadow: 2px 2px 0px black,
+        0px 0px 10px black,
+        0px 0px 20px rgb(166, 74, 0),
+        0px 0px 40px rgb(166, 74, 0);
+}
+
+#winnerAvatar {
+    margin: 15px 0 2px 0;
+    width: 128px;
+    height: 128px;
+    border: 1px solid black;
+    box-shadow: 0px 0px 15px white;
+}
+
+#btnViewPostgame {
+    position: absolute;
+    width: 120px;
+    height: 30px;
+    bottom: 10px;
+    right: 0;
+    left: 0;
+    font-weight: bold;
+    margin: auto;
+}
