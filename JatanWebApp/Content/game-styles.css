@@ -36,6 +36,47 @@ canvas {
     text-align: center;
 }
 
+#startGameBox {
+    position: fixed;
+    width: 400px;
+    height: 120px;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    margin: auto;
+
+    background-image: url('Images/site/wood_tile.png');
+    background-repeat: repeat;
+    border: 1px solid black;
+}
+#btnStartGame {
+    position: absolute;
+    height: 50px;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    font-size: 36px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.7);
+    border-top: 1px solid rgba(0,0,0,0.7);
+    background-color: rgba(0,0,0,0.3);
+    text-shadow: 2px 2px 0px black;
+    transition: all 50ms linear 0s;
+}
+#btnStartGame:hover {
+    height: 55px;
+    background-color: rgba(0,0,0,0.5);
+    font-size: 38px;
+    text-shadow: 2px 2px 0px black,
+        0px 0px 10px white;
+}
+
 .box-shadow {
     box-shadow: 1px 1px 10px #000;
 }
@@ -268,9 +309,6 @@ canvas {
     height: 60px;
 }
 
-#btnStartGame {
-    float: left;
-}
 #btnRollDice {
     float: left;
 }

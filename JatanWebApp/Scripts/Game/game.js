@@ -982,6 +982,13 @@ function updateGameModel(gameManager) {
             populatePorts();
     }
 
+    // if the game hasn't started, show the start game button for the host
+    if (_currentGameManager["GameState"] === GameState.NotStarted /* && players.length > 1 */) {
+        $("#startGameBox").removeClass("hidden");
+    } else {
+        $("#startGameBox").hideWithAnimation("zoomOut");
+    }
+
     populateDice();
     populateTurnInfoBox();
     populateResourceCards();
