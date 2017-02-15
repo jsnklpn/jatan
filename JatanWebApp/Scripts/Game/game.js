@@ -653,13 +653,16 @@ function onLoadQueueCompleted(event) {
     }
 
     // wait a second so the user can see that it completed
-    setTimeout(completedLoading, 50);
+    setTimeout(completedLoading, 800);
 }
 
 function completedLoading() {
     $("#loadingResourcesDiv").hide();
     initCanvasStage();
     _allResourcesLoaded = true;
+
+    // Show the main game canvas
+    $("#gameCanvas").removeClass("transparent");
 
     // Show the chat box after resources have loaded.
     $("#chatMessagesBox").removeClass("hidden");

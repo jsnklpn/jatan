@@ -9,6 +9,10 @@
     padding-right: 15px;
 }
 
+.transparent {
+    opacity: 0;
+}
+
 /* Override the default bootstrap behavior where horizontal description lists 
    will truncate terms that are too long to fit in the left column 
 */
@@ -128,9 +132,9 @@
 /* ====================== */
 .progress {
     background: rgba(224, 224, 224, 1);
-    background: -webkit-linear-gradient(top, rgba(171, 171, 171, 1) 0%, rgba(224, 224, 224, 1) 100%);
-    background: linear-gradient(to bottom, rgba(171, 171, 171, 1) 0%, rgba(224, 224, 224, 1) 100%);
-    border: 0px solid rgba(0, 0, 0, 1);
+    background: -webkit-linear-gradient(top, rgba(100, 100, 100, 1) 0%, rgba(224, 224, 224, 1) 100%);
+    background: linear-gradient(to bottom, rgba(100, 100, 100, 1) 0%, rgba(224, 224, 224, 1) 100%);
+    border: 1px solid white;
     border-radius: 2px;
     height: 19px;
 }
