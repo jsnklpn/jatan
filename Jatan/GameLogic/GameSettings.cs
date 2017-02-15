@@ -40,6 +40,12 @@ namespace Jatan.GameLogic
         public int TurnTimeLimit { get; set; }
 
         /// <summary>
+        /// If true, the starting player will be randomized when the game starts.
+        /// Otherwise, the game will start with the first player added to the game.
+        /// </summary>
+        public bool RandomizeStartingPlayer { get; set; }
+
+        /// <summary>
         /// Constructor. Settings set to default.
         /// </summary>
         public GameSettings()
@@ -49,6 +55,7 @@ namespace Jatan.GameLogic
             this.CardCountLossThreshold = 8;
             this.MinimumLongestRoad = 5;
             this.TurnTimeLimit = 0;
+            this.RandomizeStartingPlayer = true;
         }
     }
 }

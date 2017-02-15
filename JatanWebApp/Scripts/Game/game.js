@@ -983,7 +983,8 @@ function updateGameModel(gameManager) {
     }
 
     // if the game hasn't started, show the start game button for the host
-    if (_currentGameManager["GameState"] === GameState.NotStarted /* && players.length > 1 */) {
+    // TODO: Don't allow starting with only 1 player
+    if (gameState === GameState.NotStarted /* && players.length > 1 */ && myPlayerId === players[0]["Id"]) {
         $("#startGameBox").removeClass("hidden");
     } else {
         $("#startGameBox").hideWithAnimation("zoomOut");

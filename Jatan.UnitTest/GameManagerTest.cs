@@ -25,7 +25,8 @@ namespace Jatan.UnitTest
             manager.AddPlayer("Billy"); // PLAYER_0
             manager.AddPlayer("John"); // PLAYER_1
             manager.AddPlayer("Greg"); // PLAYER_2
-            
+
+            manager.Settings.RandomizeStartingPlayer = false;
             manager.StartNewGame();
 
             Assert.AreEqual(GameState.InitialPlacement, manager.GameState, "The game state should be in the initial placement phase.");
@@ -133,7 +134,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestDiceRoll()
         {
-            var manager = DoInitialPlacements(false);
+            var manager = DoInitialPlacements(false, false);
 
             // Get a copy of the players' current resources
             var player0 = manager.Players.First(p => p.Id == PLAYER_0);
@@ -165,7 +166,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestAcceptTradeOffer()
         {
-            var manager = DoInitialPlacementsAndRoll(false);
+            var manager = DoInitialPlacements(true, false);
             var activePlayer = manager.ActivePlayer;
             var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
             var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
@@ -198,7 +199,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestOverwriteTradeOffer()
         {
-            var manager = DoInitialPlacementsAndRoll(false);
+            var manager = DoInitialPlacements(true, false);
             var activePlayer = manager.ActivePlayer;
             var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
             var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
@@ -231,7 +232,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestAcceptTradeCounterOffer()
         {
-            var manager = DoInitialPlacementsAndRoll(false);
+            var manager = DoInitialPlacements(true, false);
             var activePlayer = manager.ActivePlayer;
             var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
             Assert.IsNotNull(player1);
@@ -266,7 +267,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestTradeWithBank()
         {
-            var manager = DoInitialPlacementsAndRoll(false);
+            var manager = DoInitialPlacements(true, false);
             var player = manager.ActivePlayer;
 
             // Trade 4 ore for 1 brick.
@@ -322,7 +323,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestPlayMonopolyCard()
         {
-            var manager = DoInitialPlacementsAndRoll(false);
+            var manager = DoInitialPlacements(true, false);
             var activePlayer = manager.ActivePlayer;
             var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
             var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
@@ -361,7 +362,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestPlayRoadBuildingCard()
         {
-            var manager = DoInitialPlacementsAndRoll(false);
+            var manager = DoInitialPlacements(true, false);
             var activePlayer = manager.ActivePlayer;
             Assert.IsNotNull(activePlayer);
 
@@ -395,7 +396,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestPlayYearOfPlentyCard()
         {
-            var manager = DoInitialPlacementsAndRoll(false);
+            var manager = DoInitialPlacements(true, false);
             var activePlayer = manager.ActivePlayer;
             Assert.IsNotNull(activePlayer);
 
@@ -429,7 +430,7 @@ namespace Jatan.UnitTest
             _timeLimitExpired = new AutoResetEvent(false);
 
             // 1-second turn time limit.
-            var manager = DoInitialPlacements(true, 1);
+            var manager = DoInitialPlacements(false, true, 1);
             manager.PlayerTurnTimeLimitExpired += (sender, i) => { _timeLimitExpired.Set(); };
             var activePlayer = manager.ActivePlayer;
             Assert.IsNotNull(activePlayer);
@@ -452,7 +453,7 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestWinTheGame()
         {
-            var manager = DoInitialPlacementsAndRoll(false, 0, 4); // Set the win score to 4.
+            var manager = DoInitialPlacements(true, false, 0, 4); // Set the win score to 4.
             var activePlayer = manager.ActivePlayer;
             Assert.IsNotNull(activePlayer);
 
@@ -474,16 +475,7 @@ namespace Jatan.UnitTest
             Assert.AreEqual(activePlayer.Id, manager.WinnerPlayerId);
         }
 
-        private GameManager DoInitialPlacementsAndRoll(bool allowSevenRoll, int turnTimeLimit = 0, int winScore = 10)
-        {
-            var manager = DoInitialPlacements(allowSevenRoll, turnTimeLimit, winScore);
-            var player = manager.ActivePlayer;
-            manager.PlayerRollDice(player.Id);
-            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The player state should 'TakeAction'.");
-            return manager;
-        }
-
-        private GameManager DoInitialPlacements(bool allowSevenRoll, int turnTimeLimit = 0, int winScore = 10)
+        private GameManager DoInitialPlacements(bool doRoll = false, bool allowSevenRoll = true, int turnTimeLimit = 0, int winScore = 10)
         {
             // This setup method will create a 3-player game with the center and far-right hexagons fully surrounded.
 
@@ -506,6 +498,7 @@ namespace Jatan.UnitTest
                 manager.Settings.TurnTimeLimit = turnTimeLimit;
             }
             manager.Settings.ScoreNeededToWin = winScore;
+            manager.Settings.RandomizeStartingPlayer = false;
 
             manager.StartNewGame();
 
@@ -538,6 +531,15 @@ namespace Jatan.UnitTest
             Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "It should be player 0's turn.");
             Assert.AreEqual(GameState.GameInProgress, manager.GameState, "The game state should be in the main game phase.");
             Assert.AreEqual(PlayerTurnState.NeedToRoll, manager.PlayerTurnState, "The player state should 'NeedToRoll'.");
+
+            if (doRoll)
+            {
+                var player = manager.ActivePlayer;
+                manager.PlayerRollDice(player.Id);
+                if (!allowSevenRoll)
+                    Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The player state should 'TakeAction'.");
+                return manager;
+            }
 
             return manager;
         }

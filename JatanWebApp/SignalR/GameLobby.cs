@@ -12,6 +12,10 @@ using JatanWebApp.SignalR.DTO;
 
 namespace JatanWebApp.SignalR
 {
+    /// <summary>
+    /// The GameLobby class is really a GameManger manager.
+    /// It's a wrapper around the core game manager and includes extra details.
+    /// </summary>
     public class GameLobby
     {
         /// <summary>

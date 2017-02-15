@@ -53,6 +53,7 @@ canvas {
 #btnStartGame {
     position: absolute;
     height: 50px;
+    width: 300px;
     right: 0;
     left: 0;
     top: 0;
@@ -63,17 +64,17 @@ canvas {
     font-weight: bold;
     font-size: 36px;
     text-align: center;
-    border-bottom: 1px solid rgba(0,0,0,0.7);
-    border-top: 1px solid rgba(0,0,0,0.7);
-    background-color: rgba(0,0,0,0.3);
-    text-shadow: 2px 2px 0px black;
+    font-family: serif;
+    border: 1px solid rgba(0,0,0,0.7);
+    background-color: rgba(0,0,0,0.5);
+    box-shadow: inset 3px 3px 3px black;
+    text-shadow: 3px 3px 0px black;
     transition: all 50ms linear 0s;
 }
 #btnStartGame:hover {
-    height: 55px;
-    background-color: rgba(0,0,0,0.5);
-    font-size: 38px;
-    text-shadow: 2px 2px 0px black,
+    background-color: rgba(0,0,0,0.4);
+    font-size: 37px;
+    text-shadow: 3px 3px 0px black,
         0px 0px 10px white;
 }
 

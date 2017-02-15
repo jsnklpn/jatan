@@ -17,6 +17,7 @@ namespace Jatan.GameLogic
         private GameSettings _gameSettings;
         private List<Player> _players;
         private int _playerTurnIndex;
+        private int _startingPlayerIndex;
         private CardDeck<DevelopmentCards> _developmentCardDeck;
         private GameState _gameState;
         private PlayerTurnState _playerTurnState;
@@ -27,6 +28,7 @@ namespace Jatan.GameLogic
         private List<Player> _playersToStealFrom;
         private int _roadBuildingRoadsRemaining;
         private TurnTimer _turnTimer;
+        private int _turnCounter;
         private int _winScore;
         private int _winnerPlayerId;
         private int _idCounter;
@@ -77,6 +79,14 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
+        /// Gets the current turn number. Starts at 0.
+        /// </summary>
+        public int TurnCounter
+        {
+            get { return _turnCounter; }
+        }
+
+        /// <summary>
         /// Gets the player whose turn it currently is.
         /// </summary>
         public Player ActivePlayer
@@ -94,7 +104,11 @@ namespace Jatan.GameLogic
         /// </summary>
         public bool LastPlayerHasPlaced
         {
-            get { return _gameBoard.GetBuildingCountForPlayer(_players.Last().Id) > 0; }
+            get
+            {
+                var lastPlayerIndex = (_startingPlayerIndex < 1) ? (_players.Count - 1) : (_startingPlayerIndex - 1);
+                return _gameBoard.GetBuildingCountForPlayer(_players[lastPlayerIndex].Id) > 0;
+            }
         }
 
         /// <summary>
@@ -102,7 +116,12 @@ namespace Jatan.GameLogic
         /// </summary>
         public bool LastPlayerIsActive
         {
-            get { return _playerTurnIndex == _players.Count - 1; }
+            get
+            {
+                var lastPlayerIndex = (_startingPlayerIndex < 1) ? (_players.Count - 1) : (_startingPlayerIndex - 1);
+                return _playerTurnIndex == lastPlayerIndex; 
+            }
+
         }
 
         /// <summary>
@@ -272,7 +291,9 @@ namespace Jatan.GameLogic
         public void StartNewGame()
         {
             _log = new HistoryLog(_players);
-            _playerTurnIndex = 0; // The first person in the list goes first. TODO: This should be randomized
+            _startingPlayerIndex = _gameSettings.RandomizeStartingPlayer ? _players.IndexOf(_players.GetRandom()) : 0;
+            _playerTurnIndex = _startingPlayerIndex;
+            _turnCounter = 0;
             _longestRoad = Tuple.Create(-1, -1);
             _largestArmy = Tuple.Create(-1, -1);
             SetupDevelopmentCards();
@@ -371,6 +392,8 @@ namespace Jatan.GameLogic
                     _playersCardsToLose.Remove(player);
                     _tradeHelper.CancelCounterOffer(playerId);
                 }
+
+                _turnCounter++;
 
                 // Log actions
                 _log.AbandonGame(playerId);
@@ -1306,17 +1329,21 @@ namespace Jatan.GameLogic
                 {
                     // The last player has not placed yet. Count up.
                     _playerTurnIndex++;
+                    _playerTurnIndex %= _players.Count;
                     _playerTurnState = PlayerTurnState.PlacingSettlement;
                 }
                 else
                 {
                     // The last player has gone. Count down.
                     _playerTurnIndex--;
+                    if (_playerTurnIndex < 0)
+                        _playerTurnIndex = _players.Count - 1;
                     
                     // If everyone has placed, start the game.
-                    if (_playerTurnIndex < 0)
+                    var lastPlayerIndex = (_startingPlayerIndex < 1) ? (_players.Count - 1) : (_startingPlayerIndex - 1);
+                    if (_playerTurnIndex == lastPlayerIndex)
                     {
-                        _playerTurnIndex = 0;
+                        _playerTurnIndex = _startingPlayerIndex;
                         _gameState = GameState.GameInProgress;
                         _playerTurnState = PlayerTurnState.NeedToRoll;
                         StartPlayerTurnTimer();
@@ -1327,6 +1354,7 @@ namespace Jatan.GameLogic
                     }
                 }
             }
+            _turnCounter++;
         }
 
         private void StartPlayerTurnTimer()
@@ -1345,6 +1373,11 @@ namespace Jatan.GameLogic
             // This method determines which players need to lose cards and how many.
 
             _playersCardsToLose.Clear();
+
+            // If the threshold is set to zero, it's disabled.
+            if (_gameSettings.CardCountLossThreshold == 0)
+                return;
+
             foreach (var p in Players)
             {
                 if (p.NumberOfResourceCards >= _gameSettings.CardCountLossThreshold)
