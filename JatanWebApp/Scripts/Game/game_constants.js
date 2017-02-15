@@ -1,4 +1,7 @@
-﻿// These hitboxes are the "game" size of image assets.
+﻿var BOARD_SCALE_MAX = 1.4;
+var BOARD_SCALE_MIN = 0.20;
+
+// These hitboxes are the "game" size of image assets.
 // These values are used for setting the proper center-point of the image and for alignment.
 // We need to use these values because the actual image sizes vary slightly between items
 // of the same time. For example, the Ore tile is taller than the others because of its mountain.

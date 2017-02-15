@@ -16,6 +16,8 @@ var _stage = null;
 var _water = null;
 var _toastMessageContainer = null; // used to display important messages to the user
 var _boardContainer = null;
+var _boardPosPercentX = 0.5; // relative X position of the board container
+var _boardPosPercentY = 0.5; // relative Y position of the board container
 var _boardTileContainer = null; // child to the board container
 var _boardRoadContainer = null; // child to the board container
 var _boardBuildingContainer = null; // child to the board container
@@ -71,6 +73,7 @@ $(function () {
     $("body").on("contextmenu", "canvas", function (e) { return false; });
 
     _canvas = $("#gameCanvas")[0];
+    resizeCanvas();
     
     // Set canvas sizes
     _cardCanvas = $("#cardCanvas")[0];
@@ -235,6 +238,12 @@ function initHtmlUI() {
     $(".select-resource-btn").click(selectResourceButtonClicked);
 
     $("#btnViewPostgame").click(btnViewPostgameClicked);
+
+    // Init quick links
+    $("#btnRestoreGameBoard").click(setDefaultBoardPosition);
+    $("#btnTurnSoundOff").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
+    $("#btnTurnSoundOn").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
+    //$("#btnViewGameRules").click(); // TODO
 
     // Show chat input box when the enter key is pressed.
     $(document).keydown(function (event) {
@@ -783,10 +792,11 @@ function initCanvasStage() {
         _boardTileContainer.addChild(beachBitmaps[i]);
     }
 
-    _boardContainer.regX = _boardContainer.getBounds().width / 2;
-    _boardContainer.regY = _boardContainer.getBounds().height / 2;
-    _boardContainer.scaleX = 0.65;
-    _boardContainer.scaleY = 0.65;
+    var bb = _boardContainer.getBounds();
+    _boardContainer.regX = bb.width / 2;
+    _boardContainer.regY = bb.height / 2;
+
+    setDefaultBoardPosition();
 
     // allow user to move and scale the board with the mouse
     initMouseWheelScaling();
@@ -797,7 +807,7 @@ function initCanvasStage() {
 function checkRender() {
     if (resizeCanvas()) {
         _invalidateCanvas = true;
-        centerBoardInCanvas();
+        positionBoardInCanvas();
         resizeWaterBackground();
         centerInCanvas(_toastMessageContainer);
     }
@@ -853,10 +863,37 @@ function resizeWaterBackground() {
     }
 }
 
-function centerBoardInCanvas() {
-    // TODO: This should use offsets
-    _boardContainer.x = _canvas.width / 2;
-    _boardContainer.y = _canvas.height / 2;
+function captureBoardRelativePosition() {
+    // Save the relative position of the board whenever the user moves it.
+    _boardPosPercentX = _boardContainer.x / _canvas.width;
+    _boardPosPercentY = _boardContainer.y / _canvas.height;
+}
+
+function positionBoardInCanvas() {
+    _boardContainer.x = _boardPosPercentX * _canvas.width;
+    _boardContainer.y = _boardPosPercentY * _canvas.height;
+}
+
+function setDefaultBoardPosition() {
+    if (_boardContainer == null)
+        return;
+
+    // Center board
+    _boardPosPercentX = 0.52;
+    _boardPosPercentY = 0.52;
+    positionBoardInCanvas();
+
+    var bb = _boardContainer.getBounds();
+    if (bb == null) return;
+
+    // Determine best initial size for the board, given the current browser window size.
+    var scale = (_canvas.height * 0.69) / bb.height;
+    if (scale > BOARD_SCALE_MAX) scale = BOARD_SCALE_MAX;
+    else if (scale < BOARD_SCALE_MIN) scale = BOARD_SCALE_MIN;
+    _boardContainer.scaleX = scale;
+    _boardContainer.scaleY = scale;
+
+    _invalidateCanvas = true;
 }
 
 function centerInCanvas(container) {
@@ -867,16 +904,14 @@ function centerInCanvas(container) {
 }
 
 function initMouseWheelScaling() {
-    var maxScale = 1.0;
-    var minScale = 0.4;
-    var scaleStep = 0.02;
     $("#gameCanvas").bind("mousewheel DOMMouseScroll", function (event) {
+        var scaleStep = 0.05 * _boardContainer.scaleX;
         if (event.originalEvent.wheelDelta > 0 || event.originalEvent.detail < 0) {
             // scroll up
-            if (_boardContainer.scaleX < maxScale) {
-                if (_boardContainer.scaleX >= (maxScale - scaleStep)) {
-                    _boardContainer.scaleX = maxScale;
-                    _boardContainer.scaleY = maxScale;
+            if (_boardContainer.scaleX < BOARD_SCALE_MAX) {
+                if (_boardContainer.scaleX >= (BOARD_SCALE_MAX - scaleStep)) {
+                    _boardContainer.scaleX = BOARD_SCALE_MAX;
+                    _boardContainer.scaleY = BOARD_SCALE_MAX;
                 } else {
                     _boardContainer.scaleX += scaleStep;
                     _boardContainer.scaleY += scaleStep;
@@ -886,10 +921,10 @@ function initMouseWheelScaling() {
         }
         else {
             // scroll down
-            if (_boardContainer.scaleX > minScale) {
-                if (_boardContainer.scaleX <= (minScale + scaleStep)) {
-                    _boardContainer.scaleX = minScale;
-                    _boardContainer.scaleY = minScale;
+            if (_boardContainer.scaleX > BOARD_SCALE_MIN) {
+                if (_boardContainer.scaleX <= (BOARD_SCALE_MIN + scaleStep)) {
+                    _boardContainer.scaleX = BOARD_SCALE_MIN;
+                    _boardContainer.scaleY = BOARD_SCALE_MIN;
                 } else {
                     _boardContainer.scaleX -= scaleStep;
                     _boardContainer.scaleY -= scaleStep;
@@ -914,12 +949,7 @@ function initMouseWheelScaling() {
         }
         _boardContainer.x = event.stageX + _boardDragMouseOffsetX;
         _boardContainer.y = event.stageY + _boardDragMouseOffsetY;
-
-        // Don't let the board leave the canvas.
-        if (_boardContainer.x > _canvas.width) _boardContainer.x = _canvas.width;
-        else if (_boardContainer.x < 0) _boardContainer.x = 0;
-        if (_boardContainer.y > _canvas.height) _boardContainer.y = _canvas.height;
-        else if (_boardContainer.y < 0) _boardContainer.y = 0;
+        captureBoardRelativePosition();
 
         _invalidateCanvas = true;
     });
