@@ -393,11 +393,12 @@ namespace Jatan.GameLogic
                     _tradeHelper.CancelCounterOffer(playerId);
                 }
 
+                // Log actions
+                _log.AbandonGame(_turnCounter, playerId);
+
                 _turnCounter++;
 
-                // Log actions
-                _log.AbandonGame(playerId);
-                if (ActivePlayer != null) _log.TurnStarted(ActivePlayer.Id);
+                if (ActivePlayer != null) _log.TurnStarted(_turnCounter, ActivePlayer.Id);
 
                 // Start the turn timer for the new active player
                 StartPlayerTurnTimer();
@@ -421,7 +422,7 @@ namespace Jatan.GameLogic
 
             var diceRoll = _dice.Roll();
 
-            _log.DiceRoll(playerId, diceRoll);
+            _log.DiceRoll(_turnCounter, playerId, diceRoll);
 
             // If the roll is a 7, then we do special logic to make players
             // lose cards and we let the active player place the robber.
@@ -454,7 +455,7 @@ namespace Jatan.GameLogic
                         var newResourcesForPlayer = resources.Value;
                         player.AddResources(newResourcesForPlayer);
 
-                        _log.ResourceCollection(player.Id, newResourcesForPlayer);
+                        _log.ResourceCollection(_turnCounter, player.Id, newResourcesForPlayer);
                     }
                 }
 
@@ -501,7 +502,7 @@ namespace Jatan.GameLogic
                 _playerTurnState = _gameBoard.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
             }
 
-            _log.CardsLost(playerId, toDiscard);
+            _log.CardsLost(_turnCounter, playerId, toDiscard);
 
             return ActionResult.CreateSuccess();
         }
@@ -595,7 +596,7 @@ namespace Jatan.GameLogic
             _playerTurnState = PlayerTurnState.TakeAction;
             _playersToStealFrom.Clear();
 
-            _log.CardStolen(playerId, robbedPlayerId, typeStolen);
+            _log.CardStolen(_turnCounter, playerId, robbedPlayerId, typeStolen);
 
             return new ActionResult<ResourceTypes>(typeStolen, true);
         }
@@ -657,7 +658,7 @@ namespace Jatan.GameLogic
             _tradeHelper.ClearAllOffers();
             _playerTurnState = PlayerTurnState.TakeAction;
 
-            _log.PlayerTrade(counterOfferPlayerId, playerId, offer);
+            _log.PlayerTrade(_turnCounter, counterOfferPlayerId, playerId, offer);
 
             return ActionResult.CreateSuccess();
         }
@@ -735,7 +736,7 @@ namespace Jatan.GameLogic
             _tradeHelper.ClearAllOffers();
             _playerTurnState = PlayerTurnState.TakeAction;
 
-            _log.PlayerTrade(ActivePlayer.Id, playerId, activeOffer);
+            _log.PlayerTrade(_turnCounter, ActivePlayer.Id, playerId, activeOffer);
 
             return ActionResult.CreateSuccess();
         }
@@ -759,7 +760,7 @@ namespace Jatan.GameLogic
             var result = player.DoTradeWithBank(tradeOffer, ports);
             if (result.Failed) return result;
 
-            _log.BankTrade(playerId, tradeOffer);
+            _log.BankTrade(_turnCounter, playerId, tradeOffer);
 
             return result;
         }
@@ -1328,13 +1329,14 @@ namespace Jatan.GameLogic
             // Advances to the next player's turn.
             if (_gameState == GameState.GameInProgress)
             {
-                _log.TurnEnded(ActivePlayer.Id);
+                _log.TurnEnded(_turnCounter, ActivePlayer.Id);
 
                 _playerTurnIndex = (_playerTurnIndex + 1) % _players.Count;
                 _playerTurnState = PlayerTurnState.NeedToRoll;
+                _turnCounter++;
                 StartPlayerTurnTimer();
 
-                _log.TurnStarted(ActivePlayer.Id);
+                _log.TurnStarted(_turnCounter, ActivePlayer.Id);
             }
             else if (_gameState == GameState.InitialPlacement)
             {
@@ -1369,7 +1371,6 @@ namespace Jatan.GameLogic
                     }
                 }
             }
-            _turnCounter++;
         }
 
         private void StartPlayerTurnTimer()

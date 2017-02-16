@@ -35,59 +35,59 @@ namespace Jatan.GameLogic
 
         #region Log methods
 
-        public void DiceRoll(int playerId, RollResult roll)
+        public void DiceRoll(int turn, int playerId, RollResult roll)
         {
             if (!_playerMap.ContainsKey(playerId) || roll == null) return;
-            LogItems.Add(new DiceRollLogItem(_playerMap[playerId], roll.Copy()));
+            LogItems.Add(new DiceRollLogItem(turn, _playerMap[playerId], roll.Copy()));
         }
 
-        public void ResourceCollection(int playerId, ResourceCollection resources)
+        public void ResourceCollection(int turn, int playerId, ResourceCollection resources)
         {
             if (!_playerMap.ContainsKey(playerId) || resources == null) return;
-            LogItems.Add(new ResourceCollectionLogItem(_playerMap[playerId], resources.Copy()));
+            LogItems.Add(new ResourceCollectionLogItem(turn, _playerMap[playerId], resources.Copy()));
         }
 
-        public void CardStolen(int thiefId, int victimId, ResourceTypes cardStolen)
+        public void CardStolen(int turn, int thiefId, int victimId, ResourceTypes cardStolen)
         {
             if (!_playerMap.ContainsKey(thiefId) || !_playerMap.ContainsKey(victimId)) return;
-            LogItems.Add(new CardStolenLogItem(_playerMap[thiefId], _playerMap[victimId], cardStolen));
+            LogItems.Add(new CardStolenLogItem(turn, _playerMap[thiefId], _playerMap[victimId], cardStolen));
         }
 
-        public void TurnStarted(int playerId)
+        public void TurnStarted(int turn, int playerId)
         {
             if (!_playerMap.ContainsKey(playerId)) return;
-            LogItems.Add(new PlayerTurnStateLogItem(_playerMap[playerId], PlayerTurnStateLogItem.TurnStates.Start));
+            LogItems.Add(new PlayerTurnStateLogItem(turn, _playerMap[playerId], PlayerTurnStateLogItem.TurnStates.Start));
         }
 
-        public void TurnEnded(int playerId)
+        public void TurnEnded(int turn, int playerId)
         {
             if (!_playerMap.ContainsKey(playerId)) return;
-            LogItems.Add(new PlayerTurnStateLogItem(_playerMap[playerId], PlayerTurnStateLogItem.TurnStates.End));
+            LogItems.Add(new PlayerTurnStateLogItem(turn, _playerMap[playerId], PlayerTurnStateLogItem.TurnStates.End));
         }
 
-        public void AbandonGame(int playerId)
+        public void AbandonGame(int turn, int playerId)
         {
             if (!_playerMap.ContainsKey(playerId)) return;
-            TurnEnded(playerId);
-            LogItems.Add(new PlayerAbandonLogItem(_playerMap[playerId]));
+            TurnEnded(turn, playerId);
+            LogItems.Add(new PlayerAbandonLogItem(turn, _playerMap[playerId]));
         }
 
-        public void CardsLost(int playerId, ResourceCollection cardsLost)
+        public void CardsLost(int turn, int playerId, ResourceCollection cardsLost)
         {
             if (!_playerMap.ContainsKey(playerId) || cardsLost == null) return;
-            LogItems.Add(new CardsLostLogItem(_playerMap[playerId], cardsLost.Copy()));
+            LogItems.Add(new CardsLostLogItem(turn, _playerMap[playerId], cardsLost.Copy()));
         }
 
-        public void BankTrade(int playerId, TradeOffer trade)
+        public void BankTrade(int turn, int playerId, TradeOffer trade)
         {
             if (!_playerMap.ContainsKey(playerId)) return;
-            LogItems.Add(new BankTradeLogItem(_playerMap[playerId], trade.Copy()));
+            LogItems.Add(new BankTradeLogItem(turn, _playerMap[playerId], trade.Copy()));
         }
 
-        public void PlayerTrade(int creatorId, int acceptorId, TradeOffer trade)
+        public void PlayerTrade(int turn, int creatorId, int acceptorId, TradeOffer trade)
         {
             if (!_playerMap.ContainsKey(creatorId) || !_playerMap.ContainsKey(acceptorId)) return;
-            LogItems.Add(new PlayerTradeLogItem(_playerMap[creatorId], _playerMap[acceptorId], trade.Copy()));
+            LogItems.Add(new PlayerTradeLogItem(turn, _playerMap[creatorId], _playerMap[acceptorId], trade.Copy()));
         }
 
         #endregion
@@ -98,7 +98,8 @@ namespace Jatan.GameLogic
     public abstract class LogItem
     {
         public DateTime TimeStampUtc { get; protected set; }
-        protected LogItem()
+        public int Turn { get; protected set; }
+        protected LogItem(int turn)
         {
             this.TimeStampUtc = DateTime.UtcNow;
         }
@@ -107,7 +108,7 @@ namespace Jatan.GameLogic
     public abstract class PlayerLogItem : LogItem
     {
         public Player Player { get; protected set; }
-        protected PlayerLogItem(Player player)
+        protected PlayerLogItem(int turn, Player player) : base(turn)
         {
             this.Player = player;
         }
@@ -116,8 +117,8 @@ namespace Jatan.GameLogic
     public class ResourceCollectionLogItem : PlayerLogItem
     {
         public ResourceCollection ResourcesCollected { get; protected set; }
-        public ResourceCollectionLogItem(Player player, ResourceCollection resourcesCollected)
-            : base(player)
+        public ResourceCollectionLogItem(int turn, Player player, ResourceCollection resourcesCollected)
+            : base(turn, player)
         {
             this.ResourcesCollected = resourcesCollected;
         }
@@ -126,8 +127,8 @@ namespace Jatan.GameLogic
     public class CardsLostLogItem : PlayerLogItem
     {
         public ResourceCollection CardsLost { get; protected set; }
-        public CardsLostLogItem(Player player, ResourceCollection cardsLost)
-            : base(player)
+        public CardsLostLogItem(int turn, Player player, ResourceCollection cardsLost)
+            : base(turn, player)
         {
             this.CardsLost = cardsLost;
         }
@@ -136,8 +137,8 @@ namespace Jatan.GameLogic
     public class DiceRollLogItem : PlayerLogItem
     {
         public RollResult Roll { get; protected set; }
-        public DiceRollLogItem(Player player, RollResult roll)
-            : base(player)
+        public DiceRollLogItem(int turn, Player player, RollResult roll)
+            : base(turn, player)
         {
             this.Roll = roll;
         }
@@ -147,8 +148,8 @@ namespace Jatan.GameLogic
     {
         public Player Victim { get; protected set; }
         public ResourceTypes CardStolen { get; protected set; }
-        public CardStolenLogItem(Player thief, Player victim, ResourceTypes cardStolen)
-            : base(thief)
+        public CardStolenLogItem(int turn, Player thief, Player victim, ResourceTypes cardStolen)
+            : base(turn, thief)
         {
             this.Victim = victim;
             this.CardStolen = cardStolen;
@@ -159,8 +160,8 @@ namespace Jatan.GameLogic
     {
         public enum TurnStates { Start, End }
         public TurnStates TurnState { get; protected set; }
-        public PlayerTurnStateLogItem(Player player, TurnStates state)
-            : base(player)
+        public PlayerTurnStateLogItem(int turn, Player player, TurnStates state)
+            : base(turn, player)
         {
             this.TurnState = state;
         }
@@ -168,7 +169,8 @@ namespace Jatan.GameLogic
 
     public class PlayerAbandonLogItem : PlayerLogItem
     {
-        public PlayerAbandonLogItem(Player player) : base(player)
+        public PlayerAbandonLogItem(int turn, Player player)
+            : base(turn, player)
         {
         }
     }
@@ -176,7 +178,8 @@ namespace Jatan.GameLogic
     public class BankTradeLogItem : PlayerLogItem
     {
         public TradeOffer Trade { get; protected set; }
-        public BankTradeLogItem(Player player, TradeOffer trade) : base(player)
+        public BankTradeLogItem(int turn, Player player, TradeOffer trade)
+            : base(turn, player)
         {
             this.Trade = trade;
         }
@@ -186,8 +189,8 @@ namespace Jatan.GameLogic
     {
         public Player Acceptor { get; protected set; }
         public TradeOffer Trade { get; protected set; }
-        public PlayerTradeLogItem(Player tradeCreator, Player tradeAcceptor, TradeOffer trade)
-            : base(tradeCreator)
+        public PlayerTradeLogItem(int turn, Player tradeCreator, Player tradeAcceptor, TradeOffer trade)
+            : base(turn, tradeCreator)
         {
             this.Acceptor = tradeAcceptor;
             this.Trade = trade;
