@@ -222,7 +222,7 @@ namespace Jatan.Models
             var activatedResourceTiles = _resourceTiles.Where(p => p.Value.RetrieveNumber == roll);
 
             // Don't check tiles that have a robber on them (in normal robber mode.)
-            if (_robberMode == RobberMode.Normal)
+            if (_robberMode == RobberMode.Normal || _robberMode == RobberMode.Safe)
                 activatedResourceTiles = activatedResourceTiles.Where(p => p.Key != _robberLocation);
 
             // For use with robber boost mode to track players which have already got the boost.

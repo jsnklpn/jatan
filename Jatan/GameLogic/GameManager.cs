@@ -438,7 +438,7 @@ namespace Jatan.GameLogic
                 else
                 {
                     // No players need to lose any cards. Immediately let the player move the robber.
-                    _playerTurnState = _gameSettings.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
+                    _playerTurnState = _gameBoard.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
                 }
             }
             else
@@ -498,7 +498,7 @@ namespace Jatan.GameLogic
             // If the player-discard list is empty now, let the active player place the robber.
             if (_playersCardsToLose.Count == 0)
             {
-                _playerTurnState = _gameSettings.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
+                _playerTurnState = _gameBoard.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
             }
 
             _log.CardsLost(playerId, toDiscard);
@@ -517,6 +517,21 @@ namespace Jatan.GameLogic
             var apr = GetPlayerFromId(playerId);
             if (apr.Failed) return apr;
             var activePlayer = apr.Data;
+
+            // Don't let the safe robber be placed on a player with 2 points.
+            if (_gameBoard.RobberMode == RobberMode.Safe)
+            {
+                var touchingPoints = newLocation.GetPoints();
+                var affectedPlayers = _gameBoard.Buildings.Where(b => touchingPoints.Contains(b.Key)).Select(p => p.Value.PlayerId).Distinct();
+                foreach (var p in affectedPlayers)
+                {
+                    var vpr = GetTotalPointsForPlayer(p);
+                    if (vpr.Succeeded && vpr.Data <= 2)
+                    {
+                        return ActionResult.CreateFailed("Safe robber cannot be placed on a player with 2 victory points.");
+                    }
+                }
+            }
 
             var moveResult = _gameBoard.MoveRobber(playerId, newLocation);
             if (moveResult.Failed) return moveResult;
@@ -1003,7 +1018,7 @@ namespace Jatan.GameLogic
                     _largestArmy = Tuple.Create(playerId, newArmySize);
 
                 // Now let the player place the robber.
-                _playerTurnState = _gameSettings.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
+                _playerTurnState = _gameBoard.RobberMode == RobberMode.None ? PlayerTurnState.TakeAction : PlayerTurnState.PlacingRobber;
             }
             else if (cardToPlay == DevelopmentCards.Library || cardToPlay == DevelopmentCards.Chapel || cardToPlay == DevelopmentCards.Market || cardToPlay == DevelopmentCards.University || cardToPlay == DevelopmentCards.GreatHall)
             {

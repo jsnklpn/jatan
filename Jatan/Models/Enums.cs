@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -218,16 +220,25 @@ namespace Jatan.Models
         /// <summary>
         /// In normal mode, the robber will prevent a tile from generating resources.
         /// </summary>
+        [Display(Name = "Normal")]
         Normal,
+
+        /// <summary>
+        /// A safe robber cannot be placed on a player with less than 3 victory points.
+        /// </summary>
+        [Display(Name = "Safe (Cannot be placed on players with 2 points)")]
+        Safe,
 
         /// <summary>
         /// In boost mode, the robber will cause a tile to generate extra resources.
         /// </summary>
+        [Display(Name = "Resource Boost (Generates an extra resource)")]
         ResourceBoost,
 
         /// <summary>
         /// The robber will do nothing.
         /// </summary>
+        [Display(Name = "Disabled")]
         None
     }
 
