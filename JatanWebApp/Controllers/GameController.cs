@@ -86,5 +86,11 @@ namespace JatanWebApp.Controllers
             return View("Join", new JoinGameViewModel() { ErrorMessage = "Game not found." });
         }
 
+        // Get: Game/PostGame/id
+        public ActionResult PostGame(string gameId)
+        {
+            return View(new PostGameViewModel(gameId));
+        }
+
     }
 }

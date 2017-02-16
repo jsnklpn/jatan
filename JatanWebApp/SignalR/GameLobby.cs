@@ -128,6 +128,9 @@ namespace JatanWebApp.SignalR
             if (this.InProgress)
                 return ActionResult.CreateFailed("This game is in progress.");
 
+            if (GameManager.GameState == GameState.EndOfGame)
+                return ActionResult.CreateFailed("This game is over.");
+
             if (this.Players.Count >= this.MaxNumberOfPlayers)
                 return ActionResult.CreateFailed("This game is full.");
 

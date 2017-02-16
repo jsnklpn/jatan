@@ -6,17 +6,6 @@
     background-color: black;
 }
 
-canvas {
-    /* Disable selection for canvas elements */
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    outline: none;
-}
-
 #gameCanvas {
  /* The CSS will set the canvas display size, but 
     the actual pixel buffer size is set in javascript */
@@ -190,57 +179,6 @@ canvas {
 }
 #quickLinks > div:active {
     right: 0;
-}
-
-/* =========== */
-/*    Icons    */
-/* =========== */
-.res-icon {
-    width: 39px;
-    height: 33px;
-    background-repeat: no-repeat;
-    background-position: center;
-    display: inline-block;
-    margin: 0px;
-}
-.res-icon-small {
-    width: 25px;
-    height: 20px;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    display: inline-block;
-    margin: 0px;
-}
-.res-icon-wood {
-    /*width: 36px;
-    height: 23px;*/
-    background-image: url('Images/site/icon_wood.png');
-}
-.res-icon-brick {
-    /*width: 35px;
-    height: 19px;*/
-    background-image: url('Images/site/icon_brick.png');
-}
-.res-icon-wheat {
-    /*width: 27px;
-    height: 33px;*/
-    background-image: url('Images/site/icon_wheat.png');
-}
-.res-icon-sheep {
-    /*width: 39px;
-    height: 26px;*/
-    background-image: url('Images/site/icon_sheep.png');
-}
-.res-icon-ore {
-    /*width: 37px;
-    height: 25px;*/
-    background-image: url('Images/site/icon_ore.png');
-}
-.res-icon-question {
-    /*width: 32px;
-    height: 32px;*/
-    background-image: url('Images/site/icon_question.png');
 }
 
 /* ============= */

@@ -189,6 +189,7 @@
     <Compile Include="Models\ViewModels\CreateGameViewModel.cs" />
     <Compile Include="Models\ViewModels\JoinGameViewModel.cs" />
     <Compile Include="Models\ViewModels\LoginViewModel.cs" />
+    <Compile Include="Models\ViewModels\PostGameViewModel.cs" />
     <Compile Include="Models\ViewModels\RegisterViewModel.cs" />
     <Compile Include="Models\ViewModels\UserSettingsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -343,6 +344,8 @@
     <None Include="Scripts\jquery-3.1.1.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\Chart.js" />
+    <Content Include="Scripts\Chart.min.js" />
     <Content Include="Scripts\createjs-2015.11.26.min.js" />
     <Content Include="Scripts\Game\game.js" />
     <Content Include="Scripts\Game\game_constants.js" />
@@ -393,6 +396,7 @@
     <Content Include="Views\Game\_GameLobby.cshtml" />
     <Content Include="Views\Game\Instance.cshtml" />
     <Content Include="Views\User\Settings.cshtml" />
+    <Content Include="Views\Game\PostGame.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201701121836146_InitialCreate.resx">

@@ -252,7 +252,7 @@
     <div>And the winner is...</div>
     <img id="winnerAvatar" class="hidden" src=""/>
     <div id="winnerName" class="hidden"></div>
-    <div id="btnViewPostgame" class="aoe-btn hidden">View Stats</div>
+    <a id="btnViewPostgame" href="@Url.Action("PostGame", "Game", new { gameId = Model.Uid })" class="aoe-btn hidden">View Stats</a>
 </div>
 
 <div id="chatInputBox" class="box-shadow hidden">

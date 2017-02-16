@@ -1,0 +1,75 @@
+﻿@using JatanWebApp.Models.ViewModels
+@model PostGameViewModel
+@{
+    ViewBag.Title = "Postgame";
+}
+@section scripts
+{
+    <script src="~/Scripts/Chart.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            populateResChart();
+            populateDiceChart();
+            populateTurnChart();
+        });
+
+        function populateResChart() {
+            var resCanvas = $("#resCanvas");
+            var data = {};
+            var options = {};
+            var chart = new Chart(resCanvas, { type: "line", data: data, options: options });
+        }
+
+        function populateDiceChart() {
+            var diceCanvas = $("#diceCanvas");
+            var data =
+            {
+                labels: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+                datasets: [{
+                    label: "Numbers Rolled",
+                    data: [
+                        @for (int i = 2; i <= 12; i++) { @(Model.DiceRolls[i] + ",") }
+                    ]
+                }]
+            };
+            var options = {};
+            var chart = new Chart(diceCanvas, { type: "bar", data: data, options: options });
+        }
+
+        function populateTurnChart() {
+            var turnCanvas = $("#turnCanvas");
+            var data = {};
+            var options = {};
+            var chart = new Chart(turnCanvas, { type: "bar", data: data, options: options });
+        }
+    </script>
+}
+
+<div class="container body-content">
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger mt-15" role="alert">
+            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+            <span class="sr-only">Error:</span>
+            @Model.ErrorMessage
+        </div>
+    }
+    else
+    {
+        <h1>@Model.GameName</h1>
+
+        <canvas id="resCanvas" class="chart-canvas" width="300" height="200"></canvas>
+        <div class="btn-group" role="group" aria-label="">
+            <button id="btnAll" type="button" class="btn btn-default">All</button>
+            <button id="btnWood" type="button" class="btn btn-default"><span class="res-icon-small res-icon-wood"></span> Wood</button>
+            <button id="btnBrick" type="button" class="btn btn-default"><span class="res-icon-small res-icon-brick"></span> Brick</button>
+            <button id="btnWheat" type="button" class="btn btn-default"><span class="res-icon-small res-icon-wheat"></span> Wheat</button>
+            <button id="btnSheep" type="button" class="btn btn-default"><span class="res-icon-small res-icon-sheep"></span> Sheep</button>
+            <button id="btnOre" type="button" class="btn btn-default"><span class="res-icon-small res-icon-ore"></span> Ore</button>
+        </div>
+
+        <canvas id="diceCanvas" class="chart-canvas" width="300" height="200"></canvas>
+        <canvas id="turnCanvas" class="chart-canvas" width="300" height="200"></canvas>
+    }
+</div>

@@ -237,8 +237,6 @@ function initHtmlUI() {
 
     $(".select-resource-btn").click(selectResourceButtonClicked);
 
-    $("#btnViewPostgame").click(btnViewPostgameClicked);
-
     // Init quick links
     $("#btnRestoreGameBoard").click(setDefaultBoardPosition);
     $("#btnTurnSoundOff").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
@@ -2573,10 +2571,6 @@ function populateWinnerBox() {
         $("#winnerAvatar").addClass("hidden");
         $("#btnViewPostgame").addClass("hidden");
     }
-}
-
-function btnViewPostgameClicked() {
-    // TODO
 }
 
 //===========================
