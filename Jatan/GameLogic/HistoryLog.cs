@@ -101,6 +101,7 @@ namespace Jatan.GameLogic
         public int Turn { get; protected set; }
         protected LogItem(int turn)
         {
+            this.Turn = turn;
             this.TimeStampUtc = DateTime.UtcNow;
         }
     }

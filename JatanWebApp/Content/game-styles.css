@@ -132,6 +132,10 @@
     -o-border-image: url('Images/site/button_border.png') 3 repeat !important;
     border-image: url('Images/site/button_border.png') 3 repeat !important;
 }
+a.aoe-btn {
+    text-decoration: none;
+    color: #dccb70;
+}
 
 .worn-paper-dialog {
     position: fixed;

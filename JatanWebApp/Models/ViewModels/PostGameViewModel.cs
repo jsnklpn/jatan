@@ -95,7 +95,7 @@ namespace JatanWebApp.Models.ViewModels
                         totals[resStack.Type] += resStack.Count;
                         totals[ResourceTypes.None] += resStack.Count;
                         playerCardsCollected[resStack.Type][resCollect.Turn] = totals[resStack.Type];
-                        playerCardsCollected[ResourceTypes.None][resCollect.Turn] = totals[resStack.Type];
+                        playerCardsCollected[ResourceTypes.None][resCollect.Turn] = totals[ResourceTypes.None];
                     }
                 }
                 foreach (var res in Enum.GetValues(typeof(ResourceTypes)).Cast<ResourceTypes>())
