@@ -89,6 +89,9 @@ namespace JatanWebApp.Controllers
         // Get: Game/PostGame/id
         public ActionResult PostGame(string gameId)
         {
+            var vm = new PostGameViewModel(gameId);
+            if (!string.IsNullOrEmpty(vm.ErrorMessage))
+                return RedirectToAction("Index", "Home");
             return View(new PostGameViewModel(gameId));
         }
 

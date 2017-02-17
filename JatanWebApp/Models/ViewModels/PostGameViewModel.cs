@@ -41,6 +41,9 @@ namespace JatanWebApp.Models.ViewModels
         public PostGameViewModel(string gameId)
         {
             this.ErrorMessage = null;
+            this.DiceRolls = new Dictionary<int, int>();
+            this.CardsCollected = new Dictionary<Player, Dictionary<ResourceTypes, int[]>>();
+            this.AverageTurnLengths = new Dictionary<Player, TimeSpan>();
 
             var lobby = GameLobbyManager.GameLobbies.Values.FirstOrDefault(g => g.Uid == gameId);
             if (lobby == null)
@@ -75,7 +78,6 @@ namespace JatanWebApp.Models.ViewModels
             var players = playerLogItems.Select(i => i.Player).Distinct().ToList();
 
             // Find the resource collection totals and create data sets for all turns.
-            this.CardsCollected = new Dictionary<Player, Dictionary<ResourceTypes, int[]>>();
             foreach (var p in players)
             {
                 var id = p.Id;
@@ -107,7 +109,6 @@ namespace JatanWebApp.Models.ViewModels
             }
 
             // Populate dice roll stats.
-            this.DiceRolls = new Dictionary<int, int>();
             for (int i = 2; i <= 12; i++)
             {
                 var rollCount = diceRolls.Count(r => r.Roll.Total == i);
@@ -115,7 +116,6 @@ namespace JatanWebApp.Models.ViewModels
             }
 
             // Populate average turn times
-            this.AverageTurnLengths = new Dictionary<Player, TimeSpan>();
             var allTurnLengths = new Dictionary<int, List<TimeSpan>>();
             DateTime startTimeStamp = DateTime.MinValue;
             int turnPlayerId = -1;
