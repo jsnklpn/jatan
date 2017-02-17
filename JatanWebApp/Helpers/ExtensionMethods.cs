@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
 using System.Web;
+using Jatan.Models;
 using JatanWebApp.Models.DAL;
 
 namespace JatanWebApp.Helpers
@@ -50,6 +51,53 @@ namespace JatanWebApp.Helpers
             TimeSpan unixTimeSpan = date - unixEpoch;
 
             return (long)unixTimeSpan.TotalSeconds;
+        }
+
+        /// <summary>
+        /// Encodes a string for JSON
+        /// </summary>
+        public static string JsonEscape(this object o)
+        {
+            return System.Web.Helpers.Json.Encode(o);
+        }
+
+        /// <summary>
+        /// Encodes a string for JSON with option to trim quotation marks
+        /// </summary>
+        public static string JsonEscape(this object o, bool removeQuotes)
+        {
+            var encoded = System.Web.Helpers.Json.Encode(o);
+            if (removeQuotes) return encoded.Trim('"');
+            return encoded;
+        }
+
+        /// <summary>
+        /// Returns a css color from a player color.
+        /// </summary>
+        public static string ToCssColor(this PlayerColor playerColor, float alpha)
+        {
+            int r = 0;
+            int g = 0;
+            int b = 0;
+            switch (playerColor)
+            {
+                case PlayerColor.Blue:
+                    b = 255;
+                    break;
+                case PlayerColor.Green:
+                    g = 255;
+                    break;
+                case PlayerColor.Red:
+                    r = 255;
+                    break;
+                case PlayerColor.Yellow:
+                    r = 255;
+                    g = 255;
+                    break;
+            }
+            if (alpha > 1) alpha = 1;
+            else if (alpha < 0) alpha = 0;
+            return string.Format("rgba({0}, {1}, {2}, {3})", r, g, b, alpha);
         }
     }
 }

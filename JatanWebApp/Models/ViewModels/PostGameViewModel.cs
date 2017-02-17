@@ -28,7 +28,7 @@ namespace JatanWebApp.Models.ViewModels
         /// <summary>
         /// A map of players to a map of resources to the list of amount collected.
         /// </summary>
-        public Dictionary<Player, Dictionary<ResourceTypes, int[]>> CardsCollected;
+        public Dictionary<Player, Dictionary<ResourceTypes, int[]>> CardsCollected { get; set; }
         /// <summary>
         /// A map of numbers to the number of times that number was rolled. (From 2 to 12)
         /// </summary>
@@ -82,19 +82,12 @@ namespace JatanWebApp.Models.ViewModels
             {
                 var id = p.Id;
                 var playerCardsCollected = new Dictionary<ResourceTypes, int[]>();
-                playerCardsCollected[ResourceTypes.None] = new int[this.TotalTurnCount];
-                playerCardsCollected[ResourceTypes.Wood] = new int[this.TotalTurnCount];
-                playerCardsCollected[ResourceTypes.Brick] = new int[this.TotalTurnCount];
-                playerCardsCollected[ResourceTypes.Wheat] = new int[this.TotalTurnCount];
-                playerCardsCollected[ResourceTypes.Sheep] = new int[this.TotalTurnCount];
-                playerCardsCollected[ResourceTypes.Ore] = new int[this.TotalTurnCount];
                 var totals = new Dictionary<ResourceTypes, int>();
-                totals[ResourceTypes.None] = 0;
-                totals[ResourceTypes.Brick] = 0;
-                totals[ResourceTypes.Wood] = 0;
-                totals[ResourceTypes.Wheat] = 0;
-                totals[ResourceTypes.Sheep] = 0;
-                totals[ResourceTypes.Ore] = 0;
+                foreach (var res in Enum.GetValues(typeof(ResourceTypes)).Cast<ResourceTypes>())
+                {
+                    playerCardsCollected[res] = new int[this.TotalTurnCount];
+                    totals[res] = 0;
+                }
                 foreach (var resCollect in resCollectItems.Where(r => r.Player.Id == id))
                 {
                     foreach (var resStack in resCollect.ResourcesCollected.ToList())
@@ -103,6 +96,17 @@ namespace JatanWebApp.Models.ViewModels
                         totals[ResourceTypes.None] += resStack.Count;
                         playerCardsCollected[resStack.Type][resCollect.Turn] = totals[resStack.Type];
                         playerCardsCollected[ResourceTypes.None][resCollect.Turn] = totals[resStack.Type];
+                    }
+                }
+                foreach (var res in Enum.GetValues(typeof(ResourceTypes)).Cast<ResourceTypes>())
+                {
+                    // Fix all the '0' data points
+                    for (int i = 1; i < this.TotalTurnCount; i++)
+                    {
+                        if (playerCardsCollected[res][i] == 0)
+                        {
+                            playerCardsCollected[res][i] = playerCardsCollected[res][i - 1];
+                        }
                     }
                 }
                 this.CardsCollected[p] = playerCardsCollected;
@@ -148,7 +152,60 @@ namespace JatanWebApp.Models.ViewModels
                     this.AverageTurnLengths[p] = new TimeSpan(Convert.ToInt64(averageTicks));
                 }
             }
-
         }
+
+        public static PostGameViewModel CreateTestVm()
+        {
+            var vm = new PostGameViewModel("test");
+            var rand = new Random();
+
+            var players = new List<Player>()
+            {
+                new Player(0, "billy", PlayerColor.Blue),
+                new Player(1, "john", PlayerColor.Red),
+                new Player(2, "robert", PlayerColor.Green),
+                new Player(3, "jim", PlayerColor.Yellow)
+            };
+
+            vm.GameName = "Test game";
+            vm.ErrorMessage = null;
+            vm.TotalTurnCount = rand.Next(50, 100);
+
+            for (int i = 2; i <= 12; i++)
+            {
+                vm.DiceRolls[i] = rand.Next(20);
+            }
+
+            foreach (var p in players)
+            {
+                vm.AverageTurnLengths[p] = TimeSpan.FromSeconds(rand.Next(10, 100));
+            }
+
+            foreach (var p in players)
+            {
+                vm.CardsCollected[p] = new Dictionary<ResourceTypes, int[]>();
+
+                foreach (var res in Enum.GetValues(typeof(ResourceTypes)).Cast<ResourceTypes>())
+                {
+                    vm.CardsCollected[p][res] = new int[vm.TotalTurnCount];
+                }
+
+                foreach (var res in Enum.GetValues(typeof(ResourceTypes)).Cast<ResourceTypes>())
+                {
+                    if (res == ResourceTypes.None) continue;
+                    
+                    var runningTotal = 0;
+                    for (var i = 0; i < vm.TotalTurnCount; i++)
+                    {
+                        var numCollected = rand.Next(0, 5) == 0 ? rand.Next(1, 3) : 0;
+                        runningTotal += numCollected;
+                        vm.CardsCollected[p][res][i] = runningTotal;
+                        vm.CardsCollected[p][ResourceTypes.None][i] += runningTotal;
+                    }
+                }
+            }
+            return vm;
+        }
+
     }
 }

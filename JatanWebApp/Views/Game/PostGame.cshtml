@@ -1,7 +1,24 @@
-﻿@using JatanWebApp.Models.ViewModels
+﻿@using Jatan.Models
+@using JatanWebApp.Helpers
+@using JatanWebApp.Models.ViewModels
 @model PostGameViewModel
 @{
     ViewBag.Title = "Postgame";
+
+    string jsonDiceRollList = Model.DiceRolls.Values.JsonEscape();
+    List<Player> playerList = Model.AverageTurnLengths.Keys.ToList();
+    List<string> playerNameList = Model.AverageTurnLengths.Keys.Select(p => p.Name.JsonEscape(true)).ToList();
+    string jsonAverageTurnLengthList = Model.AverageTurnLengths.Values.Select(t => t.TotalSeconds).JsonEscape();
+    List<string> playerColorListDark = Model.AverageTurnLengths.Keys.Select(p => p.Color.ToCssColor(0.9f)).ToList();
+    List<string> playerColorListLight = Model.AverageTurnLengths.Keys.Select(p => p.Color.ToCssColor(0.5f)).ToList();
+
+    int[] turnIndexArray = new int[Model.TotalTurnCount];
+    for (int i = 0; i < Model.TotalTurnCount; i++)
+    {
+        turnIndexArray[i] = i;
+    }
+    string jsonTurnDataPoints = turnIndexArray.JsonEscape();
+ 
 }
 
 <div class="container body-content">
@@ -28,16 +45,119 @@
     <script src="~/Scripts/Chart.min.js"></script>
     <script type="text/javascript">
 
-        $(function () {
-            populateResChart();
+        $(function() {
+
+            $("#btnAll").click(function () { populateResChart("All", _resDatasetsAll); });
+            $("#btnBrick").click(function () { populateResChart("Brick", _resDatasetsBrick); });
+            $("#btnWood").click(function () { populateResChart("Wood", _resDatasetsWood); });
+            $("#btnWheat").click(function () { populateResChart("Wheat", _resDatasetsWheat); });
+            $("#btnSheep").click(function () { populateResChart("Sheep", _resDatasetsSheep); });
+            $("#btnOre").click(function () { populateResChart("Ore", _resDatasetsOre); });
+
+            populateResChart("All", _resDatasetsAll);
             populateDiceChart();
             populateTurnChart();
         });
 
-        function populateResChart() {
+        var _resDatasetsAll = [
+        @foreach (var player in playerList)
+        {
+            @:{
+                @:label: "@player.Name.JsonEscape(true)",
+                @:borderColor: "@player.Color.ToCssColor(1)",
+                @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
+                @:data: @Model.CardsCollected[player][ResourceTypes.None].JsonEscape(),
+                @:fill: true, lineTension: 0
+            @:},
+        }
+        ];
+        var _resDatasetsWood = [
+        @foreach (var player in playerList)
+        {
+            @:{
+                @:label: "@player.Name.JsonEscape(true)",
+                @:borderColor: "@player.Color.ToCssColor(1)",
+                @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
+                @:data: @Model.CardsCollected[player][ResourceTypes.Wood].JsonEscape(),
+                @:fill: true, lineTension: 0
+            @:},
+        }
+        ];
+        var _resDatasetsBrick = [
+        @foreach (var player in playerList)
+        {
+            @:{
+                @:label: "@player.Name.JsonEscape(true)",
+                @:borderColor: "@player.Color.ToCssColor(1)",
+                @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
+                @:data: @Model.CardsCollected[player][ResourceTypes.Brick].JsonEscape(),
+                @:fill: true, lineTension: 0
+            @:},
+        }
+        ];
+        var _resDatasetsWheat = [
+        @foreach (var player in playerList)
+        {
+            @:{
+                @:label: "@player.Name.JsonEscape(true)",
+                @:borderColor: "@player.Color.ToCssColor(1)",
+                @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
+                @:data: @Model.CardsCollected[player][ResourceTypes.Wheat].JsonEscape(),
+                @:fill: true, lineTension: 0
+            @:},
+        }
+        ];
+        var _resDatasetsSheep = [
+        @foreach (var player in playerList)
+        {
+            @:{
+                @:label: "@player.Name.JsonEscape(true)",
+                @:borderColor: "@player.Color.ToCssColor(1)",
+                @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
+                @:data: @Model.CardsCollected[player][ResourceTypes.Sheep].JsonEscape(),
+                @:fill: true, lineTension: 0
+            @:},
+        }
+        ];
+        var _resDatasetsOre = [
+        @foreach (var player in playerList)
+        {
+            @:{
+                @:label: "@player.Name.JsonEscape(true)",
+                @:borderColor: "@player.Color.ToCssColor(1)",
+                @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
+                @:data: @Model.CardsCollected[player][ResourceTypes.Ore].JsonEscape(),
+                @:fill: true, lineTension: 0
+            @:},
+        }
+        ];
+
+        function populateResChart(name, datasets) {
+            $(".btn").removeClass("active");
+            $("#btn" + name).addClass("active");
             var resCanvas = $("#resCanvas");
-            var data = {};
-            var options = {};
+
+            var data =
+            {
+                labels: @jsonTurnDataPoints,
+                datasets: datasets
+            };
+            var options = {
+                responsive: true,
+                title: { display: true, text: "Resource Cards Collected (" + name + ")" },
+                elements: { point: { radius: 0 } },
+                tooltips: { enabled: false },
+                scales: {
+                    xAxes: [{ display: true, scaleLabel: { display: true, labelString: "Turn" }, ticks: { autoSkip: true, maxTicksLimit: 20 } }],
+                    yAxes: [
+                        {
+                            display: true,
+                            scaleLabel: { display: true, labelString: "Cards Collected" },
+                            ticks: { suggestedMin: 0 }
+                        }
+                    ]
+                }
+            };
             var chart = new Chart(resCanvas, { type: "line", data: data, options: options });
         }
 
@@ -48,26 +168,67 @@
                 labels: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
                 datasets: [
                     {
-                        label: "Numbers Rolled",
-                        data: [
-                            @for (int i = 2; i <= 12; i++)
-                            {
-                                @(Model.DiceRolls[i] + ",")
-                            }
-                        ]
+                        label: "# Times Rolled",
+                        data: @jsonDiceRollList,
+                        borderWidth: 1,
+                        backgroundColor: "rgba(0,0,0,0.4)",
+                        borderColor: "rgba(0,0,0,0.7)"
                     }
                 ]
             };
-            var options = {};
+            var options = {
+                legend: { display: false },
+                responsive: true,
+                title: { display: true, text: "Dice Roll Frequency" },
+                scales: {
+                    xAxes: [{ display: true, scaleLabel: { display: true } }],
+                    yAxes: [
+                        {
+                            display: true,
+                            scaleLabel: { display: true, labelString: "# Times Rolled" },
+                            ticks: { suggestedMin: 0 }
+                        }
+                    ]
+                }
+            };
             var chart = new Chart(diceCanvas, { type: "bar", data: data, options: options });
         }
 
         function populateTurnChart() {
             var turnCanvas = $("#turnCanvas");
-            var data = {};
-            var options = {};
+            var labels = [ @foreach (var name in playerNameList)
+                           {
+                               @:"@name",
+                           }
+            ];
+            var bgColors = [ @foreach (var color in playerColorListLight)
+                             {
+                                 @:"@color",
+                             }
+            ];
+            var borderColors = [ @foreach (var color in playerColorListDark)
+                                 {
+                                     @:"@color",
+                                 }
+            ];
+            var dataSets = [{ label: "Average Turn Length (seconds)", data: @jsonAverageTurnLengthList, borderWidth: 1, backgroundColor: bgColors, borderColor: borderColors }];
+            var data = { labels: labels, datasets: dataSets };
+            var options = {
+                legend: { display: false },
+                responsive: true,
+                title: { display: true, text: "Average Turn Length" },
+                scales: {
+                    xAxes: [{ display: true, scaleLabel: { display: true } }],
+                    yAxes: [
+                        {
+                            display: true,
+                            scaleLabel: { display: true, labelString: "Seconds" },
+                            ticks: { suggestedMin: 0 }
+                        }
+                    ]
+                }
+            };
             var chart = new Chart(turnCanvas, { type: "bar", data: data, options: options });
         }
     </script>
-
 }

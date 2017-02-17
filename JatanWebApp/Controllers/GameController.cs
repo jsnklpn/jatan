@@ -46,7 +46,7 @@ namespace JatanWebApp.Controllers
             return RedirectToAction("Instance", new { gameId = lobby.Uid });
         }
 
-        // Get: Game/Join
+        // Get: Game/Join/?gameId={id}&password={password}
         public ActionResult Join(string gameId, string password)
         {
             if (!string.IsNullOrEmpty(gameId))
@@ -68,7 +68,7 @@ namespace JatanWebApp.Controllers
             return View(new JoinGameViewModel());
         }
 
-        // Get: Game/Instance/id
+        // Get: Game/Instance/?gameId={id}
         public ActionResult Instance(string gameId)
         {
             if (!string.IsNullOrEmpty(gameId))
@@ -86,9 +86,12 @@ namespace JatanWebApp.Controllers
             return View("Join", new JoinGameViewModel() { ErrorMessage = "Game not found." });
         }
 
-        // Get: Game/PostGame/id
+        // Get: Game/PostGame/?gameId={id}
         public ActionResult PostGame(string gameId)
         {
+            if (gameId == "test")
+                return View(PostGameViewModel.CreateTestVm());
+
             var vm = new PostGameViewModel(gameId);
             if (!string.IsNullOrEmpty(vm.ErrorMessage))
                 return RedirectToAction("Index", "Home");
