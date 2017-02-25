@@ -259,26 +259,36 @@ a.aoe-btn {
     bottom: 0;
     height: 100px;
     background-image: url('Images/site/hud_tile.png');
-    border-top: 1px solid black;
     z-index: 1;
 }
 
 #hudCenteredDiv {
     position: absolute;
-    width: 800px;
-    margin-right: auto;
-    margin-left: auto;
     right: 0;
     left: 0;
+    margin: auto;
+    width: 800px;
+}
+
+#hudCardSection {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100px;
+    width: 485px;
+    background-image: url('Images/site/hud_card_section.png');
 }
 
 #cardCanvas {
+    position: relative;
     margin-top: -20px;
-    width: 375px;
+    margin-left: 54px;
+    width: 374px;
     height: 120px;
 }
 
 .hud-button {
+    position: relative;
     display: inline-block;
     margin: 10px;
     margin-top: 25px;

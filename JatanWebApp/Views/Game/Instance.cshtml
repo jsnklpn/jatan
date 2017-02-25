@@ -38,8 +38,10 @@
 </div>
 
 <div id="lowerHud">
+
     <div id="hudCenteredDiv">
         <div id="btnRollDice" class="aoe-btn hud-button">Roll Dice</div>
+        <div id="btnEndTurn" class="aoe-btn hud-button hidden">End Turn</div>
         <div id="btnBuyDiv" class="aoe-btn hud-button dropup">
             <div id="btnBuy" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="False">Buy</div>
             <ul class="dropdown-menu">
@@ -92,10 +94,8 @@
         </div>
         <div id="btnTradeWithBank" class="aoe-btn hud-button">Bank Trade</div>
         <div id="btnTradeWithPlayer" class="aoe-btn hud-button">Player Trade</div>
-        <canvas id="cardCanvas"></canvas>
-        <div id="btnEndTurn" class="aoe-btn hud-button">End Turn</div>
+        <div id="hudCardSection"><canvas id="cardCanvas"></canvas></div>
     </div>
-    <a id="btnLeaveGame" href="@Url.Action("Index", "Home")" class="aoe-btn hud-button">Leave Game</a>
 </div>
 
 <div id="startGameBox" class="box-shadow hidden">
@@ -188,6 +188,7 @@
     <div id="btnTurnSoundOff" title="Turn sounds off" class="hidden"><i class="fa fa-2x fa-volume-up"></i></div>
     <div id="btnTurnSoundOn" title="Turn sounds on"><i class="fa fa-2x fa-volume-off"></i></div>
     <div id="btnViewGameRules" title="View game rules"><i class="fa fa-2x fa-book"></i></div>
+    <div id="btnOpenLeaveGameDlg" title="Leave game"><i class="fa fa-2x fa-times-circle"></i></div>
 </div>
 
 <div id="diceInfoBox" class="box-shadow">
@@ -257,4 +258,23 @@
 
 <div id="chatInputBox" class="box-shadow hidden">
     <input id="chatInputText" type="text" placeholder=" Send message" />
+</div>
+
+<!-- Leave game model dialog -->
+<div id="leaveGameModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="leaveGameModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="leaveGameModalLabel">Leave Game</h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to exit the game?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <a id="btnLeaveGame" class="btn btn-danger" href="@Url.Action("Index", "Home")">Exit Game</a>
+            </div>
+        </div>
+    </div>
 </div>

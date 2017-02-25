@@ -22,6 +22,10 @@ namespace JatanWebApp.Models.ViewModels
         /// </summary>
         public string GameName { get; set; }
         /// <summary>
+        /// The UID of the game
+        /// </summary>
+        public string GameUid { get; set; }
+        /// <summary>
         /// The total number of turns in the game.
         /// </summary>
         public int TotalTurnCount { get; set; }
@@ -41,6 +45,7 @@ namespace JatanWebApp.Models.ViewModels
         public PostGameViewModel(string gameId)
         {
             this.ErrorMessage = null;
+            this.GameUid = gameId;
             this.DiceRolls = new Dictionary<int, int>();
             this.CardsCollected = new Dictionary<Player, Dictionary<ResourceTypes, int[]>>();
             this.AverageTurnLengths = new Dictionary<Player, TimeSpan>();

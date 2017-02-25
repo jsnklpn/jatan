@@ -22,22 +22,24 @@
 }
 
 <div class="container body-content">
-        <h1>@Model.GameName</h1>
-
-        <div class="chart-div">
-            <canvas id="resCanvas" class="chart-canvas" width="600" height="300"></canvas>
-        </div>
-        <div class="btn-group postgame-btn-group" role="group" aria-label="">
-            <button id="btnAll" type="button" class="btn btn-default">All</button>
-            <button id="btnWood" type="button" class="btn btn-default"><span class="res-icon-small res-icon-wood"></span> Wood</button>
-            <button id="btnBrick" type="button" class="btn btn-default"><span class="res-icon-small res-icon-brick"></span> Brick</button>
-            <button id="btnWheat" type="button" class="btn btn-default"><span class="res-icon-small res-icon-wheat"></span> Wheat</button>
-            <button id="btnSheep" type="button" class="btn btn-default"><span class="res-icon-small res-icon-sheep"></span> Sheep</button>
-            <button id="btnOre" type="button" class="btn btn-default"><span class="res-icon-small res-icon-ore"></span> Ore</button>
-        </div>
+    <h1>@Model.GameName</h1>
+    <p>
+        @Html.ActionLink("Return to game board", "Instance", new { gameId = Model.GameUid })
+    </p>
+    <div class="chart-div">
+        <canvas id="resCanvas" class="chart-canvas" width="600" height="300"></canvas>
+    </div>
+    <div class="btn-group postgame-btn-group" role="group" aria-label="">
+        <button id="btnAll" type="button" class="btn btn-default">All</button>
+        <button id="btnWood" type="button" class="btn btn-default"><span class="res-icon-small res-icon-wood"></span> Wood</button>
+        <button id="btnBrick" type="button" class="btn btn-default"><span class="res-icon-small res-icon-brick"></span> Brick</button>
+        <button id="btnWheat" type="button" class="btn btn-default"><span class="res-icon-small res-icon-wheat"></span> Wheat</button>
+        <button id="btnSheep" type="button" class="btn btn-default"><span class="res-icon-small res-icon-sheep"></span> Sheep</button>
+        <button id="btnOre" type="button" class="btn btn-default"><span class="res-icon-small res-icon-ore"></span> Ore</button>
+    </div>
     
-        <div class="chart-div"><canvas id="diceCanvas" class="chart-canvas" width="600" height="300"></canvas></div>
-        <div class="chart-div"><canvas id="turnCanvas" class="chart-canvas" width="600" height="300"></canvas></div>
+    <div class="chart-div"><canvas id="diceCanvas" class="chart-canvas" width="600" height="300"></canvas></div>
+    <div class="chart-div"><canvas id="turnCanvas" class="chart-canvas" width="600" height="300"></canvas></div>
 </div>
 
 @section scripts
@@ -149,7 +151,7 @@
                 elements: { point: { radius: 0 } },
                 tooltips: { enabled: false },
                 scales: {
-                    xAxes: [{ display: true, scaleLabel: { display: true, labelString: "Turn" }, ticks: { autoSkip: true, maxTicksLimit: 20 } }],
+                    xAxes: [{ display: true, scaleLabel: { display: true, labelString: "Turn #" }, ticks: { autoSkip: true, maxTicksLimit: 20 } }],
                     yAxes: [
                         {
                             display: true,

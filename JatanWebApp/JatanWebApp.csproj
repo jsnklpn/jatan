@@ -304,6 +304,7 @@
     <Content Include="Content\Images\site\dialog_675x441.png" />
     <Content Include="Content\Images\site\dice_photo2.png" />
     <Content Include="Content\Images\site\divider.png" />
+    <Content Include="Content\Images\site\hud_card_section.png" />
     <Content Include="Content\Images\site\hud_tile.png" />
     <Content Include="Content\Images\site\icon_brick.png" />
     <Content Include="Content\Images\site\icon_cards.png" />

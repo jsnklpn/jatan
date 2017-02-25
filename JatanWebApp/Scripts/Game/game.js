@@ -242,6 +242,12 @@ function initHtmlUI() {
     $("#btnTurnSoundOff").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
     $("#btnTurnSoundOn").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
     //$("#btnViewGameRules").click(); // TODO
+    $("#btnOpenLeaveGameDlg").click(function () { $("#leaveGameModal").modal("show"); });
+
+    $(document).click(function (event) {
+        // click anywhere to hide card-received box
+        hideCardReceivedBox();
+    });
 
     // Show chat input box when the enter key is pressed.
     $(document).keydown(function (event) {
@@ -1021,6 +1027,14 @@ function updateGameModel(gameManager) {
         $("#startGameBox").hideWithAnimation("zoomOut");
     }
 
+    if (myPlayerId === activePlayerId && playerTurnState !== PlayerTurnState.NeedToRoll) {
+        $("#btnRollDice").addClass("hidden");
+        $("#btnEndTurn").removeClass("hidden");
+    } else {
+        $("#btnEndTurn").addClass("hidden");
+        $("#btnRollDice").removeClass("hidden");
+    }
+
     populateDice();
     populateTurnInfoBox();
     populateResourceCards();
@@ -1119,7 +1133,7 @@ function rollDiceReminder() {
         _currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]) {
         $("#btnRollDice").animateOnce("shake");
         // Continually remind the player to roll the dice.
-        setTimeout(rollDiceReminder, 2000);
+        setTimeout(rollDiceReminder, 5000);
     }
 }
 
