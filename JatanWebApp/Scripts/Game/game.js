@@ -69,6 +69,16 @@ var _idToAvatarPathMap = {}; // map of player id to avatar path.
 
 $(function () {
 
+    // Fix resource URLs (needed if there is a directory between /Game/ and the root hostname.)
+    var basepath = window.location.pathname.replace("/Game/Instance", "");
+    if (basepath.length > 0) {
+        var assetKeys = Object.keys(_assetMap);
+        for (var i = 0; i < assetKeys.length; i++) {
+            var src = _assetMap[assetKeys[i]].src;
+            _assetMap[assetKeys[i]].src = basepath + src;
+        }
+    }
+
     // disable contextmenu on all canvas
     $("body").on("contextmenu", "canvas", function (e) { return false; });
 
