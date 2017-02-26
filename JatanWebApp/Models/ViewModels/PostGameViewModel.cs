@@ -26,9 +26,17 @@ namespace JatanWebApp.Models.ViewModels
         /// </summary>
         public string GameUid { get; set; }
         /// <summary>
+        /// The name of the winner.
+        /// </summary>
+        public string WinnerName { get; set; }
+        /// <summary>
         /// The total number of turns in the game.
         /// </summary>
         public int TotalTurnCount { get; set; }
+        /// <summary>
+        /// The total length of the game.
+        /// </summary>
+        public TimeSpan GameLength { get; set; }
         /// <summary>
         /// A map of players to a map of resources to the list of amount collected.
         /// </summary>
@@ -72,6 +80,26 @@ namespace JatanWebApp.Models.ViewModels
             var log = history.LogItems;
 
             this.GameName = lobby.Name;
+
+            // Populate the winner name
+            var winnerId = lobby.GameManager.WinnerPlayerId;
+            var winnerLog = log.OfType<PlayerLogItem>().SingleOrDefault(i => i.Player.Id == winnerId);
+            if (winnerLog != null)
+            {
+                this.WinnerName = winnerLog.Player.Name;
+            }
+
+            // Populate the total game length
+            if (log.Any())
+            {
+                var first = log.First().TimeStampUtc;
+                var last = log.Last().TimeStampUtc;
+                this.GameLength = last - first;
+            }
+            else
+            {
+                this.GameLength = TimeSpan.Zero;
+            }
 
             // Populate the total turn count.
             this.TotalTurnCount = log.Last().Turn + 1;

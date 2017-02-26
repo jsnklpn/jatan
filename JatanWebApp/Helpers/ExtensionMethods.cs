@@ -39,7 +39,11 @@ namespace JatanWebApp.Helpers
                     }
                 }
             }
+#if BETA
+            return @"/beta/Content/Images/avatars/default.jpg";
+#else
             return @"/Content/Images/avatars/default.jpg";
+#endif
         }
 
         /// <summary>

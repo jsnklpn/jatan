@@ -25,23 +25,32 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Release - beta|Any CPU = Release - beta|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D27FB785-CC87-4936-9746-892DD7916EA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D27FB785-CC87-4936-9746-892DD7916EA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D27FB785-CC87-4936-9746-892DD7916EA2}.Release - beta|Any CPU.ActiveCfg = Release|Any CPU
+		{D27FB785-CC87-4936-9746-892DD7916EA2}.Release - beta|Any CPU.Build.0 = Release|Any CPU
 		{D27FB785-CC87-4936-9746-892DD7916EA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D27FB785-CC87-4936-9746-892DD7916EA2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C1CB00B9-ACD1-42CB-8084-068966D39FA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C1CB00B9-ACD1-42CB-8084-068966D39FA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1CB00B9-ACD1-42CB-8084-068966D39FA9}.Release - beta|Any CPU.ActiveCfg = Release|Any CPU
+		{C1CB00B9-ACD1-42CB-8084-068966D39FA9}.Release - beta|Any CPU.Build.0 = Release|Any CPU
 		{C1CB00B9-ACD1-42CB-8084-068966D39FA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1CB00B9-ACD1-42CB-8084-068966D39FA9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{70B8825B-6810-46F1-BB1A-1A680B517F90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{70B8825B-6810-46F1-BB1A-1A680B517F90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70B8825B-6810-46F1-BB1A-1A680B517F90}.Release - beta|Any CPU.ActiveCfg = Release|Any CPU
+		{70B8825B-6810-46F1-BB1A-1A680B517F90}.Release - beta|Any CPU.Build.0 = Release|Any CPU
 		{70B8825B-6810-46F1-BB1A-1A680B517F90}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70B8825B-6810-46F1-BB1A-1A680B517F90}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Release - beta|Any CPU.ActiveCfg = Release - beta|Any CPU
+		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Release - beta|Any CPU.Build.0 = Release - beta|Any CPU
 		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
