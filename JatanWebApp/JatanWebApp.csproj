@@ -352,7 +352,6 @@
     <Content Include="Scripts\Game\game.js" />
     <Content Include="Scripts\Game\game_constants.js" />
     <Content Include="Scripts\Game\join.js" />
-    <Content Include="Scripts\Game\math.js" />
     <Content Include="Scripts\jquery-3.1.1.js" />
     <Content Include="Scripts\jquery-3.1.1.min.js" />
     <Content Include="Scripts\jquery-3.1.1.slim.js" />

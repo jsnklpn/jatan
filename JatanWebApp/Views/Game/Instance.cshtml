@@ -11,14 +11,13 @@
     <script src="~/Scripts/jquery.signalR-2.2.1.js"></script>
     <script src="~/signalr/hubs"></script>
     <script src="~/Scripts/createjs-2015.11.26.min.js"></script>
-    <script src="~/Scripts/Game/math.js"></script>
-    <script src="~/Scripts/Game/game_constants.js"></script>
-    <script src="~/Scripts/Game/game.js"></script>
+    <script src="~/Scripts/Game/game_constants.js?v=@Html.GetGuid()"></script>
+    <script src="~/Scripts/Game/game.js?v=@Html.GetGuid()"></script>
 }
 
 @section css
 {
-    <link href="~/Content/game-styles.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/game-styles.css?v=@Html.GetGuid()" rel="stylesheet" type="text/css" />
 }
 
 <canvas id="gameCanvas" class="transparent"></canvas>

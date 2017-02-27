@@ -8,6 +8,9 @@ namespace JatanWebApp
         // For more information on bundling, visit http://go.microsoft.com/fwlink/?LinkId=301862
         public static void RegisterBundles(BundleCollection bundles)
         {
+            // enable optimizations to get a bundle hash to be included in the html
+            BundleTable.EnableOptimizations = true;
+
             bundles.Add(new ScriptBundle("~/bundles/jquery").Include(
                         "~/Scripts/jquery-{version}.js",
                         "~/Scripts/jquery-extend.js"));

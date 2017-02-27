@@ -1,11 +1,12 @@
-﻿@using JatanWebApp.Models.ViewModels
+﻿@using JatanWebApp.Helpers
+@using JatanWebApp.Models.ViewModels
 @model JoinGameViewModel
 @{
     ViewBag.Title = "Join Game";
 }
 @section scripts
 {
-    <script src="~/Scripts/Game/join.js"></script>
+    <script src="~/Scripts/Game/join.js?v=@Html.GetGuid()"></script>
 }
 
 <!-- Enter password model dialog -->

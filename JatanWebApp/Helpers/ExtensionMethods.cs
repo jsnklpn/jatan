@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
 using System.Web;
+using System.Web.Mvc;
 using Jatan.Models;
 using JatanWebApp.Models.DAL;
 
@@ -102,6 +103,14 @@ namespace JatanWebApp.Helpers
             if (alpha > 1) alpha = 1;
             else if (alpha < 0) alpha = 0;
             return string.Format("rgba({0}, {1}, {2}, {3})", r, g, b, alpha);
+        }
+
+        /// <summary>
+        /// Returns a random guid string.
+        /// </summary>
+        public static string GetGuid(this HtmlHelper helper)
+        {
+            return Guid.NewGuid().ToString("N");
         }
     }
 }
