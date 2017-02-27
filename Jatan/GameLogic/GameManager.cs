@@ -35,6 +35,7 @@ namespace Jatan.GameLogic
         private Tuple<int, int> _longestRoad; // <playerId, roadLength>
         private Tuple<int, int> _largestArmy; // <playerId, armySize>
         private HistoryLog _log;
+        private GameStatistics _gameStats;
 
         #region Public properties
 
@@ -254,11 +255,23 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
+        /// Returns the game statistics for this game. Returns null if the game is not completed.
+        /// </summary>
+        public GameStatistics Statistics
+        {
+            get {  return _gameStats; }
+        }
+
+        /// <summary>
         /// The event which fires when a player's turn time-limit expires.
-        /// The player's turn is NOT skipped automatically. This must be done manually
-        /// with the <see cref="SkipPlayerTurn"/> method.
+        /// The player's turn is skipped automatically. This is just for notification purposes.
         /// </summary>
         public event EventHandler<TimeLimitElapsedArgs> PlayerTurnTimeLimitExpired;
+
+        /// <summary>
+        /// Event indicating that the game successfully completed.
+        /// </summary>
+        public event EventHandler GameCompleted;
 
         #endregion
 
@@ -270,6 +283,7 @@ namespace Jatan.GameLogic
         public GameManager()
         {
             _log = new HistoryLog(new List<Player>());
+            _gameStats = null;
             _gameSettings = new GameSettings();
             _gameState = GameState.NotStarted;
             _playerTurnState = PlayerTurnState.None;
@@ -291,6 +305,7 @@ namespace Jatan.GameLogic
         public void StartNewGame()
         {
             _log = new HistoryLog(_players);
+            _gameStats = null;
             _startingPlayerIndex = _gameSettings.RandomizeStartingPlayer ? _players.IndexOf(_players.GetRandom()) : 0;
             _playerTurnIndex = _startingPlayerIndex;
             _turnCounter = 0;
@@ -1364,6 +1379,9 @@ namespace Jatan.GameLogic
                         _gameState = GameState.GameInProgress;
                         _playerTurnState = PlayerTurnState.NeedToRoll;
                         StartPlayerTurnTimer();
+
+                        // The first real turn of the game
+                        _log.TurnStarted(_turnCounter, ActivePlayer.Id);
                     }
                     else
                     {
@@ -1498,7 +1516,17 @@ namespace Jatan.GameLogic
             // Set the winner Id and change the game state.
             _winnerPlayerId = playerId;
             _gameState = GameState.EndOfGame;
-            
+
+            // Calculate the end-of-game statistics
+            _gameStats = new GameStatistics(this);
+
+            // Fire event indicating that the game has completed.
+            var handler = GameCompleted;
+            if (handler != null)
+            {
+                handler(this, EventArgs.Empty);
+            }
+
             return true;
         }
 

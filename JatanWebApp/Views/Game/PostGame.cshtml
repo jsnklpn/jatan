@@ -5,15 +5,15 @@
 @{
     ViewBag.Title = "Postgame";
 
-    string jsonDiceRollList = Model.DiceRolls.Values.JsonEscape();
-    List<Player> playerList = Model.AverageTurnLengths.Keys.ToList();
-    List<string> playerNameList = Model.AverageTurnLengths.Keys.Select(p => p.Name.JsonEscape(true)).ToList();
-    string jsonAverageTurnLengthList = Model.AverageTurnLengths.Values.Select(t => t.TotalSeconds).JsonEscape();
-    List<string> playerColorListDark = Model.AverageTurnLengths.Keys.Select(p => p.Color.ToCssColor(0.9f)).ToList();
-    List<string> playerColorListLight = Model.AverageTurnLengths.Keys.Select(p => p.Color.ToCssColor(0.5f)).ToList();
+    string jsonDiceRollList = Model.Stats.DiceRolls.Values.JsonEscape();
+    List<Player> playerList = Model.Stats.AverageTurnLengths.Keys.ToList();
+    List<string> playerNameList = Model.Stats.AverageTurnLengths.Keys.Select(p => p.Name.JsonEscape(true)).ToList();
+    string jsonAverageTurnLengthList = Model.Stats.AverageTurnLengths.Values.Select(t => t.TotalSeconds).JsonEscape();
+    List<string> playerColorListDark = Model.Stats.AverageTurnLengths.Keys.Select(p => p.Color.ToCssColor(0.9f)).ToList();
+    List<string> playerColorListLight = Model.Stats.AverageTurnLengths.Keys.Select(p => p.Color.ToCssColor(0.5f)).ToList();
 
-    int[] turnIndexArray = new int[Model.TotalTurnCount];
-    for (int i = 0; i < Model.TotalTurnCount; i++)
+    int[] turnIndexArray = new int[Model.Stats.TotalTurnCount];
+    for (int i = 0; i < Model.Stats.TotalTurnCount; i++)
     {
         turnIndexArray[i] = i;
     }
@@ -30,15 +30,15 @@
         <ul class="list-group col-sm-8">
             <li class="list-group-item list-group-item-info">
                 Winner
-                <span class="badge">@Model.WinnerName</span>
+                <span class="badge">@Model.Stats.WinnerName</span>
             </li>
             <li class="list-group-item list-group-item-info">
                 Game length
-                <span class="badge">@Model.GameLength.ToReadableString()</span>
+                <span class="badge">@Model.Stats.GameLength.ToReadableString()</span>
             </li>
             <li class="list-group-item list-group-item-info">
                 Number of turns
-                <span class="badge">@Model.TotalTurnCount</span>
+                <span class="badge">@Model.Stats.TotalTurnCount</span>
             </li>
         </ul>
     </div>
@@ -84,7 +84,7 @@
                 @:label: "@player.Name.JsonEscape(true)",
                 @:borderColor: "@player.Color.ToCssColor(1)",
                 @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
-                @:data: @Model.CardsCollected[player][ResourceTypes.None].JsonEscape(),
+                @:data: @Model.Stats.CardsCollected[player][ResourceTypes.None].JsonEscape(),
                 @:fill: true, lineTension: 0
             @:},
         }
@@ -96,7 +96,7 @@
                 @:label: "@player.Name.JsonEscape(true)",
                 @:borderColor: "@player.Color.ToCssColor(1)",
                 @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
-                @:data: @Model.CardsCollected[player][ResourceTypes.Wood].JsonEscape(),
+                @:data: @Model.Stats.CardsCollected[player][ResourceTypes.Wood].JsonEscape(),
                 @:fill: true, lineTension: 0
             @:},
         }
@@ -108,7 +108,7 @@
                 @:label: "@player.Name.JsonEscape(true)",
                 @:borderColor: "@player.Color.ToCssColor(1)",
                 @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
-                @:data: @Model.CardsCollected[player][ResourceTypes.Brick].JsonEscape(),
+                @:data: @Model.Stats.CardsCollected[player][ResourceTypes.Brick].JsonEscape(),
                 @:fill: true, lineTension: 0
             @:},
         }
@@ -120,7 +120,7 @@
                 @:label: "@player.Name.JsonEscape(true)",
                 @:borderColor: "@player.Color.ToCssColor(1)",
                 @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
-                @:data: @Model.CardsCollected[player][ResourceTypes.Wheat].JsonEscape(),
+                @:data: @Model.Stats.CardsCollected[player][ResourceTypes.Wheat].JsonEscape(),
                 @:fill: true, lineTension: 0
             @:},
         }
@@ -132,7 +132,7 @@
                 @:label: "@player.Name.JsonEscape(true)",
                 @:borderColor: "@player.Color.ToCssColor(1)",
                 @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
-                @:data: @Model.CardsCollected[player][ResourceTypes.Sheep].JsonEscape(),
+                @:data: @Model.Stats.CardsCollected[player][ResourceTypes.Sheep].JsonEscape(),
                 @:fill: true, lineTension: 0
             @:},
         }
@@ -144,7 +144,7 @@
                 @:label: "@player.Name.JsonEscape(true)",
                 @:borderColor: "@player.Color.ToCssColor(1)",
                 @:backgroundColor: "@player.Color.ToCssColor(0.05f)",
-                @:data: @Model.CardsCollected[player][ResourceTypes.Ore].JsonEscape(),
+                @:data: @Model.Stats.CardsCollected[player][ResourceTypes.Ore].JsonEscape(),
                 @:fill: true, lineTension: 0
             @:},
         }

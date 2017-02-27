@@ -181,6 +181,10 @@
     <Compile Include="Migrations\201701171730012_AddUserImage.Designer.cs">
       <DependentUpon>201701171730012_AddUserImage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201702272258179_AddUserStats.cs" />
+    <Compile Include="Migrations\201702272258179_AddUserStats.Designer.cs">
+      <DependentUpon>201702272258179_AddUserStats.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\DAL\ApplicationUser.cs" />
     <Compile Include="Models\DAL\EntityBase.cs" />
@@ -405,6 +409,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201701171730012_AddUserImage.resx">
       <DependentUpon>201701171730012_AddUserImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201702272258179_AddUserStats.resx">
+      <DependentUpon>201702272258179_AddUserStats.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

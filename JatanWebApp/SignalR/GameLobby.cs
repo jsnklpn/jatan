@@ -62,6 +62,10 @@ namespace JatanWebApp.SignalR
         /// Indicates if the game has been cancelled.
         /// </summary>
         public bool Cancelled { get; private set; }
+        /// <summary>
+        /// Indicates if the game has successfully ended.
+        /// </summary>
+        public bool Completed { get; private set; }
 
         /// <summary>
         /// GameLobby constructor
@@ -77,6 +81,7 @@ namespace JatanWebApp.SignalR
             this.Password = model.Password;
             this.Owner = ownerName;
             this.Cancelled = false;
+            this.Completed = false;
 
             this.MaxNumberOfPlayers = model.MaxNumberOfPlayers;
 
@@ -86,15 +91,9 @@ namespace JatanWebApp.SignalR
             this.GameManager.Settings.TurnTimeLimit = model.TurnTimeLimit;
             this.GameManager.Settings.CardCountLossThreshold = model.CardLossThreshold;
             this.GameManager.PlayerTurnTimeLimitExpired += GameManager_PlayerTurnTimeLimitExpired;
+            this.GameManager.GameCompleted += GameManager_GameCompleted;
 
             this.GameManager.AddPlayer(ownerName);
-        }
-
-        private void GameManager_PlayerTurnTimeLimitExpired(object sender, TimeLimitElapsedArgs e)
-        {
-            // The current player's turn just expired and their turn was skipped.
-            // Inform all players that the game state changed.
-            GameHub.GetClientsForGame(Owner).turnTimeLimitExpired(e.PlayerId);
         }
 
         /// <summary>
@@ -169,5 +168,51 @@ namespace JatanWebApp.SignalR
             var dto = new GameManagerDTO(this, id, includeBoardConstants, includeAvatarPaths);
             return dto;
         }
+
+        private void GameManager_PlayerTurnTimeLimitExpired(object sender, TimeLimitElapsedArgs e)
+        {
+            // The current player's turn just expired and their turn was skipped.
+            // Inform all players that the game state changed.
+            GameHub.GetClientsForGame(Owner).turnTimeLimitExpired(e.PlayerId);
+        }
+
+        private void GameManager_GameCompleted(object sender, EventArgs eventArgs)
+        {
+            if (this.Completed)
+                return;
+
+            this.Completed = true;
+
+            // The game completed. Save stuff to the database.
+            try
+            {
+                var stats = GameManager.Statistics;
+                using (var db = new JatanDbContext())
+                {
+                    // Some players might have left before the game completed. They will not be updated.
+                    foreach (var player in this.GameManager.Players)
+                    {
+                        var user = db.Users.FirstOrDefault(u => u.UserName == player.Name);
+                        if (user == null) continue;
+                        user.TotalMinutesPlayed += (int)stats.GameLength.TotalMinutes;
+                        var newAvg = ((user.AverageTurnLength * user.GamesPlayed) + stats.AverageTurnLengths[player].TotalSeconds) / (user.GamesPlayed + 1);
+                        user.AverageTurnLength = (float)newAvg;
+                        user.TotalResourcesCollected += stats.CardsCollected[player][ResourceTypes.None].Last();
+                        user.GamesPlayed++;
+                        if (player.Id == this.GameManager.WinnerPlayerId)
+                        {
+                            user.GamesWon++;
+                        }
+                    }
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception)
+            {
+                // Something went wrong when saving to the database
+                // TODO: Log exception
+            }
+        }
+
     }
 }
