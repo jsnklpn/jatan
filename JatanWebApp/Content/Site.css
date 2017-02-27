@@ -189,6 +189,11 @@ canvas {
     margin: 15px 0 2px 0;
 }
 
+.postgame-btn-group {
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
 .postgame-btn-group button {
     width: 100px;
 }

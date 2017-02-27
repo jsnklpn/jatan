@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using Jatan.Models;
@@ -111,6 +112,19 @@ namespace JatanWebApp.Helpers
         public static string GetGuid(this HtmlHelper helper)
         {
             return Guid.NewGuid().ToString("N");
+        }
+
+        /// <summary>
+        /// Returns a readable timespan string (e.g. 3 hours, 24 minutes)
+        /// </summary>
+        public static string ToReadableString(this TimeSpan ts, bool includeSeconds = false)
+        {
+            var sb = new StringBuilder();
+            if (ts.Days > 0) sb.AppendFormat("{0} days, ", ts.Days);
+            if (ts.Hours > 0) sb.AppendFormat("{0} hours, ", ts.Hours);
+            if (ts.Minutes > 0) sb.AppendFormat("{0} minutes, ", ts.Minutes);
+            if (includeSeconds && ts.Seconds > 0) sb.AppendFormat("{0} seconds", ts.Seconds);
+            return sb.ToString().Trim(' ', ',');
         }
     }
 }

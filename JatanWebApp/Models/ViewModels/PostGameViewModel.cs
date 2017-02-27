@@ -201,6 +201,9 @@ namespace JatanWebApp.Models.ViewModels
             };
 
             vm.GameName = "Test game";
+            vm.WinnerName = "john";
+            vm.GameLength = TimeSpan.FromMinutes(rand.Next(30, 300));
+            vm.GameUid = "test";
             vm.ErrorMessage = null;
             vm.TotalTurnCount = rand.Next(50, 100);
 

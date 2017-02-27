@@ -24,13 +24,29 @@
 <div class="container body-content">
     <h1>@Model.GameName</h1>
     <p>
-        @Html.ActionLink("Return to game board", "Instance", new { gameId = Model.GameUid })
+        @Html.ActionLink("Return to game board", "Instance", new {gameId = Model.GameUid})
     </p>
+    <div class="container">
+        <ul class="list-group col-sm-8">
+            <li class="list-group-item list-group-item-info">
+                Winner
+                <span class="badge">@Model.WinnerName</span>
+            </li>
+            <li class="list-group-item list-group-item-info">
+                Game length
+                <span class="badge">@Model.GameLength.ToReadableString()</span>
+            </li>
+            <li class="list-group-item list-group-item-info">
+                Number of turns
+                <span class="badge">@Model.TotalTurnCount</span>
+            </li>
+        </ul>
+    </div>
     <div class="chart-div">
         <canvas id="resCanvas" class="chart-canvas" width="600" height="300"></canvas>
     </div>
     <div class="btn-group postgame-btn-group" role="group" aria-label="">
-        <button id="btnAll" type="button" class="btn btn-default">All</button>
+        <button id="btnTotal" type="button" class="btn btn-default">Total</button>
         <button id="btnWood" type="button" class="btn btn-default"><span class="res-icon-small res-icon-wood"></span> Wood</button>
         <button id="btnBrick" type="button" class="btn btn-default"><span class="res-icon-small res-icon-brick"></span> Brick</button>
         <button id="btnWheat" type="button" class="btn btn-default"><span class="res-icon-small res-icon-wheat"></span> Wheat</button>
@@ -49,19 +65,19 @@
 
         $(function() {
 
-            $("#btnAll").click(function () { populateResChart("All", _resDatasetsAll); });
+            $("#btnTotal").click(function () { populateResChart("Total", _resDatasetsTotal); });
             $("#btnBrick").click(function () { populateResChart("Brick", _resDatasetsBrick); });
             $("#btnWood").click(function () { populateResChart("Wood", _resDatasetsWood); });
             $("#btnWheat").click(function () { populateResChart("Wheat", _resDatasetsWheat); });
             $("#btnSheep").click(function () { populateResChart("Sheep", _resDatasetsSheep); });
             $("#btnOre").click(function () { populateResChart("Ore", _resDatasetsOre); });
 
-            populateResChart("All", _resDatasetsAll);
+            populateResChart("Total", _resDatasetsTotal);
             populateDiceChart();
             populateTurnChart();
         });
 
-        var _resDatasetsAll = [
+        var _resDatasetsTotal = [
         @foreach (var player in playerList)
         {
             @:{
