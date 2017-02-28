@@ -28,10 +28,8 @@
             {
                 for (var i = 0; i < Model.UserList.Count; i++)
                 {
-                    if (Model.UserList[i].UserName == User.Identity.GetUserName())
-                    {
-                        thisUserRowClass = "info";
-                    }
+                    thisUserRowClass = Model.UserList[i].UserName == User.Identity.GetUserName() ? "info" : "";
+                    
                     <tr class="@thisUserRowClass">
                         <td>@(i + 1 + playerRankOffset)</td>
                         <td>
@@ -42,7 +40,7 @@
                         <td>@Model.UserList[i].WinPercentage.ToString("P0")</td>
                         <td>@Model.UserList[i].AverageTurnLength.ToReadableString()</td>
                         <td>@Model.UserList[i].TotalTimePlayed.ToReadableString()</td>
-                        <td>@Model.UserList[i].PlayerScore</td>
+                        <td>@Model.UserList[i].PlayerScore.ToString("N0")</td>
                     </tr>
                 }
             }
