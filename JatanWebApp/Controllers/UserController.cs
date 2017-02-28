@@ -173,11 +173,7 @@ namespace JatanWebApp.Controllers
                         {
                             var newUserImage = new UserImage()
                             {
-#if BETA
-                                ImagePath = @"/beta/Content/Images/avatars/" + physicalFileName,
-#else
-                                ImagePath = @"/Content/Images/avatars/" + physicalFileName,
-#endif
+                                ImagePath = DatabaseHelper.AvatarPath + "/" + physicalFileName,
                                 UserFileName = userFileName
                             };
                             db.UserImages.Add(newUserImage);
