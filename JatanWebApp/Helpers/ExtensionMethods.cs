@@ -117,13 +117,13 @@ namespace JatanWebApp.Helpers
         /// <summary>
         /// Returns a readable timespan string (e.g. 3 hours, 24 minutes)
         /// </summary>
-        public static string ToReadableString(this TimeSpan ts, bool includeSeconds = false)
+        public static string ToReadableString(this TimeSpan ts)
         {
             var sb = new StringBuilder();
-            if (ts.Days > 0) sb.AppendFormat("{0} days, ", ts.Days);
-            if (ts.Hours > 0) sb.AppendFormat("{0} hours, ", ts.Hours);
-            if (ts.Minutes > 0) sb.AppendFormat("{0} minutes, ", ts.Minutes);
-            if (includeSeconds && ts.Seconds > 0) sb.AppendFormat("{0} seconds", ts.Seconds);
+            if (ts.Days > 0) sb.AppendFormat("{0} day{1}, ", ts.Days, ts.Days > 1 ? "s" : "");
+            if (ts.Hours > 0) sb.AppendFormat("{0} hour{1}, ", ts.Hours, ts.Hours > 1 ? "s" : "");
+            if (ts.Minutes > 0) sb.AppendFormat("{0} minute{1}, ", ts.Minutes, ts.Minutes > 1 ? "s" : "");
+            if (ts.Seconds > 0) sb.AppendFormat("{0} second{1}", ts.Seconds, ts.Seconds > 1 ? "s" : "");
             return sb.ToString().Trim(' ', ',');
         }
     }
