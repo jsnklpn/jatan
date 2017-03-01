@@ -106,10 +106,37 @@ namespace JatanWebApp.Helpers
         public static string ToReadableString(this TimeSpan ts)
         {
             var sb = new StringBuilder();
-            if (ts.Days > 0) sb.AppendFormat("{0} day{1}, ", ts.Days, ts.Days > 1 ? "s" : "");
-            if (ts.Hours > 0) sb.AppendFormat("{0} hour{1}, ", ts.Hours, ts.Hours > 1 ? "s" : "");
-            if (ts.Minutes > 0) sb.AppendFormat("{0} minute{1}, ", ts.Minutes, ts.Minutes > 1 ? "s" : "");
-            if (ts.Seconds > 0) sb.AppendFormat("{0} second{1}", ts.Seconds, ts.Seconds > 1 ? "s" : "");
+            var count = 0;
+            if (ts.Days > 0)
+            {
+                sb.AppendFormat("{0} day{1}, ", ts.Days, ts.Days > 1 ? "s" : "");
+                count++;
+            }
+            if (ts.Hours > 0)
+            {
+                sb.AppendFormat("{0} hour{1}, ", ts.Hours, ts.Hours > 1 ? "s" : "");
+                count++;
+            }
+            if (ts.Minutes > 0 && count < 2)
+            {
+                sb.AppendFormat("{0} minute{1}, ", ts.Minutes, ts.Minutes > 1 ? "s" : "");
+                count++;
+            }
+            if (ts.Seconds > 0 && count < 2)
+            {
+                sb.AppendFormat("{0} second{1}", ts.Seconds, ts.Seconds > 1 ? "s" : "");
+                count++;
+            }
+            if (ts.Milliseconds > 0 && count == 0)
+            {
+                // display milliseconds if nothing else is showing
+                sb.AppendFormat("{0} millisecond{1}", ts.Milliseconds, ts.Milliseconds > 1 ? "s" : "");
+                count++;
+            }
+            if (count == 0)
+            {
+                return "0 seconds";
+            }
             return sb.ToString().Trim(' ', ',');
         }
 
