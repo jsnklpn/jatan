@@ -204,6 +204,20 @@ canvas {
 }
 
 /* ======================= */
+/*       TOP PLAYERS       */
+/* ======================= */
+
+.player-list-avatar {
+    width: 32px;
+    height: 32px;
+    border: 1px solid black;
+}
+
+td > .player-list-avatar {
+    margin-right: 5px; 
+}
+
+/* ======================= */
 /*          ICONS          */
 /* ======================= */
 .res-icon {
