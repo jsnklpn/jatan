@@ -46,6 +46,11 @@ namespace Jatan.GameLogic
         public bool RandomizeStartingPlayer { get; set; }
 
         /// <summary>
+        /// Indicates if trading with other players is allowed.
+        /// </summary>
+        public bool AllowPlayerTrading { get; set; }
+
+        /// <summary>
         /// Constructor. Settings set to default.
         /// </summary>
         public GameSettings()
@@ -56,6 +61,7 @@ namespace Jatan.GameLogic
             this.MinimumLongestRoad = 5;
             this.TurnTimeLimit = 0;
             this.RandomizeStartingPlayer = true;
+            this.AllowPlayerTrading = true;
         }
     }
 }

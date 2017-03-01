@@ -202,6 +202,7 @@
     <Compile Include="Models\ViewModels\UserSettingsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SignalR\DTO\GameBoardDTO.cs" />
+    <Compile Include="SignalR\DTO\GameSettingsDTO.cs" />
     <Compile Include="SignalR\DTO\UserAccountInfoDTO.cs" />
     <Compile Include="SignalR\GameHub.cs" />
     <Compile Include="SignalR\DTO\GameManagerDTO.cs" />

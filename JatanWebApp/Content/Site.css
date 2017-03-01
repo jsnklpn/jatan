@@ -112,6 +112,15 @@ canvas {
     background-color: #f9f9f9;
 }
 
+.form-create .form-group {
+    margin-bottom: 7px;
+}
+
+.form-create hr {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
 .form-create-logo {
     background-image: url("Images/site/dice_photo2.png");
     background-repeat: no-repeat;
@@ -134,7 +143,7 @@ canvas {
 .group-label-icon {
     display: inline;
     position: absolute;
-    top: 35px;
+    top: 30px;
     right: 425px;
 }
 

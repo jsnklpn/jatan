@@ -1003,6 +1003,7 @@ function updateGameModel(gameManager) {
     var myPlayerId = gameManager["MyPlayerId"];
     var player = getPlayerFromId(myPlayerId);
     var gameState = gameManager["GameState"];
+    var gameSettings = gameManager["Settings"];
     var playerTurnState = gameManager["PlayerTurnState"];
     var activePlayerId = gameManager["ActivePlayerId"];
     var currentDiceRoll = gameManager["CurrentDiceRoll"];
@@ -1043,6 +1044,11 @@ function updateGameModel(gameManager) {
     } else {
         $("#btnEndTurn").addClass("hidden");
         $("#btnRollDice").removeClass("hidden");
+    }
+
+    // Hide the player trade button if it's disabled in this game.
+    if (gameSettings["PlayerTrading"] === false) {
+        $("#btnTradeWithPlayer").addClass("hidden");
     }
 
     populateDice();

@@ -42,6 +42,10 @@ namespace JatanWebApp.Models.ViewModels
             Description = "This is the number of cards that will cause a player to lose half of their hand when a 7 is rolled.")]
         public int CardLossThreshold { get; set; }
 
+        [Required]
+        [Display(Name= "Player trading")]
+        public RuleBooleanState AllowPlayerTrading { get; set; }
+
         /// <summary>
         /// List of valid values for the max number of players.
         /// </summary>
@@ -69,6 +73,7 @@ namespace JatanWebApp.Models.ViewModels
             WinScore = 10;
             TurnTimeLimit = 0; // No time limit
             CardLossThreshold = 8;
+            AllowPlayerTrading = RuleBooleanState.Enabled;
 
             // Create the value select lists for the UI
             MaxNumberOfPlayersList = new SelectList(new List<int>() { 2, 3, 4 });
@@ -76,5 +81,11 @@ namespace JatanWebApp.Models.ViewModels
             TurnTimeLimitList = new SelectList(new List<int>() { 0, 10, 20, 30, 45, 60, 90, 120, 180 });
             CardLossThresholdList = new SelectList(new List<int>() { 0, 6, 8, 10, 12, 20 });
         }
+    }
+
+    public enum RuleBooleanState
+    {
+        Enabled,
+        Disabled
     }
 }

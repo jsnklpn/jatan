@@ -32,6 +32,7 @@ namespace Jatan.GameLogic
         private int _winScore;
         private int _winnerPlayerId;
         private int _idCounter;
+        private bool _allowPlayerTrading;
         private Tuple<int, int> _longestRoad; // <playerId, roadLength>
         private Tuple<int, int> _largestArmy; // <playerId, armySize>
         private HistoryLog _log;
@@ -322,6 +323,7 @@ namespace Jatan.GameLogic
             _gameState = GameState.InitialPlacement;
             _winScore = _gameSettings.ScoreNeededToWin;
             _winnerPlayerId = -1;
+            _allowPlayerTrading = _gameSettings.AllowPlayerTrading;
             _playerTurnState = PlayerTurnState.PlacingSettlement; // TODO: Possibly wait for something to trigger the game start.
 
             // Init the turn timer
@@ -625,6 +627,11 @@ namespace Jatan.GameLogic
         {
             var validation = ValidatePlayerAction(new [] { PlayerTurnState.TakeAction, PlayerTurnState.RequestingPlayerTrade }, playerId);
             if (validation.Failed) return validation;
+
+            if (!_allowPlayerTrading)
+            {
+                return ActionResult.CreateFailed("Player trading is not allowed in this game.");
+            }
 
             if (tradeOffer == null || !tradeOffer.IsValid)
             {

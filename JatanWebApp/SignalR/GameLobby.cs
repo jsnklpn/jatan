@@ -89,6 +89,7 @@ namespace JatanWebApp.SignalR
             this.GameManager.Settings.ScoreNeededToWin = model.WinScore;
             this.GameManager.Settings.RobberMode = model.RobberMode;
             this.GameManager.Settings.TurnTimeLimit = model.TurnTimeLimit;
+            this.GameManager.Settings.AllowPlayerTrading = (model.AllowPlayerTrading == RuleBooleanState.Enabled);
             this.GameManager.Settings.CardCountLossThreshold = model.CardLossThreshold;
             this.GameManager.PlayerTurnTimeLimitExpired += GameManager_PlayerTurnTimeLimitExpired;
             this.GameManager.GameCompleted += GameManager_GameCompleted;
