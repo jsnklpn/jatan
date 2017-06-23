@@ -305,6 +305,8 @@ namespace Jatan.GameLogic
         /// </summary>
         public void StartNewGame()
         {
+            if (_players == null || _players.Count == 0) return;
+
             _log = new HistoryLog(_players);
             _gameStats = null;
             _startingPlayerIndex = _gameSettings.RandomizeStartingPlayer ? _players.IndexOf(_players.GetRandom()) : 0;
