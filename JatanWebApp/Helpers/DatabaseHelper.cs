@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Configuration;
 using JatanWebApp.Models.DAL;
 
 namespace JatanWebApp.Helpers
@@ -11,11 +12,13 @@ namespace JatanWebApp.Helpers
     /// </summary>
     public static class DatabaseHelper
     {
-#if BETA
-        public const string AvatarPath = @"/beta/Content/Images/avatars";
-#else
-        public const string AvatarPath = @"/Content/Images/avatars";
-#endif
+        static DatabaseHelper()
+        {
+            string contentRootPath = WebConfigurationManager.AppSettings["ContentRootPath"];
+            AvatarPath = contentRootPath + "/Content/Images/avatars";
+        }
+
+        public static string AvatarPath { get; private set; }
 
         /// <summary>
         /// Returns the path to the default avatar
