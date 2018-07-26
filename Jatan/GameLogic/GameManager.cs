@@ -798,7 +798,7 @@ namespace Jatan.GameLogic
             if (validation.Failed) return validation.ToGeneric<DevelopmentCards>();
 
             var pr = GetPlayerFromId(playerId);
-            if (pr.Failed) pr.ToGeneric<DevelopmentCards>();
+            if (pr.Failed) return pr.ToGeneric<DevelopmentCards>();
             var player = pr.Data;
 
             if (!player.CanAfford(PurchasableItems.DevelopmentCard))
