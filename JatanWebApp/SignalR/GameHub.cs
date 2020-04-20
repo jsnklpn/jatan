@@ -601,6 +601,23 @@ namespace JatanWebApp.SignalR
         }
 
         /// <summary>
+        /// Rejects the current trade. Can only be called by a non-active player.
+        /// </summary>
+        public ActionResult RejectActiveTradeOffer()
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.RejectTradeFromActivePlayer(playerId);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
         /// Accepts a trade counter-offer. Can only be called by the active player.
         /// </summary>
         public ActionResult AcceptCounterTradeOffer(int counterOfferOwnerId)
@@ -611,6 +628,23 @@ namespace JatanWebApp.SignalR
             if (lobby == null) return ActionResult.CreateFailed();
 
             ActionResult result = lobby.GameManager.PlayerAcceptCounterTradeOffer(playerId, counterOfferOwnerId);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
+        /// Rejects a trade counter-offer. Can only be called by the active player.
+        /// </summary>
+        public ActionResult RejectCounterTradeOffer(int counterOfferOwnerId)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            ActionResult result = lobby.GameManager.PlayerRejectCounterTradeOffer(playerId, counterOfferOwnerId);
 
             // If action succeeded, then something has changed and everyone needs an update.
             if (result.Succeeded) UpdateAllClientGameManagers();

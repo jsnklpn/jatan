@@ -27,6 +27,11 @@ namespace Jatan.Models
         public ResourceCollection ToReceive { get; set; }
 
         /// <summary>
+        /// Players which have rejected this trade offer.
+        /// </summary>
+        public HashSet<int> RejectionPlayerIds { get; set; }
+
+        /// <summary>
         /// Returns true if the trade is not empty.
         /// </summary>
         public bool IsValid
@@ -50,6 +55,7 @@ namespace Jatan.Models
             this.CreatorPlayerId = playerId;
             this.ToGive = toGive;
             this.ToReceive = toReceive;
+            this.RejectionPlayerIds = new HashSet<int>();
         }
 
         /// <summary>
@@ -60,6 +66,7 @@ namespace Jatan.Models
             this.CreatorPlayerId = playerId;
             this.ToGive = new ResourceCollection(toGive);
             this.ToReceive = new ResourceCollection(toReceive);
+            this.RejectionPlayerIds = new HashSet<int>();
         }
 
         /// <summary>

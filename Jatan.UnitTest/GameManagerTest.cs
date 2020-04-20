@@ -197,6 +197,43 @@ namespace Jatan.UnitTest
         }
 
         [TestMethod]
+        public void TestRejectTradeOffer()
+        {
+            var manager = DoInitialPlacements(true, false);
+            var activePlayer = manager.ActivePlayer;
+            var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
+            var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
+            Assert.IsNotNull(player1);
+            Assert.IsNotNull(player2);
+
+            // Active player offer trade of 1 ore and 2 wheat for 3 wood and 4 sheep.
+            var toGive = new ResourceCollection(ore: 1, wheat: 2);
+            var toGet = new ResourceCollection(wood: 3, sheep: 4);
+            activePlayer.AddResources(toGive);
+            manager.PlayerOfferTrade(activePlayer.Id, new TradeOffer(activePlayer.Id, toGive, toGet));
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should be in the 'RequestingTrade' state.");
+            Assert.IsNotNull(manager.ActivePlayerTradeOffer, "There should be an active trade.");
+            Assert.AreEqual(0, manager.ActivePlayerTradeOffer.RejectionPlayerIds.Count, "There should be no trade rejections yet.");
+
+            // Attempt to reject the trade as a non-existant player
+            var r = manager.RejectTradeFromActivePlayer(123);
+            Assert.IsTrue(r.Failed, "The trade rejection should fail.");
+            Assert.AreEqual(0, manager.ActivePlayerTradeOffer.RejectionPlayerIds.Count, "There should be no trade rejections yet.");
+
+            // Player 2 will reject the trade. The trade should still exist at this point.
+            r = manager.RejectTradeFromActivePlayer(player2.Id);
+            Assert.IsTrue(r.Succeeded, "The trade rejection should succeed.");
+            Assert.IsTrue(manager.ActivePlayerTradeOffer.RejectionPlayerIds.Contains(player2.Id), "Player 2 should have rejected this offer.");
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should still be in the 'RequestingPlayerTrade' state.");
+
+            // Player 1 will accept the trade and it should reset the player turn state
+            r = manager.RejectTradeFromActivePlayer(player1.Id);
+            Assert.IsTrue(r.Succeeded, "The trade rejection should succeed.");
+            Assert.IsNull(manager.ActivePlayerTradeOffer, "There should be no active trades now.");
+            Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "Player should still be in the 'RequestingPlayerTrade' state.");
+        }
+
+        [TestMethod]
         public void TestOverwriteTradeOffer()
         {
             var manager = DoInitialPlacements(true, false);
@@ -262,6 +299,58 @@ namespace Jatan.UnitTest
             Assert.IsTrue(activePlayer.ResourceCards.Equals(toActivePlayerCounter), "Active player did not get his resources from the trade.");
             Assert.IsTrue(player1.ResourceCards.Equals(toOtherPlayer), "Player 1 did not get his resources from the trade.");
             Assert.AreEqual(PlayerTurnState.TakeAction, manager.PlayerTurnState, "The trade is complete. Player should be in the 'TakeAction' state.");
+        }
+
+        [TestMethod]
+        public void TestRejectTradeCounterOffer()
+        {
+            var manager = DoInitialPlacements(true, false);
+            var activePlayer = manager.ActivePlayer;
+            var player1 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_1);
+            var player2 = manager.Players.FirstOrDefault(p => p.Id == PLAYER_2);
+            Assert.IsNotNull(player1);
+            Assert.IsNotNull(player2);
+
+            activePlayer.RemoveAllResources();
+            player1.RemoveAllResources();
+            player2.RemoveAllResources();
+            var toOtherPlayer = new ResourceCollection(ore: 1, wheat: 2);
+            var toActivePlayer = new ResourceCollection(wood: 3, sheep: 4);
+            var toActivePlayerCounter = new ResourceCollection(brick: 5, sheep: 1);
+            var originalOffer = new TradeOffer(activePlayer.Id, toOtherPlayer, toActivePlayer);
+            var counterOffer1 = new TradeOffer(player1.Id, toActivePlayerCounter, toOtherPlayer);
+            var counterOffer2 = new TradeOffer(player2.Id, toActivePlayerCounter, toOtherPlayer);
+
+            var startingResources = new ResourceCollection(100, 100, 100, 100, 100);
+            activePlayer.AddResources(startingResources);
+            player1.AddResources(startingResources);
+            player2.AddResources(startingResources);
+
+            var r = manager.PlayerOfferTrade(activePlayer.Id, originalOffer);
+            Assert.IsTrue(r.Succeeded, "Player 1 initial trade should be successful.");
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should be in the 'RequestingTrade' state.");
+            Assert.AreEqual(0, manager.CounterTradeOffers.Count, "There should be counter-offers yet.");
+
+            // Active player rejects a counter-offer and it fails because the counter-offer doesn't exist.
+            r = manager.PlayerRejectCounterTradeOffer(activePlayer.Id, player1.Id);
+            Assert.IsTrue(r.Failed, "The counter-offer rejection should fail.");
+            Assert.AreEqual(0, manager.CounterTradeOffers.Count, "There should be counter-offers yet.");
+
+            // Player 1 sends a counter-offer and it gets rejected.
+            r = manager.SendCounterTradeOffer(player1.Id, counterOffer1);
+            Assert.IsTrue(r.Succeeded, "The counter offer send action should work.");
+            r = manager.PlayerRejectCounterTradeOffer(activePlayer.Id, player1.Id);
+            Assert.IsTrue(r.Succeeded, "The counter offer should be rejected.");
+            Assert.IsTrue(manager.CounterTradeOffers.First(t => t.CreatorPlayerId == player1.Id).RejectionPlayerIds.Contains(activePlayer.Id), "The #1 counter-offer should be rejected.");
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should be in the 'RequestingTrade' state.");
+
+            // Player 2 sends a counter-offer and it gets rejected.
+            r = manager.SendCounterTradeOffer(player2.Id, counterOffer2);
+            Assert.IsTrue(r.Succeeded, "The counter offer send action should work.");
+            r = manager.PlayerRejectCounterTradeOffer(activePlayer.Id, player2.Id);
+            Assert.IsTrue(r.Succeeded, "The counter offer should be rejected.");
+            Assert.IsTrue(manager.CounterTradeOffers.First(t => t.CreatorPlayerId == player2.Id).RejectionPlayerIds.Contains(activePlayer.Id), "The #2 counter-offer should be rejected.");
+            Assert.AreEqual(PlayerTurnState.RequestingPlayerTrade, manager.PlayerTurnState, "Player should be in the 'RequestingTrade' state.");
         }
 
         [TestMethod]
