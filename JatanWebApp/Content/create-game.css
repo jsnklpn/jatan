@@ -1,4 +1,4 @@
 ﻿body {
-    background: url('Images/site/water_background3.jpg') no-repeat center #000;
+    background: url('Images/site/water_background3.jpg') no-repeat center fixed #000;
     background-size: cover;
 }
