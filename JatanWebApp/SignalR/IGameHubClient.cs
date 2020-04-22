@@ -13,6 +13,7 @@ namespace JatanWebApp.SignalR
     public interface IGameHubClient
     {
         void broadcastMessage(string userName, string message);
+        void showToastMessage(string message);
         void updateGameManager(GameManagerDTO manager);
         void newPlayerJoined(string newPlayerName);
         void playerLeft(string playerName);

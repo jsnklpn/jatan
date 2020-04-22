@@ -13,6 +13,20 @@
     opacity: 0;
 }
 
+.semi-transparent-background {
+    background-color: rgba(255, 255, 255, 0.6);
+    color: #111;
+}
+
+.large-logo {
+    max-width: 400px;
+}
+
+.large-logo img {
+    width: 100%;
+    object-fit: contain;
+}
+
 /* Disable selection for canvas elements */
 canvas {
     -webkit-touch-callout: none;

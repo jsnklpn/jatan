@@ -114,6 +114,10 @@ function initSignalR() {
         writeTextToChat(name + ": " + message, ChatTextType.User);
     };
 
+    gameHub.client.showToastMessage = function (message) {
+        displayToastMessage(message);
+    };
+
     gameHub.client.updateGameManager = function (gameManager) {
         updateGameModel(gameManager);
     };
@@ -242,6 +246,10 @@ function initHtmlUI() {
     $("#btnAcceptTrade2").click(function () { playerTradeBoxAcceptClicked(2) });
     $("#btnAcceptTrade3").click(function () { playerTradeBoxAcceptClicked(3) });
     $("#btnAcceptTrade4").click(function () { playerTradeBoxAcceptClicked(4) });
+    $("#btnRejectTrade1").click(function () { playerTradeBoxRejectClicked(1) });
+    $("#btnRejectTrade2").click(function () { playerTradeBoxRejectClicked(2) });
+    $("#btnRejectTrade3").click(function () { playerTradeBoxRejectClicked(3) });
+    $("#btnRejectTrade4").click(function () { playerTradeBoxRejectClicked(4) });
 
     $("#cardReceivedBox").click(hideCardReceivedBox);
 
@@ -1924,6 +1932,26 @@ function populatePlayers() {
             }
             if (tradeOffer != null) {
 
+                // Logic for when to show the 'REJECTED' text over the trade.
+                var rejections = tradeOffer["RejectionPlayerIds"];
+                if (rejections != null && rejections.length > 0) {
+                    if (weAreActivePlayer && playerId === activePlayerId) {
+                        // If we're the active player and this is our trade box, never show the rejected text.
+                        $(tradeBoxId + " .trade-rejected-text").addClass("hidden");
+                    }
+                    else if (!weAreActivePlayer && playerId === activePlayerId && !rejections.includes(_currentGameManager["MyPlayerId"])) {
+                        // If we're not the active player and we're drawing the active trade box, only show the rejection if it's ours.
+                        $(tradeBoxId + " .trade-rejected-text").addClass("hidden");
+                    }
+                    else {
+                        $(tradeBoxId + " .trade-rejected-text").removeClass("hidden");
+                    }
+                }
+                else {
+                    // No rejection to show.
+                    $(tradeBoxId + " .trade-rejected-text").addClass("hidden");
+                }
+
                 var toGive = tradeOffer["ToGive"];
                 var resNames = ["Wood", "Brick", "Wheat", "Sheep", "Ore"];
                 for (var ri = 0; ri < resNames.length; ri++) {
@@ -1956,7 +1984,7 @@ function populatePlayers() {
                 }
 
                 var $btnAccept = $(tradeBoxId + " .player-trade-accept");
-                var $btnCounter = $(tradeBoxId + " .player-trade-counter");
+                var $btnReject = $(tradeBoxId + " .player-trade-reject");
                 var $btnCancel = $(tradeBoxId + " .player-trade-cancel");
                 var $btnEdit = $(tradeBoxId + " .player-trade-edit");
 
@@ -1969,15 +1997,15 @@ function populatePlayers() {
                     if (weAreActivePlayer) {
                         // We are the active player viewing another player's trade. Show the accept button.
                         $btnAccept.removeClass("hidden");
-                        $btnCounter.addClass("hidden");
+                        $btnReject.removeClass("hidden");
                     } else if (_currentGameManager["ActivePlayerId"] === playerId) {
-                        // We are viewing the active player's trade. Show accept & counter-offer buttons.
+                        // We are viewing the active player's trade. Show accept & reject buttons.
                         $btnAccept.removeClass("hidden");
-                        $btnCounter.removeClass("hidden");
+                        $btnReject.removeClass("hidden");
                     } else {
                         // We are not the active player and we're viewing a non-active player's trade. Show no buttons.
                         $btnAccept.addClass("hidden");
-                        $btnCounter.addClass("hidden");
+                        $btnReject.addClass("hidden");
                     }
                 } else {
                     // This is our trade. Show cancel button.
@@ -1985,7 +2013,7 @@ function populatePlayers() {
                     $btnEdit.removeClass("hidden");
 
                     $btnAccept.addClass("hidden");
-                    $btnCounter.addClass("hidden");
+                    $btnReject.addClass("hidden");
                 }
 
                 $(tradeBoxId).removeClass("hidden");
@@ -2023,6 +2051,35 @@ function playerTradeBoxAcceptClicked(boxId) {
             var playerId = player["Id"];
             // Accept the counter trade offer.
             _serverGameHub.acceptCounterTradeOffer(playerId).done(function (result) {
+                if (!result["Succeeded"]) { // failed. display error message.
+                    displayToastMessage(result["Message"]);
+                }
+            });
+        }
+    }
+}
+
+function playerTradeBoxRejectClicked(boxId) {
+    if (_currentGameManager == null || _serverGameHub == null)
+        return;
+
+    var amActivePlayer = (_currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]);
+
+    if (!amActivePlayer) {
+        // Reject the active trade offer.
+        _serverGameHub.rejectActiveTradeOffer().done(function (result) {
+            if (!result["Succeeded"]) { // failed. display error message.
+                displayToastMessage(result["Message"]);
+            }
+        });
+    } else {
+        var players = _currentGameManager["Players"];
+        var playerIndex = boxId - 1;
+        if (playerIndex >= 0 && playerIndex < players.length) {
+            var player = players[boxId - 1];
+            var playerId = player["Id"];
+            // Reject the counter trade offer.
+            _serverGameHub.rejectCounterTradeOffer(playerId).done(function (result) {
                 if (!result["Succeeded"]) { // failed. display error message.
                     displayToastMessage(result["Message"]);
                 }

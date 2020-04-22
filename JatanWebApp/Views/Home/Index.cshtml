@@ -1,20 +1,50 @@
-﻿@{
+﻿@using JatanWebApp.Helpers
+@using JatanWebApp.Models.ViewModels
+@{
     ViewBag.Title = "Jatan";
 }
 
+@section css
+{
+    <link href="~/Content/create-game.css?v=@Html.GetGuid()" rel="stylesheet" />
+}
+
 <div class="container">
-    <div class="jumbotron">
-        <h2>Settlers of Jatan</h2>
-        <p class="lead">Jatan is an open-source recreation of the popular board game, Settlers of Catan.</p>
-        <p><a href="https://github.com/jsnklpn/jatan" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    <div class="row panel panel-body semi-transparent-background">
+        <div class="col-sm-8 col-sm-offset-2">
+            <div class="large-logo center-block">
+                <img src="~/Content/Images/site/jatanlogo-full-transparent.png" title="The Settlers of Jatan" />
+            </div>
+            <h3>Welcome to Jatan!</h3>
+            <p>Jatan is an open-source remake of a popular board game.</p>
+            <p><a href="https://github.com/jsnklpn/jatan" class="btn btn-primary">Check out on Github &raquo;</a></p>
+        </div>
     </div>
 
-    <div class="row">
+    <div class="row panel panel-body semi-transparent-background">
         <div class="col-sm-8 col-sm-offset-2">
-            <h2>News</h2>
+            <h3>Updates</h3>
             <p>
-                Still under development. Check back later.
+                <strong>March 21, 2020</strong>
+                <ul>
+                    <li class="small">Added "Reject" button to other players' trade offers. If a trade offer is rejected by all players, the offer is cancelled.</li>
+                    <li class="small">Minor tweaks to site styling.</li>
+                </ul>
             </p>
+            <p>
+                <strong>July 26, 2018</strong>
+                <ul>
+                    <li class="small">Fixed minor bug with returning some card purchase errors.</li>
+                </ul>
+            </p>
+            <p>
+                <strong>March 1, 2017</strong>
+                <ul>
+                    <li class="small">Added setting to game creation page to disable player trading.</li>
+                    <li class="small">Condensed player creation page UI.</li>
+                </ul>
+            </p>
+            <a class="btn btn-primary btn-sm" href="https://github.com/jsnklpn/jatan/commits/master">See all updates...</a>
         </div>
     </div>
 </div>

@@ -2,11 +2,15 @@
 @using JatanWebApp.Models.ViewModels
 @model JoinGameViewModel
 @{
-    ViewBag.Title = "Join Game";
+    ViewBag.Title = "Available Games";
 }
 @section scripts
 {
     <script src="~/Scripts/Game/join.js?v=@Html.GetGuid()"></script>
+}
+@section css
+{
+    <link href="~/Content/create-game.css?v=@Html.GetGuid()" rel="stylesheet" />
 }
 
 <!-- Enter password model dialog -->
@@ -28,7 +32,7 @@
     </div>
 </div>
 
-<div class="container body-content">
+<div class="container body-content semi-transparent-background">
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
         <div class="alert alert-danger mt-15" role="alert">
@@ -38,31 +42,35 @@
         </div>
     }
     <h3>@ViewBag.Title</h3>
-    <div class=""> <!-- panel panel-default mt-15 -->
-        <table class="table table-hover table-bordered game-lobby-list">
-            <thead>
-            <tr>
-                <th></th> <!-- Join button -->
-                <th>Name</th>
-                <th>Creator</th>
-                <th>Players</th>
-                <th>Rules</th>
-            </tr>
-            </thead>
-            <tbody>
-            @if (Model.AvailableGames.Any())
-            {
-                foreach (var game in Model.AvailableGames)
-                {
-                    @Html.Partial("_GameLobby", game)
-                }
-            }
-            </tbody>
-        </table>
+    <div class="panel panel-body">
         @if (!Model.AvailableGames.Any())
         {
-            <div class="text-center"><em>No games found.</em>
+            <div class="text-center alert">
+                <em>No games found.</em>
             </div>
+        }
+        else
+        {
+            <table class="table table-hover table-bordered game-lobby-list">
+                <thead>
+                    <tr>
+                        <th></th> <!-- Join button -->
+                        <th>Name</th>
+                        <th>Creator</th>
+                        <th>Players</th>
+                        <th>Rules</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.AvailableGames.Any())
+                    {
+                        foreach (var game in Model.AvailableGames)
+                        {
+                            @Html.Partial("_GameLobby", game)
+                        }
+                    }
+                </tbody>
+            </table>
         }
     </div>
 </div>

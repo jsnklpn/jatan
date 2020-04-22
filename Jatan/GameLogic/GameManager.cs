@@ -688,6 +688,35 @@ namespace Jatan.GameLogic
         }
 
         /// <summary>
+        /// Rejects a specific counter trade offer. Can only be called by the active player.
+        /// </summary>
+        public ActionResult PlayerRejectCounterTradeOffer(int playerId, int counterOfferPlayerId)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.RequestingPlayerTrade, playerId);
+            if (validation.Failed) return validation;
+
+            var apr = GetPlayerFromId(playerId);
+            if (apr.Failed) return apr;
+            var activePlayer = apr.Data;
+
+            var pr = GetPlayerFromId(counterOfferPlayerId);
+            if (pr.Failed) return pr;
+            var counterOfferPlayer = pr.Data;
+
+            var offer = _tradeHelper.GetCounterOfferByPlayerId(counterOfferPlayerId);
+            if (offer == null)
+            {
+                return ActionResult.CreateFailed("The trade offer does not exist.");
+            }
+
+            // Adding a rejection ID to the trade offer will notify
+            // the other player that their offer was rejected.
+            offer.RejectionPlayerIds.Add(playerId);
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
         /// Cancels a player's current trade offer.
         /// If called by the active player, cancels all trade offers and changes the turn state.
         /// If called by a non-active player, cancels a specific counter-offer.
@@ -761,6 +790,38 @@ namespace Jatan.GameLogic
             _playerTurnState = PlayerTurnState.TakeAction;
 
             _log.PlayerTrade(_turnCounter, ActivePlayer.Id, playerId, activeOffer);
+
+            return ActionResult.CreateSuccess();
+        }
+
+        /// <summary>
+        /// Accept the active player's current trade. This can only be called by a non-active player.
+        /// </summary>
+        public ActionResult RejectTradeFromActivePlayer(int playerId)
+        {
+            var validation = ValidatePlayerAction(PlayerTurnState.RequestingPlayerTrade);
+            if (validation.Failed) return validation;
+
+            var pr = GetPlayerFromId(playerId);
+            if (pr.Failed) return pr;
+
+            var activeOffer = _tradeHelper.ActivePlayerTradeOffer;
+            if (activeOffer == null)
+            {
+                return ActionResult.CreateFailed("There is no active trade offer to reject.");
+            }
+
+            activeOffer.RejectionPlayerIds.Add(playerId);
+
+            // Now check if everyone has rejected the active offer.
+            var nonActivePlayers = new HashSet<int>(this.Players.Select(p => p.Id).Where(id => id != activeOffer.CreatorPlayerId));
+
+            if (activeOffer.RejectionPlayerIds.SetEquals(nonActivePlayers))  // Everyone rejected!
+            {
+                // Clear the offer and go back to TakeAction player state
+                _tradeHelper.ClearAllOffers();
+                _playerTurnState = PlayerTurnState.TakeAction;
+            }
 
             return ActionResult.CreateSuccess();
         }

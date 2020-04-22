@@ -617,6 +617,48 @@ a.aoe-btn {
     font-family: serif;
 }
 
+.trade-rejected-text {
+    width: 267px;
+    position: fixed;
+    text-align: center;
+    z-index: 1000;
+    transform: rotate(15deg);
+    color: red;
+    font-family: serif;
+    font-size: 50px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000;
+    /* disable select */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    outline: none;
+    /* animate text */
+    animation: slam-down 0.5s ease-in;
+}
+@keyframes slam-down {
+    0% {
+        transform: scale(2) rotate(15deg);
+        opacity: .1;
+    }
+
+    100% {
+        transform: scale(1) rotate(15deg);
+        opacity: 1;
+    }
+}
+#playerTradeBox1 .trade-rejected-text,
+#playerTradeBox2 .trade-rejected-text {
+    top: 42px;
+}
+#playerTradeBox3 .trade-rejected-text,
+#playerTradeBox4 .trade-rejected-text {
+    bottom: 170px;
+}
+
 .player-trade-recv {
     padding-top: 15px;
 }
@@ -693,7 +735,7 @@ a.aoe-btn {
     height: 30px;
 }
 
-.player-trade-button.player-trade-counter,
+.player-trade-button.player-trade-reject,
 .player-trade-button.player-trade-edit {
     right: 137px;
 }

@@ -601,6 +601,44 @@ namespace JatanWebApp.SignalR
         }
 
         /// <summary>
+        /// Rejects the current trade. Can only be called by a non-active player.
+        /// </summary>
+        public ActionResult RejectActiveTradeOffer()
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            if (lobby.GameManager.ActivePlayerTradeOffer?.RejectionPlayerIds.Contains(playerId) == true)
+            {
+                // We've already cancelled this request. Don't bother with sending updates to all players.
+                return ActionResult.CreateSuccess();
+            }
+
+            // Check if this is the last rejection which will cancel this trade request
+            bool lastRejection = (lobby.GameManager.ActivePlayerTradeOffer?.RejectionPlayerIds.Count == (lobby.GameManager.Players.Count - 2));
+
+            ActionResult result = lobby.GameManager.RejectTradeFromActivePlayer(playerId);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded)
+            {
+                UpdateAllClientGameManagers();
+
+                // Tell the active player that his trade request has been rejected. This isn't entirely necessary, but it's helpful.
+                string activePlayerName = lobby.GameManager.ActivePlayer?.Name;
+                if (!string.IsNullOrEmpty(activePlayerName) && _hubUsers.TryGetValue(activePlayerName, out HubUser activeHubUser))
+                {
+                    var ids = activeHubUser.ConnectionIds.ToList();
+                    string message = lastRejection ? "All players have rejected your trade offer." : $"{Context.User.Identity.Name} has rejected your trade offer.";
+                    Clients.Clients(ids).showToastMessage(message);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Accepts a trade counter-offer. Can only be called by the active player.
         /// </summary>
         public ActionResult AcceptCounterTradeOffer(int counterOfferOwnerId)
@@ -611,6 +649,31 @@ namespace JatanWebApp.SignalR
             if (lobby == null) return ActionResult.CreateFailed();
 
             ActionResult result = lobby.GameManager.PlayerAcceptCounterTradeOffer(playerId, counterOfferOwnerId);
+
+            // If action succeeded, then something has changed and everyone needs an update.
+            if (result.Succeeded) UpdateAllClientGameManagers();
+            return result;
+        }
+
+        /// <summary>
+        /// Rejects a trade counter-offer. Can only be called by the active player.
+        /// </summary>
+        public ActionResult RejectCounterTradeOffer(int counterOfferOwnerId)
+        {
+            var playerId = GetJatanPlayerId();
+            if (playerId == -1) return ActionResult.CreateFailed();
+            var lobby = GetGameLobby();
+            if (lobby == null) return ActionResult.CreateFailed();
+
+            if (lobby.GameManager.CounterTradeOffers?
+                .Where(t => t.CreatorPlayerId == counterOfferOwnerId).FirstOrDefault()?
+                .RejectionPlayerIds.Contains(playerId) == true)
+            {
+                // We've already cancelled this request. Don't bother with sending updates to all players.
+                return ActionResult.CreateSuccess();
+            }
+
+            ActionResult result = lobby.GameManager.PlayerRejectCounterTradeOffer(playerId, counterOfferOwnerId);
 
             // If action succeeded, then something has changed and everyone needs an update.
             if (result.Succeeded) UpdateAllClientGameManagers();
