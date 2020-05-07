@@ -17,6 +17,13 @@ $(function () {
         $("#passwordModal").modal("show");
     });
 
+    $("#tbPassword").keypress(function (event) {
+        if (event.which == 13) { // Enter pressed
+            event.preventDefault();
+            btnSubmitPassword_click();
+        }
+    });
+
     $("#btnSubmitPassword").click(btnSubmitPassword_click);
 });
 
