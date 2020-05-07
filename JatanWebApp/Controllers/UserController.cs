@@ -143,8 +143,8 @@ namespace JatanWebApp.Controllers
                 {
                     if (avatarFile.ContentLength == 0)
                         throw new Exception("The file is empty.");
-                    if (avatarFile.ContentLength > 2000000)
-                        throw new Exception("The filesize exceeds 2MB.");
+                    if (avatarFile.ContentLength > 16777216)
+                        throw new Exception("The filesize exceeds 16 MB.");
 
                     var avatarPhysicalPath = HttpContext.Server.MapPath(@"~/Content/Images/avatars/");
                     if (!Directory.Exists(avatarPhysicalPath))
@@ -165,6 +165,7 @@ namespace JatanWebApp.Controllers
                     }
 
                     resizedImage.Save(Path.GetFullPath(physicalFilePath), ImageFormat.Jpeg);
+                    resizedImage.Dispose();
 
                     using (var db = new JatanDbContext())
                     {
