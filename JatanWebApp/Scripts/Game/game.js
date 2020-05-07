@@ -58,6 +58,7 @@ var _boardDragMouseOffsetX = null;
 var _boardDragMouseOffsetY = null;
 
 var _toastMessageTimerId = 0;
+var _soundEnabled = false;
 
 var _hexToBeachMap = {}; // Populated when beach tiles are drawn
 var _hexToResourceTileMap = {}; // Populated when resource tiles are drawn
@@ -257,8 +258,8 @@ function initHtmlUI() {
 
     // Init quick links
     $("#btnRestoreGameBoard").click(setDefaultBoardPosition);
-    $("#btnTurnSoundOff").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
-    $("#btnTurnSoundOn").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
+    $("#btnTurnSoundOff").click(function () { _soundEnabled = false; $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); });
+    $("#btnTurnSoundOn").click(function () { _soundEnabled = true; $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); });
     //$("#btnViewGameRules").click(); // TODO
     $("#btnOpenLeaveGameDlg").click(function () { $("#leaveGameModal").modal("show"); });
 
@@ -303,6 +304,12 @@ function initHtmlUI() {
         }
         return true;
     });
+}
+
+function playSound(soundId) {
+    if (_allResourcesLoaded && _soundEnabled) {
+        createjs.Sound.play(soundId);
+    }
 }
 
 function showCardReceivedBox(type, card) {
@@ -655,6 +662,7 @@ function tradeOkClicked() {
 
 function loadGameResources() {
     _loadQueue = new createjs.LoadQueue();
+    _loadQueue.installPlugin(createjs.Sound);
     _loadQueue.on("complete", onLoadQueueCompleted);
     _loadQueue.on("progress", onLoadQueueProgressChanged);
     var resourceKeys = Object.keys(_assetMap);
@@ -665,7 +673,7 @@ function loadGameResources() {
 }
 
 function onLoadQueueProgressChanged(event) {
-    var progressString = (Math.floor(100 * event.progress)).toString() + "%";
+    var progressString = (Math.min(100, Math.floor(100 * event.progress))).toString() + "%";
     $("#percentLoadedText").text(progressString);
     $("#resourceProgressBar").css("width", progressString);
 }
@@ -683,8 +691,8 @@ function onLoadQueueCompleted(event) {
         }
     }
 
-    // wait a second so the user can see that it completed
-    setTimeout(completedLoading, 800);
+    // wait a moment so the user can see that it completed
+    setTimeout(completedLoading, 300);
 }
 
 function completedLoading() {
@@ -1156,6 +1164,7 @@ function rollDiceReminder() {
     if (_currentGameManager["PlayerTurnState"] === PlayerTurnState.NeedToRoll &&
         _currentGameManager["MyPlayerId"] === _currentGameManager["ActivePlayerId"]) {
         $("#btnRollDice").animateOnce("shake");
+        playSound(SoundId.Alert);
         // Continually remind the player to roll the dice.
         setTimeout(rollDiceReminder, 5000);
     }
@@ -1765,8 +1774,15 @@ function populateDice() {
             $("#diceImage2").attr("src", "");
         }
 
-        // show the dice info box.
-        $diceInfoBox.addClass("dice-box-show");
+        // show the dice info box
+        if ($diceInfoBox.hasClass("dice-box-show") === false) {
+            $diceInfoBox.addClass("dice-box-show");
+            if (total === 7) {
+                playSound(SoundId.Robber);
+            } else {
+                playSound(SoundId.Roll1);
+            }
+        }
     }
 }
 
@@ -2216,6 +2232,8 @@ function handleClickRoad(event) {
     _serverGameHub.selectRoad(hexEdge).done(function (result) {
         if (!result["Succeeded"]) { // failed. display error message.
             displayToastMessage(result["Message"]);
+        } else {
+            playSound(SoundId.BuildRoad);
         }
     });
 }
@@ -2230,6 +2248,8 @@ function handleClickSettlement(event) {
     _serverGameHub.selectBuilding(hexPoint, BuildingTypes.Settlement).done(function (result) {
         if (!result["Succeeded"]) { // failed. display error message.
             displayToastMessage(result["Message"]);
+        } else {
+            playSound(SoundId.BuildSettlement);
         }
     });
 }
@@ -2244,6 +2264,8 @@ function handleClickCity(event) {
     _serverGameHub.selectBuilding(hexPoint, BuildingTypes.City).done(function (result) {
         if (!result["Succeeded"]) { // failed. display error message.
             displayToastMessage(result["Message"]);
+        } else {
+            playSound(SoundId.BuildCity);
         }
     });
 }
@@ -2638,6 +2660,8 @@ function populateWinnerBox() {
             }
             $("#winnerName").text(winner["Name"]);
             $("#winnerBox").showWithAnimation("zoomInDown");
+
+            playSound(SoundId.EndGame);
 
             if ($("#winnerName").hasClass("hidden")) {
                 // The name & avatar are hidden. Show them after a delay... for suspense.

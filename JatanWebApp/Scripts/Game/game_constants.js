@@ -129,7 +129,42 @@ var _assetMap = {
     "imgIconWheat": { src: "/Content/Images/site/icon_wheat.png", data: null, hitbox: wheatIconHitbox },
     "imgIconSheep": { src: "/Content/Images/site/icon_sheep.png", data: null, hitbox: sheepIconHitbox },
     "imgIconOre": { src: "/Content/Images/site/icon_ore.png", data: null, hitbox: oreIconHitbox },
-    "imgIconQuestion": { src: "/Content/Images/site/icon_question.png", data: null, hitbox: questionIconHitbox }
+    "imgIconQuestion": { src: "/Content/Images/site/icon_question.png", data: null, hitbox: questionIconHitbox },
+    // Sounds -- Make sure the keys match the SoundId map defined later.
+    "sndIntro": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndStartGame": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndEndGame": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndError": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndAlert": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndBuildRoad": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndBuildSettlement": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndBuildCity": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndTrade": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndRoll1": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndRoll2": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndRoll3": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndRoll4": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndRobber": { src: "/Content/Sounds/jatan_alert.mp3", data: null },
+    "sndLoseCards": { src: "/Content/Sounds/jatan_alert.mp3", data: null }
+};
+
+// Sound IDs
+var SoundId = {
+    Intro: "sndIntro",
+    StartGame: "sndStartGame",
+    EndGame: "sndEndGame",
+    Error: "sndError",
+    Alert: "sndAlert",
+    BuildRoad: "sndBuildRoad",
+    BuildSettlement: "sndBuildSettlement",
+    BuildCity: "sndBuildCity",
+    Trade: "sndTrade",
+    Roll1: "sndRoll1",
+    Roll2: "sndRoll2",
+    Roll3: "sndRoll3",
+    Roll4: "sndRoll4",
+    Robber: "sndRobber",
+    LoseCards: "sndLoseCards"
 };
 
 // Resource types enum
