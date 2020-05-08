@@ -259,7 +259,7 @@ function initHtmlUI() {
     $("#btnRestoreGameBoard").click(setDefaultBoardPosition);
     $("#btnTurnSoundOff").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
     $("#btnTurnSoundOn").click(function () { $("#btnTurnSoundOff, #btnTurnSoundOn").toggleClass("hidden"); }); // TODO
-    //$("#btnViewGameRules").click(); // TODO
+    $("#btnViewGameRules").click(function () { $("#rulesListModal").modal("show"); });
     $("#btnOpenLeaveGameDlg").click(function () { $("#leaveGameModal").modal("show"); });
 
     $(document).click(function (event) {

@@ -162,6 +162,17 @@ canvas {
 }
 
 /* ====================== */
+/*        JOIN GAME       */
+/* ====================== */
+.rules-list {
+    margin-bottom: 0;
+}
+
+.rules-list .list-group-item {
+    padding: 2px 10px 2px 10px;
+}
+
+/* ====================== */
 /*      PROGRESS BAR      */
 /* ====================== */
 .progress {
