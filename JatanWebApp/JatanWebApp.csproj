@@ -409,6 +409,7 @@
     <Content Include="Views\Game\Instance.cshtml" />
     <Content Include="Views\User\Settings.cshtml" />
     <Content Include="Views\Game\PostGame.cshtml" />
+    <Content Include="Views\Game\_RulesList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201701121836146_InitialCreate.resx">

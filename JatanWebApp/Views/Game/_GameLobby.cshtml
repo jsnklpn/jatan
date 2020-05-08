@@ -1,43 +1,25 @@
 ﻿@using JatanWebApp.SignalR
 @model GameLobby
-@{
-    var timeLimit = Model.GameManager.Settings.TurnTimeLimit;
-    var cardCount = Model.GameManager.Settings.CardCountLossThreshold;
-    string rulesHtmlContent = string.Format(
-        @"<div>" +
-        @"<div>Turn time limit: <b>{0}</b></div>" +
-        @"<div>Score to win: <b>{1}</b></div>" +
-        @"<div>Robber mode: <b>{2}</b></div>" +
-        @"<div>Card loss threshold: <b>{3}</b></div>" +
-        @"</div>",
-        (timeLimit == 0 ? "None" : timeLimit.ToString()),
-        Model.GameManager.Settings.ScoreNeededToWin,
-        Model.GameManager.Settings.RobberMode,
-        (cardCount == 0 ? "None" : cardCount.ToString()));
-}
 <tr class="game-lobby-item">
     @if (Model.InProgress)
     {
-        <td><a href="#" class="btn btn-block btn-danger disabled"><span class="glyphicon glyphicon-hourglass"></span> In Progress</a></td>
+        <td class="vert-align"><a href="#" class="btn btn-block btn-danger disabled"><span class="glyphicon glyphicon-hourglass"></span> In Progress</a></td>
     }
     else if (Model.RequiresPassword)
     {
-        <td>
+        <td class="vert-align">
             <input type="hidden" class="join-href" value="@Url.Action("Join", new { gameId = Model.Uid, password = "PASSWORD" })" />
             <a href="#" class="enter-password-button btn btn-block btn-success"><span class="glyphicon glyphicon-play-circle"></span> Join</a>
         </td>
     }
     else
     {
-        <td><a href="@Url.Action("Join", new { gameId = Model.Uid })" class="btn btn-block btn-success"><span class="glyphicon glyphicon-play-circle"></span> Join</a></td>
+        <td class="vert-align"><a href="@Url.Action("Join", new { gameId = Model.Uid })" class="btn btn-block btn-success"><span class="glyphicon glyphicon-play-circle"></span> Join</a></td>
     }
     <td class="vert-align">@Model.Name</td>
     <td class="vert-align">@Model.Owner</td>
     <td class="vert-align">@Model.Players.Count.ToString() / @Model.MaxNumberOfPlayers</td>
     <td>
-        <button class="btn btn-info" data-toggle="popover" data-placement="bottom" data-trigger="hover" data-container="body"
-                title="Rules" data-html="true" data-content="@rulesHtmlContent">
-            View Rules
-        </button>
+        @Html.Partial("_RulesList", Model)
     </td>
 </tr>
