@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -1352,16 +1353,32 @@ namespace Jatan.GameLogic
 
         private void DoAiPlacements()
         {
-            // TODO: Implement AI placements
-            DoRandomPlacements();
+            var idOrder = GetInitialPlacementPlayerIdOrder();
+            foreach (var id in idOrder)
+            {
+                var player = GetPlayerFromId(id).Data;
+                var buildingLoc = AiHelper.GetBestBuildingPlacement(id, _gameBoard);
+                if (buildingLoc != null)
+                {
+                    player.Purchase(PurchasableItems.Settlement, true);
+                    _gameBoard.PlaceBuilding(id, BuildingTypes.Settlement, buildingLoc.Value, true);
+                }
+                var roadLoc = AiHelper.GetBestRoadPlacement(id, _gameBoard);
+                if (roadLoc != null)
+                {
+                    player.Purchase(PurchasableItems.Road, true);
+                    _gameBoard.PlaceRoad(id, roadLoc.Value, true);
+                }
+            }
         }
 
         private void DoRandomPlacements()
         {
-            int playerIndex = _playerTurnIndex;
-            for (int i = 0; i < _players.Count * 2; i++)
+            var idOrder = GetInitialPlacementPlayerIdOrder();
+
+            foreach (var id in idOrder)
             {
-                var player = _players[playerIndex];
+                var player = GetPlayerFromId(id).Data;
 
                 HexPoint buildLoc;
                 var allHexes = _gameBoard.GetAllBoardHexagons();
@@ -1385,9 +1402,6 @@ namespace Jatan.GameLogic
                 var roadLoc = allRoadLocations.GetRandom();
                 player.Purchase(PurchasableItems.Road, true);
                 var rRes = _gameBoard.PlaceRoad(player.Id, roadLoc, true);
-
-                playerIndex++;
-                playerIndex %= _players.Count;
             }
         }
 
@@ -1647,6 +1661,45 @@ namespace Jatan.GameLogic
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Create an array that maps the turn # to the player id.
+        /// For example, using the list of players: [{Bob,ID=0}, {Joe,ID=1}, {Tom,ID=2}].
+        /// If Bob (ID = 0) is selected to go first, the array will be: [0,1,2,2,1,0].
+        /// If Joe (ID = 1) is selected to go first, the array will be: [1,2,0,0,2,1].
+        /// </summary>
+        private int[] GetInitialPlacementPlayerIdOrder()
+        {
+            int lastPlayerIndex = (_startingPlayerIndex < 1) ? (_players.Count - 1) : (_startingPlayerIndex - 1);
+            int playerIndex = _startingPlayerIndex;
+            bool lastPlayerPlaced = false;
+
+            int[] turnPlayerIdMap = new int[_players.Count * 2];
+            for (int i = 0; i < turnPlayerIdMap.Length; i++)
+            {
+                turnPlayerIdMap[i] = _players[playerIndex].Id;
+                if (lastPlayerPlaced)
+                {
+                    playerIndex--;
+                    if (playerIndex < 0)
+                        playerIndex = _players.Count - 1;
+                }
+                else
+                {
+                    if (playerIndex == lastPlayerIndex)
+                    {
+                        lastPlayerPlaced = true;
+                    }
+                    else
+                    {
+                        playerIndex++;
+                        playerIndex %= _players.Count;
+                    }
+                }
+            }
+
+            return turnPlayerIdMap;
         }
 
         #endregion
