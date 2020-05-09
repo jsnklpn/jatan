@@ -24,7 +24,7 @@ namespace JatanWebApp.Models.ViewModels
 
         [Required]
         [Display(Name = "Robber mode")]
-        public Jatan.Models.RobberMode RobberMode { get; set; }
+        public RobberMode RobberMode { get; set; }
 
         [Required]
         [Range(5, 10, ErrorMessage = "Score must be between 5 and 10.")]
@@ -45,6 +45,10 @@ namespace JatanWebApp.Models.ViewModels
         [Required]
         [Display(Name= "Player trading")]
         public RuleBooleanState AllowPlayerTrading { get; set; }
+
+        [Required]
+        [Display(Name = "Initial placement")]
+        public PlacementMode InitialPlacementMode { get; set; }
 
         /// <summary>
         /// List of valid values for the max number of players.
@@ -74,6 +78,7 @@ namespace JatanWebApp.Models.ViewModels
             TurnTimeLimit = 0; // No time limit
             CardLossThreshold = 8;
             AllowPlayerTrading = RuleBooleanState.Enabled;
+            InitialPlacementMode = PlacementMode.Normal;
 
             // Create the value select lists for the UI
             MaxNumberOfPlayersList = new SelectList(new List<int>() { 2, 3, 4 });

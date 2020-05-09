@@ -243,6 +243,28 @@ namespace Jatan.Models
     }
 
     /// <summary>
+    /// Placement modes for the start of the game.
+    /// </summary>
+    public enum PlacementMode
+    {
+        /// <summary>
+        /// Normal mode. The players get to choose their initial placements.
+        /// </summary>
+        [Display(Name = "Normal (Players select)")]
+        Normal,
+        /// <summary>
+        /// The initial placements are selected by game AI.
+        /// </summary>
+        [Display(Name = "A.I. selects")]
+        AI,
+        /// <summary>
+        /// The initial placements are completely random.
+        /// </summary>
+        [Display(Name = "Random locations")]
+        Random,
+    }
+
+    /// <summary>
     /// Possible colors for a player.
     /// </summary>
     public enum PlayerColor

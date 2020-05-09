@@ -13,6 +13,10 @@
         <i class="fa fa-fw fa-clock-o" style="color:darkblue" aria-hidden="true"></i>
         Turn time limit: <b class="pull-right">@(timeLimit == 0 ? "None" : timeLimit.ToString() + " seconds")</b>
     </div>
+        <div class="list-group-item">
+        <i class="fa fa-fw fa-map-marker" style="color:orangered" aria-hidden="true"></i>
+        Initial placements: <b class="pull-right">@Model.GameManager.Settings.InitialPlacementMode</b>
+    </div>
     <div class="list-group-item">
         <i class="fa fa-fw fa-male" style="color:black" aria-hidden="true"></i>
         Robber mode: <b class="pull-right">@Model.GameManager.Settings.RobberMode</b>

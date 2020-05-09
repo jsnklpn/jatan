@@ -322,11 +322,11 @@ namespace Jatan.GameLogic
             _playersCardsToLose.Clear();
             _playersToStealFrom.Clear();
             _tradeHelper.ClearAllOffers();
-            _gameState = GameState.InitialPlacement;
+            _gameState = GameState.NotStarted;
             _winScore = _gameSettings.ScoreNeededToWin;
             _winnerPlayerId = -1;
             _allowPlayerTrading = _gameSettings.AllowPlayerTrading;
-            _playerTurnState = PlayerTurnState.PlacingSettlement; // TODO: Possibly wait for something to trigger the game start.
+            _playerTurnState = PlayerTurnState.None;
 
             // Init the turn timer
             if (_turnTimer != null)
@@ -336,6 +336,8 @@ namespace Jatan.GameLogic
             }
             _turnTimer = new TurnTimer(_gameSettings.TurnTimeLimit);
             _turnTimer.TimeLimitElapsed += TurnTimer_TimeLimitElapsed;
+
+            InitPlacementPhase();
         }
 
         #endregion
@@ -1284,18 +1286,8 @@ namespace Jatan.GameLogic
         /// </summary>
         public List<HexEdge> GetLegalRoadPlacements(int playerId)
         {
-            List<HexEdge> result = new List<HexEdge>();
-            var edges = _gameBoard.GetAllBoardEdges();
             bool startOfGame = (_gameState == GameState.InitialPlacement);
-            foreach (var edge in edges)
-            {
-                var placementResult = _gameBoard.ValidateRoadPlacement(playerId, edge, startOfGame);
-                if (placementResult.Succeeded)
-                {
-                    result.Add(edge);
-                }
-            }
-            return result;
+            return _gameBoard.GetRoadPlacementsForPlayer(playerId, startOfGame);
         }
 
         /// <summary>
@@ -1303,18 +1295,8 @@ namespace Jatan.GameLogic
         /// </summary>
         public List<HexPoint> GetLegalBuildingPlacements(int playerId, BuildingTypes type)
         {
-            List<HexPoint> result = new List<HexPoint>();
-            var points = _gameBoard.GetAllBoardPoints();
             bool startOfGame = (_gameState == GameState.InitialPlacement);
-            foreach (var point in points)
-            {
-                var placementResult = _gameBoard.ValidateBuildingPlacement(playerId, type, point, startOfGame);
-                if (placementResult.Succeeded)
-                {
-                    result.Add(point);
-                }
-            }
-            return result;
+            return _gameBoard.GetBuildingPlacementsForPlayer(playerId, type, startOfGame);
         }
 
         #endregion
@@ -1340,6 +1322,73 @@ namespace Jatan.GameLogic
 
             _developmentCardDeck.AddCards(cardsToAdd);
             _developmentCardDeck.Shuffle(5);
+        }
+
+        private void InitPlacementPhase()
+        {
+            _gameState = GameState.InitialPlacement;
+
+            // Compute computer-selected placements if needed
+            var mode = _gameSettings.InitialPlacementMode;
+            if (mode == PlacementMode.AI || mode == PlacementMode.Random)
+            {
+                if (mode == PlacementMode.AI)
+                    DoAiPlacements();
+                else
+                    DoRandomPlacements();
+
+                // Since the placements are done automatically, start the game immediately.
+                _gameState = GameState.GameInProgress;
+                _playerTurnState = PlayerTurnState.NeedToRoll;
+                _log.TurnStarted(_turnCounter, ActivePlayer.Id);
+                StartPlayerTurnTimer();
+            }
+            else
+            {
+                // Normal player placements
+                _playerTurnState = PlayerTurnState.PlacingSettlement;
+            }
+        }
+
+        private void DoAiPlacements()
+        {
+            // TODO: Implement AI placements
+            DoRandomPlacements();
+        }
+
+        private void DoRandomPlacements()
+        {
+            int playerIndex = _playerTurnIndex;
+            for (int i = 0; i < _players.Count * 2; i++)
+            {
+                var player = _players[playerIndex];
+
+                HexPoint buildLoc;
+                var allHexes = _gameBoard.GetAllBoardHexagons();
+                var allBuildLocations = GetLegalBuildingPlacements(player.Id, BuildingTypes.Settlement);
+
+                // First attempt to get locations with 2 or 3 bordering hexes
+                var goodLocations = allBuildLocations.Where(p => p.GetHexes().Intersect(allHexes).Count() >= 2).ToList();
+                if (goodLocations.Count > 0)
+                {
+                    buildLoc = goodLocations.GetRandom();
+                }
+                else // If no good spots left, get a spot anywhere. This shouldn't ever happen...
+                {
+                    buildLoc = allBuildLocations.GetRandom();
+                }
+                player.Purchase(PurchasableItems.Settlement, true);
+                var bRes = _gameBoard.PlaceBuilding(player.Id, BuildingTypes.Settlement, buildLoc, true);
+
+                // Then pick a completely random road
+                var allRoadLocations = GetLegalRoadPlacements(player.Id);
+                var roadLoc = allRoadLocations.GetRandom();
+                player.Purchase(PurchasableItems.Road, true);
+                var rRes = _gameBoard.PlaceRoad(player.Id, roadLoc, true);
+
+                playerIndex++;
+                playerIndex %= _players.Count;
+            }
         }
 
         #endregion

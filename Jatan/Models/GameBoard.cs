@@ -317,10 +317,15 @@ namespace Jatan.Models
 
             if (startOfGame)
             {
-                // Make sure this is touching a settlement owned by this player. It's the start of the game.
-                if (!IsPlayerBuildingHere(playerId, edge))
+                // Find the lone building and make sure we're touching it.
+                var buildings = GetBuildingLocationsForPlayer(playerId);
+                var roads = GetRoadLocationsForPlayer(playerId);
+                var loneBuilding = buildings.Where(p => !roads.Any(r => r.ContainsPoint(p))).FirstOrDefault();
+
+                // Make sure this is touching a lone settlement owned by this player. It's the start of the game.
+                if (!edge.ContainsPoint(loneBuilding))
                 {
-                    return new ActionResult(false, String.Format("The road location {0} is not near a settlement.", edge));
+                    return new ActionResult(false, String.Format("The road location {0} is not near a lone settlement.", edge));
                 }
             }
             else
@@ -453,11 +458,41 @@ namespace Jatan.Models
         }
 
         /// <summary>
+        /// Returns a list of all legal placements for a building for the given player.
+        /// </summary>
+        public List<HexPoint> GetBuildingPlacementsForPlayer(int playerId, BuildingTypes type, bool startOfGame)
+        {
+            return this.GetAllBoardPoints()
+                .Where(p => ValidateBuildingPlacement(playerId, type, p, startOfGame).Succeeded)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the number of roads on the board for a player. This does not find the road length.
+        /// </summary>
+        public List<HexEdge> GetRoadLocationsForPlayer(int playerId)
+        {
+            return _roads.Where(r => r.Value.PlayerId == playerId)
+                .Select(r => r.Key)
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets the number of roads on the board for a player. This does not find the road length.
         /// </summary>
         public int GetRoadCountForPlayer(int playerId)
         {
             return _roads.Count(r => r.Value.PlayerId == playerId);
+        }
+
+        /// <summary>
+        /// Returns a list of all legal placements for a road for the given player.
+        /// </summary>
+        public List<HexEdge> GetRoadPlacementsForPlayer(int playerId, bool startOfGame)
+        {
+            return this.GetAllBoardEdges()
+                .Where(e => ValidateRoadPlacement(playerId, e, startOfGame).Succeeded)
+                .ToList();
         }
 
         /// <summary>

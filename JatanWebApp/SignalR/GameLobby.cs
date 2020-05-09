@@ -91,6 +91,7 @@ namespace JatanWebApp.SignalR
             this.GameManager.Settings.TurnTimeLimit = model.TurnTimeLimit;
             this.GameManager.Settings.AllowPlayerTrading = (model.AllowPlayerTrading == RuleBooleanState.Enabled);
             this.GameManager.Settings.CardCountLossThreshold = model.CardLossThreshold;
+            this.GameManager.Settings.InitialPlacementMode = model.InitialPlacementMode;
             this.GameManager.PlayerTurnTimeLimitExpired += GameManager_PlayerTurnTimeLimitExpired;
             this.GameManager.GameCompleted += GameManager_GameCompleted;
 

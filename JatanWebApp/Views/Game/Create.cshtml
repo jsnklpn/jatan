@@ -55,22 +55,28 @@
                     @Html.ValidationMessageFor(m => m.WinScore, "", new {@class = "text-danger"})
                 </div>
                 <div class="form-group form-group-sm">
+                    <i class="fa fa-map-marker fa-lg group-label-icon" style="color:orangered" aria-hidden="true"></i>
+                    @Html.LabelFor(m => m.InitialPlacementMode, new { @class = "control-label" })
+                    @Html.EnumDropDownListFor(m => m.InitialPlacementMode, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.InitialPlacementMode, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group form-group-sm">
                     <i class="fa fa-male fa-lg group-label-icon" aria-hidden="true"></i>
                     @Html.LabelFor(m => m.RobberMode, new { @class = "control-label" })
                     @Html.EnumDropDownListFor(m => m.RobberMode, new {@class = "form-control"})
-                    @Html.ValidationMessageFor(m => m.RobberMode, "", new {@class = "text-danger"})
+                    @Html.ValidationMessageFor(m => m.RobberMode, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group form-group-sm">
+                    <i class="fa fa-gavel fa-lg group-label-icon" style="color: brown" aria-hidden="true"></i>
+                    @Html.LabelFor(m => m.CardLossThreshold, new { @class = "control-label" })
+                    @Html.DropDownListFor(m => m.CardLossThreshold, Model.CardLossThresholdList, null, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(m => m.CardLossThreshold, "", new { @class = "text-danger"})
                 </div>
                 <div class="form-group form-group-sm">
                     <i class="fa fa-handshake-o fa-lg group-label-icon" style="color:darkgreen" aria-hidden="true"></i>
                     @Html.LabelFor(m => m.AllowPlayerTrading, new { @class = "control-label" })
                     @Html.EnumDropDownListFor(m => m.AllowPlayerTrading, new { @class = "form-control" })
                     @Html.ValidationMessageFor(m => m.AllowPlayerTrading, "", new { @class = "text-danger" })
-                </div>
-                <div class="form-group form-group-sm">
-                    <i class="fa fa-gavel fa-lg group-label-icon" style="color: brown" aria-hidden="true"></i>
-                    @Html.LabelFor(m => m.CardLossThreshold, new {@class = "control-label"})
-                    @Html.DropDownListFor(m => m.CardLossThreshold, Model.CardLossThresholdList, null, new {@class = "form-control"})
-                    @Html.ValidationMessageFor(m => m.CardLossThreshold, "", new {@class = "text-danger"})
                 </div>
                 <hr/>
                 <div class="form-group">

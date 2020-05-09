@@ -51,6 +51,11 @@ namespace Jatan.GameLogic
         public bool AllowPlayerTrading { get; set; }
 
         /// <summary>
+        /// The initial placement mode.
+        /// </summary>
+        public PlacementMode InitialPlacementMode { get; set; }
+
+        /// <summary>
         /// Constructor. Settings set to default.
         /// </summary>
         public GameSettings()
@@ -62,6 +67,7 @@ namespace Jatan.GameLogic
             this.TurnTimeLimit = 0;
             this.RandomizeStartingPlayer = true;
             this.AllowPlayerTrading = true;
+            this.InitialPlacementMode = PlacementMode.Normal; 
         }
     }
 }
