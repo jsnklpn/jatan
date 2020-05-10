@@ -301,12 +301,20 @@ function initHtmlUI() {
             $("#tradeDialog").addClass("hidden");
             hideCardReceivedBox();
         }
-        else if (keycode === 32) { // space key pressed. Roll the dice if possible.
-            var $btnRoll = $("#btnRollDice");
+        else if (keycode === 32) { // space key pressed. Roll the dice or end your turn if possible.
             var $inputBox = $("#chatInputBox");
-            if ($btnRoll.hasClass("hidden") === false &&
-                $inputBox.hasClass("hidden") === true) { // Don't roll if chat box is open
+            if ($inputBox.hasClass("hidden") === false) {
+                // Don't do anything if chat box is open
+                return true;
+            }
+            var $btnRoll = $("#btnRollDice");
+            var $btnEndTurn = $("#btnEndTurn");
+            if ($btnRoll.hasClass("hidden") === false) {
                 $btnRoll.click();
+                return false;
+            }
+            else if ($btnEndTurn.hasClass("hidden") === false) {
+                $btnEndTurn.click();
                 return false;
             }
         }
