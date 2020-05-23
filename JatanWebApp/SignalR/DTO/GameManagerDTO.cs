@@ -24,8 +24,7 @@ namespace JatanWebApp.SignalR.DTO
         public List<PlayerDTO> Players { get; set; }
         public TradeOffer ActiveTradeOffer { get; set; }
         public List<TradeOffer> CounterTradeOffers { get; set; }
-        // The Unix epoch time when the current player's turn will expire. 0 if none.
-        public long TurnExpire { get; set; }
+        public int TurnTimeRemaining { get; set; } // The number of seconds left until the active turn ends. -1 if no timer is enabled.
         public int WinnerPlayerId { get; set; }
 
         // These properties are populated only when needed.
@@ -104,7 +103,7 @@ namespace JatanWebApp.SignalR.DTO
             }
 
             var expiration = manager.TurnTimerExpiration;
-            this.TurnExpire = expiration == DateTime.MinValue ? 0 : expiration.ToUnixTimestamp();
+            this.TurnTimeRemaining = (expiration == DateTime.MinValue) ? -1 : Math.Max(0, (int)expiration.Subtract(DateTime.UtcNow).TotalSeconds);
         }
     }
 }
