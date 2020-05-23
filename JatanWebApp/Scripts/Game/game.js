@@ -8,6 +8,7 @@ var _currentGameManager = null;
 var _currentResourceTiles = null;
 var _currentPorts = null;
 var _turnTimerTimeoutId = null;
+var _turnTimerExpirationDate = null;
 
 var _allResourcesLoaded = false;
 var _loadQueue = null;
@@ -1787,7 +1788,7 @@ function populateTurnInfoBox() {
     var activePlayerId = _currentGameManager["ActivePlayerId"];
     var gameState = _currentGameManager["GameState"];
     var playerTurnState = _currentGameManager["PlayerTurnState"];
-    var turnExpireEpoch = _currentGameManager["TurnExpire"];
+    var turnTimeRemaining = _currentGameManager["TurnTimeRemaining"];
 
     var gameStarted = (gameState === GameState.InitialPlacement || gameState === GameState.GameInProgress);
 
@@ -1829,11 +1830,13 @@ function populateTurnInfoBox() {
     }
 
     // Turn timer
-    if (turnExpireEpoch !== 0) {
+    if (turnTimeRemaining >= 0) {
+        _turnTimerExpirationDate = (Date.now() / 1000) + turnTimeRemaining;
         $("#turnTimer").removeClass("hidden");
         clearTimeout(_turnTimerTimeoutId);
         updateTurnTimer();
     } else {
+        _turnTimerExpirationDate = 0;
         $("#turnTimer").addClass("hidden");
     }
 }
@@ -1843,13 +1846,12 @@ function updateTurnTimer() {
         $("#turnTimer").addClass("hidden");
         return;
     }
-    var turnExpireEpoch = _currentGameManager["TurnExpire"];
-    if (turnExpireEpoch === 0) {
+    if (_turnTimerExpirationDate === 0) {
         $("#turnTimer").addClass("hidden");
         return;
     }
-    var currentTime = new Date().getTime() / 1000;
-    var secondsLeft = Math.floor(turnExpireEpoch - currentTime);
+    var currentTime = Date.now() / 1000;
+    var secondsLeft = Math.floor(_turnTimerExpirationDate - currentTime);
     
     if (secondsLeft <= 10) {
         if (secondsLeft < 0) {
