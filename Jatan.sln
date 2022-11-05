@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUI", "TestUI\TestUI.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JatanWebApp", "JatanWebApp\JatanWebApp.csproj", "{9428ED76-43AC-4BC6-9D66-E321C22F6516}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JatanWebAppCore", "JatanWebAppCore\JatanWebAppCore.csproj", "{39210BC4-52B0-42F0-8C3C-5DD15BB898A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,12 @@ Global
 		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Release - beta|Any CPU.Build.0 = Release - beta|Any CPU
 		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9428ED76-43AC-4BC6-9D66-E321C22F6516}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39210BC4-52B0-42F0-8C3C-5DD15BB898A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39210BC4-52B0-42F0-8C3C-5DD15BB898A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39210BC4-52B0-42F0-8C3C-5DD15BB898A7}.Release - beta|Any CPU.ActiveCfg = Release|Any CPU
+		{39210BC4-52B0-42F0-8C3C-5DD15BB898A7}.Release - beta|Any CPU.Build.0 = Release|Any CPU
+		{39210BC4-52B0-42F0-8C3C-5DD15BB898A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39210BC4-52B0-42F0-8C3C-5DD15BB898A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
