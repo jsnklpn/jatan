@@ -15,13 +15,13 @@ namespace JatanWebApp.Controllers
     public class GameController : BaseController
     {
         // GET: Game
-        public ActionResult Index()
+        public Microsoft.AspNetCore.Mvc.ActionResult Index()
         {
             return RedirectToAction("Join");
         }
 
         // Get: Game/Create
-        public ActionResult Create()
+        public Microsoft.AspNetCore.Mvc.ActionResult Create()
         {
             var userName = User.Identity.Name;
             var defaultGameName = string.Format("{0}'s game", userName);
@@ -32,7 +32,7 @@ namespace JatanWebApp.Controllers
         // Post: Game/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(CreateGameViewModel viewModel)
+        public Microsoft.AspNetCore.Mvc.ActionResult Create(CreateGameViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
@@ -47,7 +47,7 @@ namespace JatanWebApp.Controllers
         }
 
         // Get: Game/Join/?gameId={id}&password={password}
-        public ActionResult Join(string gameId, string password)
+        public Microsoft.AspNetCore.Mvc.ActionResult Join(string gameId, string password)
         {
             if (!string.IsNullOrEmpty(gameId))
             {
@@ -69,7 +69,7 @@ namespace JatanWebApp.Controllers
         }
 
         // Get: Game/Instance/?gameId={id}
-        public ActionResult Instance(string gameId)
+        public Microsoft.AspNetCore.Mvc.ActionResult Instance(string gameId)
         {
             if (!string.IsNullOrEmpty(gameId))
             {
@@ -87,7 +87,7 @@ namespace JatanWebApp.Controllers
         }
 
         // Get: Game/PostGame/?gameId={id}
-        public ActionResult PostGame(string gameId)
+        public Microsoft.AspNetCore.Mvc.ActionResult PostGame(string gameId)
         {
             if (gameId == "test")
                 return View(PostGameViewModel.CreateTestVm());

@@ -10,16 +10,16 @@ using JatanWebApp.Models.ViewModels;
 
 namespace JatanWebApp.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : Microsoft.AspNetCore.Mvc.Controller
     {
         // Get: /Home/
-        public ActionResult Index()
+        public Microsoft.AspNetCore.Mvc.ActionResult Index()
         {
             return View();
         }
 
         // GET: /Home/TopPlayers?page=1&size=25
-        public ActionResult TopPlayers(int? page, int? size)
+        public Microsoft.AspNetCore.Mvc.ActionResult TopPlayers(int? page, int? size)
         {
             int pageIndex = page ?? 1;
             int pageSize = size ?? 25;

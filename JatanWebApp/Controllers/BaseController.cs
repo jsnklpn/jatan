@@ -11,7 +11,7 @@ namespace JatanWebApp.Controllers
     /// <summary>
     /// Base controller that checks for user credentials.
     /// </summary>
-    public abstract class BaseController : Controller
+    public abstract class BaseController : Microsoft.AspNetCore.Mvc.Controller
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
@@ -31,7 +31,7 @@ namespace JatanWebApp.Controllers
             get { return HttpContext.GetOwinContext().Authentication; }
         }
 
-        protected override void OnActionExecuting(ActionExecutingContext context)
+        protected override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
         {
             base.OnActionExecuting(context);
 
@@ -54,7 +54,7 @@ namespace JatanWebApp.Controllers
             base.Initialize(requestContext);
         }
 
-        protected ActionResult RedirectToLocal(string returnUrl)
+        protected Microsoft.AspNetCore.Mvc.ActionResult RedirectToLocal(string returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))
             {

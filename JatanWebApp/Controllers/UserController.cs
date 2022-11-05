@@ -19,14 +19,14 @@ namespace JatanWebApp.Controllers
     public class UserController : BaseController
     {
         // GET: User
-        public ActionResult Index()
+        public Microsoft.AspNetCore.Mvc.ActionResult Index()
         {
             return View();
         }
 
         // GET: /User/Login
         [AllowAnonymous]
-        public ActionResult Login(string returnUrl)
+        public Microsoft.AspNetCore.Mvc.ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
             return View();
@@ -36,7 +36,7 @@ namespace JatanWebApp.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
+        public async Task<Microsoft.AspNetCore.Mvc.ActionResult> Login(LoginViewModel model, string returnUrl)
         {
             if (!ModelState.IsValid)
             {
@@ -65,7 +65,7 @@ namespace JatanWebApp.Controllers
         // POST: /User/Logoff
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult LogOff()
+        public Microsoft.AspNetCore.Mvc.ActionResult LogOff()
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
             return RedirectToAction("Index", "Home");
@@ -73,7 +73,7 @@ namespace JatanWebApp.Controllers
 
         // GET: /Account/Register
         [AllowAnonymous]
-        public ActionResult Register()
+        public Microsoft.AspNetCore.Mvc.ActionResult Register()
         {
             return View();
         }
@@ -83,7 +83,7 @@ namespace JatanWebApp.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterViewModel model)
+        public async Task<Microsoft.AspNetCore.Mvc.ActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -110,7 +110,7 @@ namespace JatanWebApp.Controllers
 
         // GET: User/Settings
         [Authorize]
-        public ActionResult Settings()
+        public Microsoft.AspNetCore.Mvc.ActionResult Settings()
         {
             var vm = new UserSettingsViewModel();
 
@@ -135,7 +135,7 @@ namespace JatanWebApp.Controllers
         // POST: User/Settings
         [Authorize]
         [HttpPost]
-        public ActionResult Settings(UserSettingsViewModel viewModel, HttpPostedFileBase avatarFile)
+        public Microsoft.AspNetCore.Mvc.ActionResult Settings(UserSettingsViewModel viewModel, HttpPostedFileBase avatarFile)
         {
             try
             {

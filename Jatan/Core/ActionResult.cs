@@ -83,7 +83,7 @@ namespace Jatan.Core
         /// <summary>
         /// Creates a new success result.
         /// </summary>
-        public new static ActionResult<T> CreateSuccess(T data)
+        public static ActionResult<T> CreateSuccess(T data)
         {
             return new ActionResult<T>(data, true, "");
         }
@@ -99,7 +99,7 @@ namespace Jatan.Core
         /// <summary>
         /// Creates a new result.
         /// </summary>
-        public new static ActionResult<T> Create(ActionResult result)
+        public static ActionResult<T> Create(ActionResult result)
         {
             return new ActionResult<T>(default(T), result.Succeeded, result.Message);
         }

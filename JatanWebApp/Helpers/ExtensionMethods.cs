@@ -170,7 +170,7 @@ namespace JatanWebApp.Helpers
         /// <param name="htmlHelper">Helper used to render HTML elements.</param>
         /// <param name="pagedList">The list which will be used with this paging control.</param>
         /// <returns>HTML of the paging control.</returns>
-        public static MvcHtmlString PagerControl(this HtmlHelper htmlHelper, IPagedList pagedList)
+        public static Microsoft.AspNetCore.Html.HtmlString PagerControl(this HtmlHelper htmlHelper, IPagedList pagedList)
         {
             string actionName = htmlHelper.ViewContext.RouteData.Values["action"] as string;
             StringBuilder sb = new StringBuilder();
@@ -229,7 +229,7 @@ namespace JatanWebApp.Helpers
 
             sb.Append(@"</ul>");
 
-            return MvcHtmlString.Create(sb.ToString());
+            return Microsoft.AspNetCore.Html.HtmlString.Create(sb.ToString());
         }
     }
 }

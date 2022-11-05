@@ -16,8 +16,6 @@ namespace Jatan.UnitTest
         const int PLAYER_1 = 1;
         const int PLAYER_2 = 2;
 
-        private AutoResetEvent _timeLimitExpired;
-
         [TestMethod]
         public void TestInitialPlacementPhase()
         {
@@ -516,24 +514,24 @@ namespace Jatan.UnitTest
         [TestMethod]
         public void TestPlayerTurnTimeLimit()
         {
-            _timeLimitExpired = new AutoResetEvent(false);
+            var timeLimitExpired = new AutoResetEvent(false);
 
             // 1-second turn time limit.
             var manager = DoInitialPlacements(false, true, 1);
-            manager.PlayerTurnTimeLimitExpired += (sender, i) => { _timeLimitExpired.Set(); };
+            manager.PlayerTurnTimeLimitExpired += (sender, i) => { timeLimitExpired.Set(); };
             var activePlayer = manager.ActivePlayer;
             Assert.IsNotNull(activePlayer);
 
             Assert.AreEqual(PLAYER_0, manager.ActivePlayer.Id, "It should be PLAYER_0's turn.");
 
             // The time-limit is 1 second. Wait for 1.1 seconds and see if it expires.
-            bool turnExpired = _timeLimitExpired.WaitOne(1100);
+            bool turnExpired = timeLimitExpired.WaitOne(1100);
             Assert.IsTrue(turnExpired, "The turn expiration event is supposed to expire.");
 
             Assert.AreEqual(PLAYER_1, manager.ActivePlayer.Id, "It should now be PLAYER_1's turn.");
             
             // The time-limit is 1 second. Wait for 1.1 seconds and see if it expires.
-            turnExpired = _timeLimitExpired.WaitOne(1100);
+            turnExpired = timeLimitExpired.WaitOne(1100);
             Assert.IsTrue(turnExpired, "The turn expiration event is supposed to expire.");
 
             Assert.AreEqual(PLAYER_2, manager.ActivePlayer.Id, "It should now be PLAYER_2's turn.");

@@ -196,3 +196,4 @@ FakesAssemblies/
 *.opt
 /Images/Thumbs.db
 *.db
+/upgrade-assistant.clef
